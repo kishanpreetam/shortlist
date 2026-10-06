@@ -1,0 +1,48 @@
+# Copy to profile.yaml and edit. profile.yaml is gitignored, so your details stay local.
+
+name: Your Name
+home_area: "14460"        # OFLC area code where you'd work remotely (14460 = Boston-Cambridge-Newton)
+home_label: Boston        # shown in the target list for local openings
+years_experience: 1.5     # full-time-equivalent professional experience
+lottery_seasons: 2        # H-1B lotteries you can enter before your work authorization ends
+
+# Role families to scan (keys from shortlist/roles.py). Remove ones you don't want.
+roles: [data_engineer, ai_engineer, forward_deployed, data_scientist, data_analyst, analytics_engineer,
+        bi_engineer, research_engineer, ml_engineer, consulting, software_engineer, business_analyst]
+
+# Skill levels: 1.0 = strong (used in real work), 0.7 = solid, 0.5 = working knowledge.
+# Keys are listed in shortlist/classify.py (SKILLS). List only what you can defend in an interview.
+skills:
+  python: 1.0
+  sql: 1.0
+  pandas: 0.8
+  aws: 0.7
+  etl: 0.7
+  tableau: 0.7
+  statistics: 0.7
+  scikit_learn: 0.6
+  git: 0.8
+
+# How well you fit each role family overall (default 0.6). Raise the ones your experience matches.
+role_overrides: {}
+#  data_engineer: {fit: 0.85}
+
+# For the target list: your school's LinkedIn slug enables alumni-search links.
+school: Your University
+school_linkedin: your-university        # linkedin.com/school/<this>/people
+data_angle: ""                          # e.g. "two years of production ETL at <employer>"
+
+# Projects that prove you can do the work at employers with matching tags
+# (tags are set per company in shortlist/companies.yaml).
+proof: {}
+#  api:
+#    project: My API Project
+#    roles: [ai_engineer, software_engineer]
+#    boost: 0.15
+#    angle: "built something on their API"
+
+# People you know, by company. warm: true = someone who will reply; alumni: count of alumni there.
+contacts: {}
+#  HubSpot: {alumni: 12, warm: false}
+
+exclude_companies: []

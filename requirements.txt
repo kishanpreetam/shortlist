@@ -1,0 +1,4 @@
+polars>=1.30
+fastexcel>=0.21
+requests>=2.32
+pyyaml>=6.0

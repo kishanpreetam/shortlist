@@ -1,0 +1,112 @@
+# Employers to scan. `boards` lists every public board we know of; the
+# fetcher tries each and keeps the one with the most postings.
+#
+# lca_2026: certified H-1B filings Jan-Jun 2026 where known (h1bdata.info,
+#           2026-10-06 research). Replaced automatically once the DOL file
+#           is imported with `python -m shortlist lca <file.xlsx>`.
+# cap_exempt: universities, affiliated nonprofits, nonprofit research
+#           institutes. No lottery. Always confirm with the employer.
+# h1b: legal-name stem used to look up H-1B filings (defaults to the name).
+# tags: boston | api (developer platform) | ai_product (AI product company) |
+#       data (data-platform company). Link tags to your own projects in profile.yaml `proof`.
+
+HubSpot:        {boards: [[greenhouse, hubspotjobs]], lca_2026: 756, tags: [boston, api, ai_product]}
+Klaviyo:        {boards: [[greenhouse, klaviyo]], tags: [boston, api, ai_product]}
+Wayfair:        {boards: [[greenhouse, wayfair]], tags: [boston, data]}
+Toast:          {boards: [[greenhouse, toast]], tags: [boston], h1b: "TOAST INC"}
+CarGurus:       {boards: [[greenhouse, cargurus]], tags: [boston, data]}
+Recorded Future: {boards: [[greenhouse, recordedfuture]], tags: [boston, data], h1b: "RECORDED FUTURE"}
+Motional:       {boards: [[greenhouse, motional]], tags: [boston]}
+SimpliSafe:     {boards: [[greenhouse, simplisafe]], tags: [boston]}
+ezCater:        {boards: [[lever, ezcater]], tags: [boston]}
+Whoop:          {boards: [[lever, whoop]], tags: [boston, data]}
+Formlabs:       {boards: [[greenhouse, formlabs]], tags: [boston]}
+Hopper:         {boards: [[ashby, hopper]], tags: [boston, data], h1b: "HOPPER"}
+Lightmatter:    {boards: [[greenhouse, lightmatter]], tags: [boston]}
+Tamr:           {boards: [[lever, tamr]], tags: [boston, data]}
+Wistia:         {boards: [[greenhouse, wistia]], tags: [boston], h1b: "WISTIA INC"}
+PathAI:         {boards: [[greenhouse, pathai]], tags: [boston, data]}
+Liquid AI:      {boards: [[ashby, liquid-ai]], lca_2026: 4, tags: [boston, api], h1b: "LIQUID AI"}
+Datadog:        {boards: [[greenhouse, datadog]], tags: [boston, api, data], h1b: "DATADOG"}
+Ai2:            {boards: [[greenhouse, thealleninstitute]], cap_exempt: true, tags: [api], h1b: "ALLEN INSTITUTE FOR ARTIFICIAL"}
+Anthropic:      {boards: [[greenhouse, anthropic]], lca_2026: 199, tags: [api], h1b: "ANTHROPIC PBC"}
+OpenAI:         {boards: [[ashby, openai], [greenhouse, openai]], lca_2026: 165, tags: [api]}
+Databricks:     {boards: [[greenhouse, databricks]], lca_2026: 384, tags: [api, data]}
+Glean:          {boards: [[greenhouse, gleanwork]], lca_2026: 28, tags: [ai_product]}
+Cursor:         {boards: [[ashby, cursor]], lca_2026: 35, tags: [api], h1b: "ANYSPHERE"}
+Sierra:         {boards: [[ashby, sierra]], lca_2026: 18, tags: [ai_product], h1b: "SIERRA TECHNOLOGIES"}
+Perplexity:     {boards: [[ashby, perplexity]], lca_2026: 13, tags: [api], h1b: "PERPLEXITY AI"}
+Cohere:         {boards: [[ashby, cohere]], tags: [api], h1b: "COHERE US INC"}
+Mistral AI:     {boards: [[lever, mistral]], tags: [api], h1b: "MISTRAL AI"}
+Together AI:    {boards: [[greenhouse, togetherai]], tags: [api], h1b: "TOGETHER COMPUTER"}
+Baseten:        {boards: [[ashby, baseten]], tags: [api], h1b: "BASETEN LABS"}
+Modal:          {boards: [[ashby, modal]], tags: [api], h1b: "MODAL LABS"}
+Pinecone:       {boards: [[ashby, pinecone]], tags: [api, data], h1b: "PINECONE SYSTEMS"}
+Replit:         {boards: [[ashby, replit]], tags: [api]}
+Harvey:         {boards: [[ashby, harvey]], tags: [ai_product], h1b: "COUNSEL AI"}
+Decagon:        {boards: [[ashby, decagon]], tags: [ai_product], h1b: "DECAGON AI"}
+Writer:         {boards: [[ashby, writer]], tags: [ai_product], h1b: "WRITER INC"}
+Hebbia:         {boards: [[greenhouse, hebbia]], tags: [ai_product]}
+Scale AI:       {boards: [[greenhouse, scaleai]], tags: [data], h1b: "SCALE AI"}
+Palantir:       {boards: [[lever, palantir]], tags: [data], h1b: "PALANTIR TECHNOLOGIES"}
+Stripe:         {boards: [[greenhouse, stripe]], tags: [api]}
+Twilio:         {boards: [[greenhouse, twilio]], tags: [api]}
+Cloudflare:     {boards: [[greenhouse, cloudflare]], tags: [api]}
+Plaid:          {boards: [[ashby, plaid]], tags: [api]}
+Postman:        {boards: [[greenhouse, postman]], tags: [api]}
+Vercel:         {boards: [[greenhouse, vercel]], tags: [api]}
+Supabase:       {boards: [[ashby, supabase], [greenhouse, supabase]], tags: [api, data], h1b: "SUPABASE INC"}
+Linear:         {boards: [[ashby, linear]], tags: [api], h1b: "LINEAR ORBIT INC"}
+Notion:         {boards: [[ashby, notion], [greenhouse, notion]], tags: [api, ai_product], h1b: "NOTION LABS"}
+Airtable:       {boards: [[greenhouse, airtable]], tags: [api], h1b: "FORMAGRID"}
+Asana:          {boards: [[greenhouse, asana]], tags: [api]}
+Retool:         {boards: [[greenhouse, retool]], tags: [api], h1b: "RETOOL INC"}
+Vanta:          {boards: [[greenhouse, vanta]], tags: [api]}
+Okta:           {boards: [[greenhouse, okta]], tags: [api]}
+Elastic:        {boards: [[greenhouse, elastic]], tags: [api, data], h1b: "ELASTICSEARCH"}
+MongoDB:        {boards: [[greenhouse, mongodb]], tags: [api, data]}
+Confluent:      {boards: [[ashby, confluent]], tags: [data]}
+Snowflake:      {boards: [[ashby, snowflake]], tags: [data]}
+Fivetran:       {boards: [[greenhouse, fivetran]], tags: [data]}
+dbt Labs:       {boards: [[greenhouse, dbtlabsinc]], tags: [data], h1b: "DBT LABS"}
+Sigma Computing: {boards: [[greenhouse, sigmacomputing]], tags: [data], h1b: "SIGMA COMPUTING"}
+Amplitude:      {boards: [[greenhouse, amplitude]], tags: [data]}
+Mixpanel:       {boards: [[greenhouse, mixpanel]], tags: [data]}
+GitLab:         {boards: [[greenhouse, gitlab]], tags: [api], h1b: "GITLAB INC"}
+Ramp:           {boards: [[ashby, ramp], [greenhouse, ramp]], tags: [api], h1b: "RAMP BUSINESS"}
+Brex:           {boards: [[greenhouse, brex]], tags: [api]}
+Gusto:          {boards: [[greenhouse, gusto]], tags: []}
+Affirm:         {boards: [[greenhouse, affirm]], tags: [data]}
+Chime:          {boards: [[greenhouse, chime]], tags: [data], h1b: "CHIME FINANCIAL"}
+Coinbase:       {boards: [[greenhouse, coinbase]], tags: []}
+Robinhood:      {boards: [[greenhouse, robinhood]], tags: [], h1b: "ROBINHOOD MARKETS"}
+Benchling:      {boards: [[greenhouse, benchling]], tags: [data]}
+Verkada:        {boards: [[greenhouse, verkada]], tags: [], h1b: "VERKADA INC"}
+Samsara:        {boards: [[greenhouse, samsara]], tags: [data]}
+Figma:          {boards: [[greenhouse, figma]], tags: []}
+Airbnb:         {boards: [[greenhouse, airbnb]], tags: [data]}
+Lyft:           {boards: [[greenhouse, lyft]], tags: [data]}
+Pinterest:      {boards: [[greenhouse, pinterest]], tags: [data]}
+Dropbox:        {boards: [[greenhouse, dropbox]], tags: []}
+Instacart:      {boards: [[greenhouse, instacart]], tags: [data], h1b: "MAPLEBEAR"}
+Reddit:         {boards: [[greenhouse, reddit]], tags: [data]}
+DoorDash:       {boards: [[greenhouse, doordashusa]], tags: [data]}
+Duolingo:       {boards: [[greenhouse, duolingo]], tags: [data], h1b: "DUOLINGO INC"}
+Grammarly:      {boards: [[greenhouse, grammarly]], tags: [ai_product]}
+Roblox:         {boards: [[greenhouse, roblox]], tags: []}
+Attentive:      {boards: [[greenhouse, attentive]], tags: [ai_product], h1b: "ATTENTIVE MOBILE"}
+Zoox:           {boards: [[lever, zoox]], tags: []}
+Klarna:         {boards: [[lever, klarna]], tags: []}
+
+# Cap-exempt Boston employers that file for data/software roles (2025 LCAs, h1bdata.info).
+# Their jobs sit on Workday and other portals this tool can't read, so the report lists them to check by hand.
+Mass General Brigham: {boards: [], cap_exempt: true, portal: "https://www.massgeneralbrigham.org/en/about/careers", h1b: "GENERAL HOSPITAL CORP", tags: [boston]}
+Dana-Farber:    {boards: [], cap_exempt: true, portal: "https://careers.dana-farber.org/", h1b: "DANA FARBER", tags: [boston], h1b: "DANA-FARBER CANCER INSTITUTE"}
+Boston Children's: {boards: [], cap_exempt: true, portal: "https://www.childrenshospital.org/careers", h1b: "CHILDRENS HOSPITAL CORP", tags: [boston], h1b: "CHILDREN'S HOSPITAL CORPORATION"}
+Boston University: {boards: [], cap_exempt: true, portal: "https://careers.bu.edu/", h1b: "TRUSTEES OF BOSTON UNIVERSITY", tags: [boston]}
+Northeastern University: {boards: [], cap_exempt: true, portal: "https://northeastern.wd1.myworkdayjobs.com/careers", h1b: "NORTHEASTERN UNIVERSITY", tags: [boston]}
+Broad Institute: {boards: [], cap_exempt: true, portal: "https://www.broadinstitute.org/careers", h1b: "BROAD INSTITUTE", tags: [boston], h1b: "BROAD INSTITUTE, INC."}
+Boston Medical Center: {boards: [], cap_exempt: true, portal: "https://jobs.bmc.org/", h1b: "BOSTON MEDICAL CENTER", tags: [boston]}
+Harvard University: {boards: [], cap_exempt: true, portal: "https://careers.harvard.edu/", h1b: "PRESIDENT AND FELLOWS OF HARVARD", tags: [boston], h1b: "PRESIDENT AND FELLOWS OF HARVARD COLLEGE"}
+MIT:            {boards: [], cap_exempt: true, portal: "https://hr.mit.edu/jobs", h1b: "MASSACHUSETTS INSTITUTE OF TECHNOLOGY", tags: [boston]}
+Tufts University: {boards: [], cap_exempt: true, portal: "https://jobs.tufts.edu/", h1b: "TRUSTEES OF TUFTS COLLEGE", tags: [boston], h1b: "TRUSTEES OF TUFTS COLLEGE"}
