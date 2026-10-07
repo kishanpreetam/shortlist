@@ -124,15 +124,25 @@ US_STATES = set(
     "AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC "
     "SD TN TX UT VT VA WA WV WI WY DC".split()
 )
+# Whole words only, so "Capacity" doesn't match APAC and "Indiana" doesn't match India.
 NON_US = re.compile(
-    r"canada|toronto|vancouver|montreal|united kingdom|\buk\b|london|ireland|dublin|germany|berlin|munich|france|paris|"
+    r"\b(?:canada|toronto|vancouver|montreal|united kingdom|uk|london|ireland|dublin|germany|berlin|munich|france|paris|"
     r"netherlands|amsterdam|spain|madrid|barcelona|portugal|lisbon|poland|warsaw|india|bangalore|bengaluru|hyderabad|pune|"
-    r"singapore|japan|tokyo|australia|sydney|melbourne|brazil|são paulo|sao paulo|mexico|israel|tel aviv|emea|apac|latam|"
+    r"singapore|japan|tokyo|australia|sydney|melbourne|brazil|são paulo|sao paulo|(?<!new )mexico|israel|tel aviv|emea|apac|latam|"
     r"switzerland|zurich|sweden|stockholm|denmark|copenhagen|korea|seoul|china|hong kong|taiwan|philippines|argentina|colombia|"
-    r"europe|asia|africa|middle east|dubai|uae|saudi|costa rica|guatemala|peru|chile|uruguay|vietnam|thailand|indonesia|malaysia|new zealand|nigeria|kenya|egypt|south africa|romania|ukraine|serbia|czech|hungary|greece|italy|belgium|austria|finland|norway|estonia|lithuania|latvia",
+    r"europe|asia|africa|middle east|dubai|uae|saudi|costa rica|guatemala|peru|chile|uruguay|vietnam|thailand|indonesia|malaysia|new zealand|nigeria|kenya|egypt|south africa|romania|ukraine|serbia|czech|hungary|greece|italy|belgium|austria|finland|norway|estonia|lithuania|latvia)\b",
     re.I,
 )
 US_HINT = re.compile(r"united states|\bu\.?s\.?a?\b|\bus\b|remote", re.I)
+US_STATE_NAMES = re.compile(
+    r"\b(?:alabama|alaska|arizona|arkansas|california|colorado|connecticut|delaware|florida|georgia|hawaii|idaho|illinois|"
+    r"indiana|iowa|kansas|kentucky|louisiana|maine|maryland|massachusetts|michigan|minnesota|mississippi|missouri|montana|"
+    r"nebraska|nevada|new hampshire|new jersey|new mexico|new york|north carolina|north dakota|ohio|oklahoma|oregon|"
+    r"pennsylvania|rhode island|south carolina|south dakota|tennessee|texas|utah|vermont|virginia|washington|wisconsin|wyoming)\b",
+    re.I,
+)
+# Separators between places in one location field: "San Francisco; London, UK", "NYC | Remote", "Austin or Remote".
+PLACE_SEP = re.compile(r"\s*[;|\n]\s*|\s+/\s+|\s+or\s+")
 
 
 def is_us(location: str, title: str = "") -> bool:
@@ -140,6 +150,11 @@ def is_us(location: str, title: str = "") -> bool:
         return False
     if NON_US.search(title) and not re.search(r"united states|\bus\b|\busa\b", title, re.I):
         return False
+    # A posting that lists several places is open to US candidates if any of them is in the US.
+    return any(_is_us_place(p) for p in PLACE_SEP.split(location) if p.strip())
+
+
+def _is_us_place(location: str) -> bool:
     # "San Jose, CR" style: a trailing two-letter code that isn't a US state means another country.
     trailing = re.findall(r",\s*([A-Z]{2})\b(?!\s*,?\s*(?:United States|US|USA))", location)
     if trailing and all(t not in US_STATES and t != "US" for t in trailing) and not re.search(r"united states|\busa?\b", location, re.I):
@@ -147,7 +162,7 @@ def is_us(location: str, title: str = "") -> bool:
     if NON_US.search(location) and not re.search(r"united states|\bus\b|\busa\b", location, re.I):
         return False
     tokens = re.findall(r"\b[A-Z]{2}\b", location)
-    return any(t in US_STATES for t in tokens) or bool(US_HINT.search(location)) or bool(
+    return any(t in US_STATES for t in tokens) or bool(US_HINT.search(location) or US_STATE_NAMES.search(location)) or bool(
         re.search(r"new york|san francisco|boston|seattle|austin|chicago|los angeles|denver|atlanta|washington|cambridge|"
                   r"palo alto|mountain view|menlo park|sunnyvale|san jose|oakland|brooklyn|pittsburgh|philadelphia|dallas|houston|"
                   r"miami|raleigh|salt lake|portland|san diego|nashville|minneapolis|detroit|phoenix", location, re.I)

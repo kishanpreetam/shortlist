@@ -116,7 +116,7 @@ def lever(site: str, company: str) -> list[Posting]:
         ] + [j.get("additionalPlain", "")]
         out.append(Posting(
             company=company, source="lever", title=j.get("text", ""),
-            location=cats.get("location", "") or ", ".join(cats.get("allLocations", []) or []),
+            location=cats.get("location", "") or "; ".join(cats.get("allLocations", []) or []),
             url=j.get("hostedUrl", ""), text="\n".join(p for p in parts if p),
             posted_at=_dt(j.get("createdAt")),
             remote=(j.get("workplaceType") == "remote") if j.get("workplaceType") not in (None, "unspecified") else None,
