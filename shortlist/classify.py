@@ -9,18 +9,27 @@ import re
 
 TOO_SENIOR = re.compile(
     r"\b(senior|sr\.?|staff|principal|lead|manager|director|head of|vp|vice president|chief|"
-    r"distinguished|fellow|architect|iii|iv|v|level 3|level 4|l5|l6)\b"
+    r"distinguished|fellow|architect|iii|iv|v|level 3|level 4|l5|l6|managing partner|executive partner)\b"
 )
-NOT_FULL_TIME_GRAD = re.compile(r"\b(intern|internship|co-?op|apprentice|summer 20\d\d|part[- ]time)\b")
+NOT_FULL_TIME_GRAD = re.compile(r"\b(intern|internships?|co-?op|apprentice|summer 20\d\d|part[- ]time)\b")
+POSTDOC = re.compile(r"\bpost[- ]?doc(toral)?\b")  # postdoctoral appointments need a finished PhD
+# Hospital, university, bank and insurer boards add clinical, teaching, finance and HR titles
+# that match role-family words ("Nurse Consultant", "Equity Research Associate").
 OFF_PROFILE = re.compile(
     r"\b(ios|android|mobile|embedded|firmware|fpga|asic|verilog|rtl|hardware engineer|silicon|kernel|game|graphics|"
-    r"unity|unreal|mechanical|electrical|robotics hardware|sales development|account executive|recruiter|designer|copywriter|paralegal|attorney)\b"
+    r"unity|unreal|mechanical|electrical|robotics hardware|sales development|account executive|recruiter|designer|copywriter|paralegal|attorney|"
+    r"nurse|rn|pharmacist|pharmacy technician|physician|therapist|phlebotomist|lactation|beauty|"
+    r"clinical research (associate|coordinator)|faculty|lecturer|professor|"
+    r"equity research|investment banking|financial planning|wealth planning|retirement consultant|risk control|wholesaler|"
+    r"hr consultant|talent consultant)\b"
 )
 ENTRY = re.compile(r"\b(new grad|graduate|entry|junior|jr\.?|associate|early career|university|i|1|level 1|level i)\b")
 
 
 def seniority(title: str) -> str:
     t = title.lower()
+    if POSTDOC.search(t):
+        return "postdoc"
     if NOT_FULL_TIME_GRAD.search(t):
         return "internship"
     if TOO_SENIOR.search(t):
@@ -101,6 +110,17 @@ YES = re.compile(
 )
 ABOUT_WORK = re.compile(r"visa|work|employ|h-?1b|\bopt\b|authori[sz]|immigra|citizen|sponsor|clearance", re.I)
 FALSE_POSITIVE = re.compile(r"export licen[cs]e|every role|executive sponsor|sponsor bank|event sponsor|clearance sponsor|sponsor your clearance", re.I)
+# "may not be able to employ candidates who ... or support future F-1 or H-1B sponsorship" (Roblox and others)
+NO_VISA_SUPPORT = re.compile(r"\b(may not|not be able to|unable to|cannot)\b[^\n]{0,220}?\b(F-1|H-1B|visa)\b[^\n]{0,40}?\bsponsorship\b", re.I)
+# Green-card (PERM) postings list one person's exact background: "Position also requires the following: 2 years ..."
+PERM_STYLE = re.compile(r"position (also )?requires (the following|\d+ (years|months))|requires \d+ (years|months) of experience in the following", re.I)
+
+
+def is_perm_style(text: str) -> bool:
+    return bool(PERM_STYLE.search(text or ""))
+
+
+CITIZEN_WITH_CLEARANCE = re.compile(r"\bU\.?\s?S\.?\s+citizen(ship)?\b.{0,160}?\bclearance\b", re.I | re.S)
 CLEARANCE_SPONSOR = re.compile(r"sponsor (your |a )?(security )?clearance", re.I)
 
 
@@ -111,11 +131,25 @@ def sponsorship_signal(text: str) -> str:
     joined = " ".join(relevant)
     if any(CITIZEN.search(s) and re.search(r"require|must|only|restricted|eligib", s, re.I) for s in relevant):
         return "citizen_only"
-    if NO.search(joined):
+    # A requirements list often says it with no "must": "U.S. Citizenship with the ability to obtain ... a clearance."
+    # Checked on the whole text, since sentence splitting cuts "U.S." apart.
+    if CITIZEN_WITH_CLEARANCE.search(text):
+        return "citizen_only"
+    if NO.search(joined) or NO_VISA_SUPPORT.search(text):
         return "no"
     if YES.search(joined) and not CLEARANCE_SPONSOR.search(joined):
         return "yes"
     return "unknown"
+
+
+# Clinical roles that need a license the profile can't have ("PA or RN license", "direct patient care").
+CLINICAL_LICENSE = re.compile(
+    r"\b(RN|NP|PA|LPN|MD)\b[^.]{0,40}\b(licen[sc]e|degree)\b|registered nurse|nursing licen[sc]e|direct (care of )?patient care|"
+    r"direct care of patients|board[- ]certified", re.I)
+
+
+def needs_clinical_license(text: str) -> bool:
+    return bool(CLINICAL_LICENSE.search(text or ""))
 
 
 # --- location & employment type --------------------------------------------------

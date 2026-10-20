@@ -46,3 +46,23 @@ contacts: {}
 #  HubSpot: {alumni: 12, warm: false}
 
 exclude_companies: []
+
+# ---- Daily apply queue (python -m shortlist today) ----
+# Optional. Paths to the resume version you send for each kind of role, and one sentence
+# of proof per version for the short message to a person at the company.
+# Versions: ai-engineer, data-engineer, data-scientist, data-analyst (see RESUME_FOR in apply.py;
+# override per role family with `resume_for: {software_engineer: data-engineer}`).
+resumes: {}
+#  data-engineer: /path/to/Your-Name-Data-Engineer.pdf
+pitch: {}
+#  data-engineer: "I built the Python and SQL pipelines behind <something real>."
+# Optional: tailor a resume to each job on the page, from your facts file (see shortlist/resume.py).
+# resume_facts: /path/to/facts.json
+# tailored_dir: ~/Documents/Resumes
+# With Claude Code installed and signed in (`claude auth login`), Claude rewrites your points for each job,
+# and only rewrites that keep your facts are used.
+# rewrite_points: true          # false keeps your own wording
+# rewrite_warmup: 5             # how many of the next jobs to rewrite in the background (0 waits for a Tailor click)
+# claude_path: /path/to/claude  # if it isn't on your PATH
+# Words that never go on any resume it builds: headings drop them, and lines that use one stay off.
+# resume_never_words: [contract]

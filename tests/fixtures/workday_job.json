@@ -1,0 +1,25 @@
+{
+  "jobPostingInfo": {
+    "id": "06e692cc30f6100162460ef78ed80001",
+    "title": "Associate Data Scientist",
+    "jobDescription": "<p><b>About the role</b></p><p>Build data pipelines and models in Python and SQL on AWS.</p><ul><li>2+ years of experience with machine learning</li></ul><p>Salary range: $76,335.00 - $107,823.00</p>",
+    "location": "Boston, MA (Main Campus)",
+    "additionalLocations": ["Burlington, MA"],
+    "postedOn": "Posted 5 Days Ago",
+    "startDate": "2026-10-07",
+    "timeType": "Full time",
+    "remoteType": "Hybrid",
+    "jobReqId": "R100001",
+    "jobPostingId": "Associate-Data-Scientist_R100001",
+    "jobPostingSiteId": "careers",
+    "country": {"descriptor": "United States of America", "id": "bc33aa3152ec42d4995f4791a106ed09"},
+    "canApply": true,
+    "posted": true,
+    "includeResumeParsing": true,
+    "jobRequisitionLocation": {"descriptor": "Main Campus", "country": {"descriptor": "United States of America", "id": "bc33aa3152ec42d4995f4791a106ed09", "alpha2Code": "US"}},
+    "externalUrl": "https://acme.wd1.myworkdayjobs.com/careers/job/Boston-MA-Main-Campus/Associate-Data-Scientist_R100001"
+  },
+  "hiringOrganization": {"name": "Acme University", "url": ""},
+  "similarJobs": [],
+  "userAuthenticated": false
+}

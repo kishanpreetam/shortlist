@@ -92,6 +92,70 @@ def _page_title_matches(ats: str, slug: str, key: str) -> bool:
     return bool(title) and (key in title or title.startswith(key[:8]))
 
 
+def _employers() -> dict[str, dict]:
+    """normalized name -> {name, filings, by_role, boston} from the cached H-1B filings by job title."""
+    employers: dict[str, dict] = {}
+    for title in TITLES:
+        for year in YEARS:
+            for employer, job_title, salary, location, *_ in _rows(title, year):
+                if STAFFING.search(employer):
+                    continue
+                role = role_for_title(job_title)
+                if role is None:
+                    continue
+                e = employers.setdefault(norm(employer), {"name": employer, "filings": 0, "by_role": {}, "boston": 0})
+                e["filings"] += 1
+                e["by_role"][role.key] = e["by_role"].get(role.key, 0) + 1
+                if re.search(r",\s*MA$", location):
+                    e["boston"] += 1
+    return employers
+
+
+def _workable_account(account: str) -> tuple[str | None, int]:
+    """(the account's name, how many of its open jobs are in the US)."""
+    time.sleep(1.0)
+    try:
+        r = requests.get(f"https://apply.workable.com/api/v1/widget/accounts/{account}", headers={"User-Agent": USER_AGENT}, timeout=20)
+        data = r.json() if r.ok else {}
+    except (requests.RequestException, ValueError):
+        return None, 0
+    us = sum((j.get("country") or "").lower() in ("united states", "united states of america", "usa", "us") for j in data.get("jobs") or [])
+    return data.get("name"), us
+
+
+WORKABLE_MAX_FILINGS = 50  # employers filing this many H-1Bs run their own enterprise hiring systems
+
+
+def add_workable(min_filings: int = 2, known: set[str] | None = None, limit: int = 600) -> list[dict]:
+    """Employers that file H-1Bs for your roles and post jobs on Workable, added to data/discovered.yaml.
+    Candidates are the employer's name run together and hyphenated. Anyone can open a Workable account under a
+    famous name (accounts named apple, tesla and bloomberg exist, with no jobs), so a match must carry the
+    employer's name, have open US jobs, and belong to an employer small enough to plausibly hire through Workable."""
+    known = {norm(k) for k in (known or set())}
+    found = yaml.safe_load(OUT.read_text()) if OUT.exists() else []
+    have = {norm(d["name"]) for d in found}
+    tried = 0
+    added = []
+    for key, e in sorted(_employers().items(), key=lambda kv: -kv[1]["filings"]):
+        if e["filings"] < min_filings or e["filings"] >= WORKABLE_MAX_FILINGS or key in known or key in have or len(key) < 4:
+            continue
+        if tried >= limit:
+            break
+        tried += 1
+        words = [w for w in re.sub(r"[^a-z0-9 ]", " ", e["name"].lower()).split()
+                 if w not in ("inc", "llc", "corp", "corporation", "co", "company", "ltd", "limited", "lp", "llp", "plc", "the")]
+        for account in dict.fromkeys(["".join(words), "-".join(words)]):
+            board, us_jobs = _workable_account(account) if account else (None, 0)
+            if board and us_jobs and (norm(board) == key or norm(board).startswith(key) or key.startswith(norm(board))) and len(norm(board)) >= 4:
+                d = {"name": e["name"].title(), "ats": "workable", "slug": account, "filings": e["filings"],
+                     "by_role": e["by_role"], "boston": e["boston"]}
+                found.append(d)
+                added.append(d)
+                break
+    OUT.write_text(yaml.safe_dump(found, sort_keys=False))
+    return added
+
+
 def run(min_filings: int = 5, known: set[str] | None = None) -> list[dict]:
     known = {norm(k) for k in (known or set())}
     employers: dict[str, dict] = {}

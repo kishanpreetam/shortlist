@@ -15,7 +15,7 @@
 - leverage    warm contacts, alumni, and proof-of-work projects that match the employer
               (configured in profile.yaml under `proof`).
 
-Hard exclusions: senior titles, internships, non-US, contract roles (STEM OPT
+Hard exclusions: senior titles, internships, postdocs, non-US, contract roles (STEM OPT
 needs W-2 employment), citizenship or clearance requirements, explicit "no
 sponsorship", and asks of 3+ more years than the candidate has.
 """
@@ -132,14 +132,20 @@ def score_posting(p: Posting, company: Company, profile: dict, sponsor_record: d
         s.excluded = "senior title"
     elif seniority == "internship":
         s.excluded = "internship or part-time"
+    elif seniority == "postdoc":
+        s.excluded = "postdoc (needs a PhD)"
     elif seniority == "off_profile":
-        s.excluded = "off-profile specialty (mobile, hardware, games...)"
+        s.excluded = "off-profile specialty (mobile, hardware, games, clinical, teaching...)"
     elif not (classify.is_us(p.location, p.title) or p.remote and not classify.NON_US.search(f"{p.location} {p.title}")):
         s.excluded = f"outside the US ({p.location})"
     elif classify.is_contract(p.title, p.employment_type):
         s.excluded = "contract role (STEM OPT needs W-2 employment)"
     elif signal == "citizen_only":
         s.excluded = "US citizens / clearance only"
+    elif classify.is_perm_style(p.text):
+        s.excluded = "green-card (PERM) posting written for one person"
+    elif classify.needs_clinical_license(p.text):
+        s.excluded = "needs a clinical license (RN, PA or similar)"
     elif signal == "no":
         s.excluded = "posting says no visa sponsorship"
     elif s.years_required is not None and s.years_required >= have + 3:

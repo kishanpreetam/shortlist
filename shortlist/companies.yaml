@@ -1,5 +1,6 @@
 # Employers to scan. `boards` lists every public board we know of; the
-# fetcher tries each and keeps the one with the most postings.
+# fetcher tries each and keeps the one with the most postings. A Workday board
+# is tenant/wdN/site, from its address: northeastern.wd1.myworkdayjobs.com/careers.
 #
 # lca_2026: certified H-1B filings Jan-Jun 2026 where known (h1bdata.info,
 #           2026-10-06 research). Replaced automatically once the DOL file
@@ -99,14 +100,105 @@ Zoox:           {boards: [[lever, zoox]], tags: []}
 Klarna:         {boards: [[lever, klarna]], tags: []}
 
 # Cap-exempt Boston employers that file for data/software roles (2025 LCAs, h1bdata.info).
-# Their jobs sit on Workday and other portals this tool can't read, so the report lists them to check by hand.
-Mass General Brigham: {boards: [], cap_exempt: true, portal: "https://www.massgeneralbrigham.org/en/about/careers", h1b: "GENERAL HOSPITAL CORP", tags: [boston]}
+# Those on Workday are scanned. The rest use portals this tool can't read (Dana-Farber's
+# robots.txt disallows its Workday site), so the report lists them to check by hand.
+Mass General Brigham: {boards: [[workday, massgeneralbrigham/wd1/MGBExternal]], cap_exempt: true, portal: "https://www.massgeneralbrigham.org/en/about/careers", h1b: "GENERAL HOSPITAL CORP", tags: [boston]}
 Dana-Farber:    {boards: [], cap_exempt: true, portal: "https://careers.dana-farber.org/", h1b: "DANA FARBER", tags: [boston], h1b: "DANA-FARBER CANCER INSTITUTE"}
 Boston Children's: {boards: [], cap_exempt: true, portal: "https://www.childrenshospital.org/careers", h1b: "CHILDRENS HOSPITAL CORP", tags: [boston], h1b: "CHILDREN'S HOSPITAL CORPORATION"}
 Boston University: {boards: [], cap_exempt: true, portal: "https://careers.bu.edu/", h1b: "TRUSTEES OF BOSTON UNIVERSITY", tags: [boston]}
-Northeastern University: {boards: [], cap_exempt: true, portal: "https://northeastern.wd1.myworkdayjobs.com/careers", h1b: "NORTHEASTERN UNIVERSITY", tags: [boston]}
+Northeastern University: {boards: [[workday, northeastern/wd1/careers]], cap_exempt: true, portal: "https://northeastern.wd1.myworkdayjobs.com/careers", h1b: "NORTHEASTERN UNIVERSITY", tags: [boston]}
 Broad Institute: {boards: [], cap_exempt: true, portal: "https://www.broadinstitute.org/careers", h1b: "BROAD INSTITUTE", tags: [boston], h1b: "BROAD INSTITUTE, INC."}
-Boston Medical Center: {boards: [], cap_exempt: true, portal: "https://jobs.bmc.org/", h1b: "BOSTON MEDICAL CENTER", tags: [boston]}
+Boston Medical Center: {boards: [[workday, bmc/wd1/BMC]], cap_exempt: true, portal: "https://jobs.bmc.org/", h1b: "BOSTON MEDICAL CENTER", tags: [boston]}
 Harvard University: {boards: [], cap_exempt: true, portal: "https://careers.harvard.edu/", h1b: "PRESIDENT AND FELLOWS OF HARVARD", tags: [boston], h1b: "PRESIDENT AND FELLOWS OF HARVARD COLLEGE"}
 MIT:            {boards: [], cap_exempt: true, portal: "https://hr.mit.edu/jobs", h1b: "MASSACHUSETTS INSTITUTE OF TECHNOLOGY", tags: [boston]}
 Tufts University: {boards: [], cap_exempt: true, portal: "https://jobs.tufts.edu/", h1b: "TRUSTEES OF TUFTS COLLEGE", tags: [boston], h1b: "TRUSTEES OF TUFTS COLLEGE"}
+
+# Large H-1B sponsors on Workday, in order of 2025-26 filings for the role families
+# (h1bdata.info by job title, counted as `discover` does; staffing firms left out).
+# Each was checked on 2026-10-12 with one list request. Employers whose robots.txt
+# disallows their Workday job site are left out. cap_exempt marks a university or
+# its academic medical center; confirm with them.
+CVS Health:     {boards: [[workday, cvshealth/wd1/CVS_Health_Careers]], h1b: "AETNA RESOURCES", tags: []}  # Aetna Resources files most of CVS Health's tech H-1Bs
+Adobe:          {boards: [[workday, adobe/wd5/external_experienced]], tags: []}
+Intel:          {boards: [[workday, intel/wd1/External]], h1b: "INTEL CORPORATION", tags: []}
+Cisco:          {boards: [[workday, cisco/wd5/Cisco_Careers]], h1b: "CISCO SYSTEMS", tags: []}
+Expedia Group:  {boards: [[workday, expedia/wd108/search]], h1b: "EXPEDIA", tags: []}
+Visa:           {boards: [[workday, visa/wd5/Visa]], h1b: "VISA USA", tags: []}
+Amgen:          {boards: [[workday, amgen/wd1/Careers]], tags: []}
+PayPal:         {boards: [[workday, paypal/wd1/jobs]], tags: []}
+Rocket Companies: {boards: [[workday, quickenloans/wd5/rocket_careers]], h1b: "ROCKET MORTGAGE", tags: []}  # also Rocket's Redfin jobs
+Salesforce:     {boards: [[workday, salesforce/wd12/External_Career_Site]], tags: []}
+Zillow:         {boards: [[workday, zillow/wd5/Zillow_Group_External]], tags: []}
+HP:             {boards: [[workday, hp/wd5/ExternalCareerSite]], h1b: "HP INC", tags: []}
+Autodesk:       {boards: [[workday, autodesk/wd1/Ext]], tags: []}
+Barclays:       {boards: [[workday, barclays/wd3/External_Career_Site_Barclays]], tags: []}
+Micron:         {boards: [[workday, micron/wd1/External]], h1b: "MICRON TECHNOLOGY", tags: []}
+U.S. Bank:      {boards: [[workday, usbank/wd1/US_Bank_Careers]], h1b: "US BANK NATIONAL ASSOCIATION", tags: []}
+NVIDIA:         {boards: [[workday, nvidia/wd5/NVIDIAExternalCareerSite]], tags: []}
+Elevance Health: {boards: [[workday, elevancehealth/wd1/ANT]], tags: []}
+Genentech:      {boards: [[workday, roche/wd3/roche-ext]], h1b: "GENENTECH", tags: []}  # Roche's site, which carries Genentech's jobs
+Toyota North America: {boards: [[workday, toyota/wd503/TMNA]], h1b: "TOYOTA MOTOR", tags: []}
+Mastercard:     {boards: [[workday, mastercard/wd1/CorporateCareers]], tags: []}
+Asurion:        {boards: [[workday, asurion/wd5/AsurionCareers_US]], tags: []}
+S&P Global:     {boards: [[workday, spgi/wd5/SPGI_Careers]], tags: []}
+Shipt:          {boards: [[workday, shipt/wd1/Shipt_External]], h1b: "SHIPT INC", tags: []}
+Comscore:       {boards: [[workday, comscore/wd5/External]], tags: [data]}
+General Motors: {boards: [[workday, generalmotors/wd5/Careers_GM]], tags: []}
+Truist:         {boards: [[workday, truist/wd1/Careers]], tags: []}
+Workday:        {boards: [[workday, workday/wd5/Workday]], tags: []}
+Prudential Financial: {boards: [[workday, pru/wd5/Careers]], h1b: "THE PRUDENTIAL INSURANCE", tags: []}
+Northwestern Mutual: {boards: [[workday, northwesternmutual/wd5/CORPORATE-CAREERS]], tags: []}
+Travelers:      {boards: [[workday, travelers/wd5/External]], h1b: "THE TRAVELERS INDEMNITY", tags: []}
+LendingClub:    {boards: [[workday, lendingclub/wd1/External]], tags: []}
+NXP:            {boards: [[workday, nxp/wd3/careers]], h1b: "NXP USA", tags: []}
+Red Hat:        {boards: [[workday, redhat/wd5/Jobs]], tags: []}
+Health Catalyst: {boards: [[workday, healthcatalyst/wd5/healthcatalystcareers]], tags: [data]}
+PNC:            {boards: [[workday, pnc/wd5/External]], h1b: "THE PNC FINANCIAL", tags: []}
+American Family Insurance: {boards: [[workday, amfam/wd1/Careers]], h1b: "AMERICAN FAMILY MUTUAL INSURANCE", tags: []}
+John Hancock:   {boards: [[workday, manulife/wd3/MFCJH_Jobs]], h1b: "JOHN HANCOCK LIFE INSURANCE", tags: [boston]}  # Manulife's site, which carries John Hancock's jobs
+Capital One:    {boards: [[workday, capitalone/wd12/Capital_One]], tags: []}
+Cox Automotive: {boards: [[workday, cox/wd1/Cox_External_Career_Site_1]], tags: []}
+Broadcom:       {boards: [[workday, broadcom/wd1/External_Career]], tags: []}
+HCSC:           {boards: [[workday, hcsc/wd1/HCSC_External]], h1b: "HEALTH CARE SERVICE CORPORATION", tags: []}
+Guidewire:      {boards: [[workday, guidewire/wd5/external]], tags: []}
+FIS:            {boards: [[workday, fis/wd5/SearchJobs]], h1b: "FIS MANAGEMENT SERVICES", tags: []}
+Warner Bros. Discovery: {boards: [[workday, warnerbros/wd5/global]], h1b: "DISCOVERY COMMUNICATIONS", tags: []}
+Northern Trust: {boards: [[workday, ntrs/wd1/northerntrust]], h1b: "THE NORTHERN TRUST", tags: []}
+Applied Materials: {boards: [[workday, amat/wd1/External]], tags: []}
+MUFG:           {boards: [[workday, mufgub/wd3/MUFG-Careers]], tags: []}
+Johnson & Johnson: {boards: [[workday, jj/wd5/JJ]], tags: []}
+Sanofi:         {boards: [[workday, sanofi/wd3/SanofiCareers]], tags: []}
+Zoetis:         {boards: [[workday, zoetis/wd5/zoetis]], tags: []}
+Agilent:        {boards: [[workday, agilent/wd5/Agilent_Careers]], tags: []}
+Teladoc Health: {boards: [[workday, teladoc/wd503/teladochealth_is_hiring]], tags: []}
+Highmark Health: {boards: [[workday, highmarkhealth/wd1/highmark]], h1b: "HIGHMARK", tags: []}
+Raymond James:  {boards: [[workday, raymondjames/wd1/RaymondJamesCareers]], tags: []}
+RingCentral:    {boards: [[workday, ringcentral/wd1/RingCentral_Careers]], tags: []}
+Vanguard:       {boards: [[workday, vanguard/wd5/vanguard_external]], h1b: "THE VANGUARD GROUP", tags: []}
+PRA Group:      {boards: [[workday, pra/wd1/PRA_Careers]], tags: []}
+Etsy:           {boards: [[workday, etsy/wd5/Etsy_Careers]], tags: []}
+Yahoo:          {boards: [[workday, ouryahoo/wd5/careers]], h1b: "OATH HOLDINGS", tags: []}
+Abbott:         {boards: [[workday, abbott/wd5/abbottcareers]], h1b: "ABBOTT LABORATORIES", tags: []}
+McKesson:       {boards: [[workday, mckesson/wd3/External_Careers]], tags: []}
+Dow Jones:      {boards: [[workday, dowjones/wd1/Dow_Jones_Career]], tags: []}
+University of Chicago: {boards: [[workday, uchicago/wd5/External]], cap_exempt: true, h1b: "THE UNIVERSITY OF CHICAGO", tags: []}
+Sonos:          {boards: [[workday, sonos/wd1/Sonos]], tags: []}
+LSEG:           {boards: [[workday, lseg/wd3/Careers]], h1b: "REFINITIV", tags: []}
+Capital Group:  {boards: [[workday, capgroup/wd1/capitalgroupcareers]], h1b: "CAPITAL GROUP COMPANIES", tags: []}
+KLA:            {boards: [[workday, kla/wd1/Search]], h1b: "KLA CORPORATION", tags: []}
+Philips:        {boards: [[workday, philips/wd3/jobs-and-careers]], h1b: "PHILIPS NORTH AMERICA", tags: []}
+CoStar:         {boards: [[workday, costar/wd1/CoStarCareers]], tags: [data]}
+Procter & Gamble: {boards: [[workday, pg/wd5/1000]], h1b: "THE PROCTER & GAMBLE", tags: []}
+Motorola Solutions: {boards: [[workday, motorolasolutions/wd5/Careers]], tags: []}
+Cincinnati Children's: {boards: [[workday, cincinnatichildrens/wd5/careersatcincinnatichildrens]], cap_exempt: true, h1b: "CINCINNATI CHILDREN'S HOSPITAL", tags: []}
+Phreesia:       {boards: [[workday, phreesia/wd1/Phreesia]], tags: []}
+Cardlytics:     {boards: [[workday, cardlytics/wd5/CardlyticsExternalCareerSite]], tags: []}
+Analog Devices: {boards: [[workday, analogdevices/wd1/External]], tags: [boston]}
+Guardian Life:  {boards: [[workday, guardianlife/wd5/Guardian-Life-Careers]], h1b: "THE GUARDIAN LIFE INSURANCE", tags: []}
+Aspen Technology: {boards: [[workday, aspentech/wd5/aspentech]], tags: [boston]}
+IQVIA:          {boards: [[workday, iqvia/wd1/IQVIA]], tags: []}
+Montefiore:     {boards: [[workday, montefiore/wd12/MMC]], cap_exempt: true, tags: []}
+Invesco:        {boards: [[workday, invesco/wd1/IVZ]], tags: []}
+Novartis:       {boards: [[workday, novartis/wd3/Novartis_Careers]], tags: []}
+Nasdaq:         {boards: [[workday, nasdaq/wd1/Global_External_Site]], h1b: "THE NASDAQ", tags: []}
+Gartner:        {boards: [[workday, gartner/wd5/EXT]], tags: []}
