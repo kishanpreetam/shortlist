@@ -34,12 +34,13 @@ def write(scored: list[Scored], roles: list[dict], profile: dict, multipliers: d
         w = csv.writer(f)
         w.writerow(["score", "company", "title", "role", "location", "salary", "salary_source", "wage_level",
                     "lottery_odds", "sponsor", "sponsor_reason", "fit", "matched", "missing", "years_required",
-                    "age_days", "leverage", "excluded", "url"])
+                    "age_days", "leverage", "excluded", "url", "posted_at"])
         for s in sorted(scored, key=lambda s: -s.score):
             w.writerow([round(s.score, 1), s.company.name, s.posting.title, s.role.key, s.posting.location,
                         round(s.salary or 0), s.salary_source, LEVEL_NAMES.get(s.wage_level), round(s.lottery, 2),
                         round(s.sponsor, 2), s.sponsor_reason, round(s.fit, 2), " ".join(s.matched), " ".join(s.missing),
-                        s.years_required, s.age_days, s.leverage_reason, s.excluded or "", s.posting.url])
+                        s.years_required, s.age_days, s.leverage_reason, s.excluded or "", s.posting.url,
+                        s.posting.posted_at.isoformat() if s.posting.posted_at else ""])
 
     role_rows = "".join(
         f"<tr><td><b>{_e(r['role'])}</b><div class=note>{_e(r['note'])}</div></td>"

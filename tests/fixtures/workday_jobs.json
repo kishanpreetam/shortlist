@@ -1,0 +1,96 @@
+{
+ "total": 5,
+ "jobPostings": [
+  {
+   "title": "Associate Data Scientist",
+   "externalPath": "/job/Boston-MA-Main-Campus/Associate-Data-Scientist_R100001",
+   "locationsText": "Boston, MA (Main Campus)",
+   "postedOn": "Posted 5 Days Ago",
+   "bulletFields": [
+    "R100001"
+   ]
+  },
+  {
+   "title": "Senior Data Engineer",
+   "externalPath": "/job/Boston-MA-Main-Campus/Senior-Data-Engineer_R100002",
+   "locationsText": "2 Locations",
+   "postedOn": "Posted Yesterday",
+   "bulletFields": [
+    "R100002"
+   ]
+  },
+  {
+   "title": "Machine Learning Engineer",
+   "externalPath": "/job/Toronto/Machine-Learning-Engineer_R100003",
+   "locationsText": "Toronto, ON, Canada",
+   "postedOn": "Posted Today",
+   "bulletFields": [
+    "R100003"
+   ]
+  },
+  {
+   "title": "Financial Aid Counselor",
+   "externalPath": "/job/Boston-MA-Main-Campus/Financial-Aid-Counselor_R100004",
+   "locationsText": "Boston, MA (Main Campus)",
+   "postedOn": "Posted 3 Days Ago",
+   "bulletFields": [
+    "R100004"
+   ]
+  },
+  {
+   "title": "Postdoctoral Research Associate",
+   "externalPath": "/job/Boston-MA-Main-Campus/Postdoctoral-Research-Associate_R100005",
+   "locationsText": "Boston, MA (Main Campus)",
+   "postedOn": "Posted 30+ Days Ago",
+   "bulletFields": [
+    "R100005"
+   ]
+  }
+ ],
+ "facets": [
+  {
+   "facetParameter": "timeType",
+   "descriptor": "Time Type",
+   "values": [
+    {
+     "descriptor": "Full time",
+     "id": "a075b0ac3f5e0116348185a949f70009",
+     "count": 193
+    }
+   ]
+  },
+  {
+   "facetParameter": "locationMainGroup",
+   "values": [
+    {
+     "facetParameter": "locationCountry",
+     "descriptor": "Location Country",
+     "values": [
+      {
+       "descriptor": "Canada",
+       "id": "a30a87ed25634629aa6c3958aa2b91ea",
+       "count": 5
+      },
+      {
+       "descriptor": "United States of America",
+       "id": "bc33aa3152ec42d4995f4791a106ed09",
+       "count": 212
+      }
+     ]
+    },
+    {
+     "facetParameter": "locations",
+     "descriptor": "Locations",
+     "values": [
+      {
+       "descriptor": "Boston, MA (Main Campus)",
+       "id": "299650046df20101f1b8e07892960000",
+       "count": 165
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "userAuthenticated": false
+}
