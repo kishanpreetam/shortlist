@@ -352,7 +352,7 @@ def resume_preview(d: dict, profile: dict) -> dict:
             "covered": sel["covered"], "learning": sel["learning"], "not_on_page": sel["not_on_page"], "missing": sel["missing"],
             "skills_detail": sel["skills_detail"], "coverage": sel["coverage"], "available": sel["available"],
             "pending": engine.pending_count(facts), "pending_versions": engine.pending_versions(facts),
-            "requirements": sel.get("requirements") or [], "advice": sel.get("advice") or [],
+            "requirements": sel.get("requirements") or [], "advice": sel.get("advice") or [], "logistics": sel.get("logistics") or [],
             "places": [{"id": g["id"], "name": g.get("org") or g.get("title", "")} for grp in ("roles", "projects")
                        for g in facts[grp] if engine.ok(g)],
             "rewrite_note": note, "rewrite_failed": failed, "rewritten": len(sel.get("rewrites") or {}),
@@ -1432,14 +1432,18 @@ function suggestButton(q,row,key){const b=el('button',{class:'x',text:'Suggest l
 function reqBox(r,key){  /* what the job asks for, and which of your lines on this page show it */
  const reqs=r.requirements||[];if(!reqs.length)return null;
  const lines={education:'Education',skills:'Skills',dates:'Your role dates'};for(const g of (r.experience||[]).concat(r.projects||[]))for(const b of g.bullets)lines[b.id]=b.text;
- const shown=reqs.filter(q=>q.by.length).length,reqd=reqs.filter(q=>q.kind==='required'),reqdShown=reqd.filter(q=>q.by.length).length;
- const box=el('details',{class:'wait',open:'open'},el('summary',{},el('b',{text:'What this job asks for: '+reqdShown+' of '+reqd.length+' required and '+shown+' of '+reqs.length+' in all are on this page'})));
+ const full=q=>q.status?q.status==='full':q.by.length>0,part=q=>q.status==='partial';
+ const shown=reqs.filter(full).length,reqd=reqs.filter(q=>q.kind==='required'),reqdShown=reqd.filter(full).length,reqdPart=reqd.filter(part).length;
+ const box=el('details',{class:'wait',open:'open'},el('summary',{},el('b',{text:'What this job asks for: '+reqdShown+' of '+reqd.length+' required fully on this page'+(reqdPart?' ('+reqdPart+' more partly)':'')+', and '+shown+' of '+reqs.length+' in all'})));
  for(const a of (r.advice||[]))box.append(el('div',{class:'row small'+(a.level==='change'?' warn-row':a.level==='ok'?' ok':' muted')},el('b',{text:a.level==='change'?'Change: ':a.level==='ok'?'Good: ':'Note: '}),a.text));
  box.append(el('p',{class:'small muted',text:"Each line on the page is written toward the requirements it really shows. For one it doesn't show that you have done, write it once with \\"I've done this\\"; it goes on every resume where it fits."}));
  for(const q of reqs){const row=el('div',{class:'row small'});const kind=el('span',{class:'muted',text:' ('+q.kind+')'+(q.by.length&&(q.where||[]).length?', in '+q.where.join(', '):'')});
   const inLines=(q.where||[]).some(w=>w==='experience'||w==='projects');
   const btn=el('button',{class:'x',text:q.by.length?'Show it in a line':"I've done this",title:'Write one line about the work, once; it goes on every resume where it fits'});
-  if(q.by.length){row.append(el('span',{class:'chip new',text:'shown'}),' ',q.text,kind,q.kind==='required'&&!inLines?btn:null,q.kind==='required'&&!inLines?suggestButton(q,row,key):null,el('div',{class:'muted',style:'margin-left:58px',text:'by: '+q.by.map(id=>{const t=lines[id]||'';return t.length>70?t.slice(0,70)+'...':t;}).join(' | ')}));}
+  if(q.by.length){const short=part(q)&&q.kind==='required';
+   row.append(el('span',{class:part(q)?'chip warn':'chip new',text:part(q)?'partly':'shown'}),' ',q.text,kind,q.kind==='required'&&(!inLines||short)?btn:null,q.kind==='required'&&(!inLines||short)?suggestButton(q,row,key):null,
+     part(q)?el('div',{class:'muted',style:'margin-left:58px',text:'short: '+(q.gaps||[]).join('; ')}):null,
+     el('div',{class:'muted',style:'margin-left:58px',text:'by: '+q.by.map(id=>{const t=lines[id]||'';return t.length>70?t.slice(0,70)+'...':t;}).join(' | ')}));}
   else row.append(el('span',{class:'chip warn',text:'not shown'}),' ',q.text,kind,' ',btn,suggestButton(q,row,key));
   btn.addEventListener('click',()=>{const where=el('select',{},...(r.places||[]).map(pl=>el('option',{value:pl.id,text:pl.name})));
      const ta=el('textarea',{rows:'2',placeholder:'One line about what you did, in your own words, as it should read on your resume'});
@@ -1448,6 +1452,7 @@ function reqBox(r,key){  /* what the job asks for, and which of your lines on th
          el('button',{text:'Cancel',onclick:()=>form.remove()})));
      row.after(form);ta.focus();});
   box.append(row);}
+ if((r.logistics||[]).length)box.append(el('div',{class:'row small muted'},el('b',{text:'Check these yourself, no resume line shows them: '}),r.logistics.map(x=>x.text).join('; ')));
  return box;}
 function skillsAsk(r,p,key){  /* every skill this job wants that your resume doesn't show: asked once, remembered for every job */
  const ask=(r.skills_detail||[]).filter(x=>x.state==='missing');if(!ask.length)return null;

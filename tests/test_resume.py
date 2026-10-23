@@ -778,5 +778,158 @@ class LayoutTest(unittest.TestCase):
         self.assertNotIn("—", page)
 
 
+class StuffingTest(unittest.TestCase):
+    """A tool a rewrite adds to your wording goes in at most ADDED_TOOL_MAX lines and tools lines of a page."""
+
+    @staticmethod
+    def facts():
+        facts = copy.deepcopy(FACTS)
+        facts["roles"] = [{"id": f"r{i}", "title": "Data Engineer", "org": f"Org {i}", "place": "", "dates": f"20{20 + i} – 20{21 + i}",
+                           "status": "approved", "bullets": [{"id": f"r{i}a", "text": f"Built ETL pipelines in Python for team {i}.",
+                                                              "status": "approved"}]} for i in range(4)]
+        facts["added_skills"] = [{"term": "snowflake", "level": "used", "where": ["r0", "r1", "r2", "r3"], "status": "approved"}]
+        return facts
+
+    def test_an_added_tool_goes_in_two_lines_and_two_tools_lines(self):
+        facts = self.facts()
+        got = rewrite.Rewrites()
+        got.requirements = [{"id": "R1", "text": "Experience with Snowflake", "kind": "required"},
+                            {"id": "R2", "text": "Build ETL pipelines in Python", "kind": "required"}]
+        got.update({f"r{i}a": f"Built ETL pipelines in Python with Snowflake for team {i}." for i in range(4)})
+        got.shows = {f"r{i}a": ["R1", "R2"] for i in range(4)}
+        sel = resume.select(facts, "Data engineer: Snowflake, Python and ETL pipelines.", "Data Engineer", "data-engineer", rewrites=got)
+        texts = bullet_texts(sel)
+        self.assertEqual(len(texts), 4)  # every line stays on the page
+        self.assertEqual(sum("Snowflake" in t for t in texts.values()), resume.ADDED_TOOL_MAX)
+        self.assertEqual(sum("Snowflake" in g["tech"] for g in sel["experience"]), resume.ADDED_TOOL_MAX)
+        self.assertEqual(resume.check(facts, sel, 1), [])
+
+    def test_a_mention_comes_out_only_when_it_comes_out_cleanly(self):
+        strip = resume.strip_tools
+        self.assertEqual(strip("Built pipelines with Python and AI coding tools for the team.", ["ai_coding"]),
+                         "Built pipelines with Python for the team.")
+        self.assertEqual(strip("Integrated LLM features with Python, using AI coding tools.", ["ai_coding"]),
+                         "Integrated LLM features with Python.")
+        self.assertEqual(strip("Built ETL pipelines on AWS with Snowflake to load data.", ["snowflake"]), "Built ETL pipelines on AWS to load data.")
+        self.assertEqual(strip("Loaded data with Snowflake, dbt and Airflow.", ["snowflake"]), "Loaded data with dbt and Airflow.")
+        self.assertEqual(strip("Integrated LLM features with Python, JavaScript and AI coding tools.", ["ai_coding"]),
+                         "Integrated LLM features with Python and JavaScript.")  # the list stays a list
+        self.assertEqual(strip("Maintained a Python pipeline using AI coding tools, with 137 automated tests.", ["ai_coding"]),
+                         "Maintained a Python pipeline, with 137 automated tests.")
+        self.assertIsNone(strip("Snowflake powered the warehouse.", ["snowflake"]))
+
+
+class ContextTest(unittest.TestCase):
+    """A role states its context once: a later line leaves out what an earlier line of the role already says."""
+
+    def test_only_context_phrases_come_out(self):
+        trim = resume.trim_context
+        self.assertEqual(trim("Delivered dashboards and forecasting models for a $10M NSF-funded alliance.", ["$10M"]),
+                         "Delivered dashboards and forecasting models.")
+        self.assertEqual(trim("Analyzed performance data from 300+ institutions for a $10M NSF-funded alliance, building ETL pipelines.",
+                              ["$10M", "300+"]), "Analyzed performance data, building ETL pipelines.")
+        self.assertIsNone(trim("Processed 1M+ rows with Spark.", ["1M+"]))  # there the number is the result, not context
+
+    def test_the_first_line_keeps_it_and_the_check_verifies_the_rest(self):
+        facts = copy.deepcopy(FACTS)
+        facts["roles"][0]["bullets"] = [
+            {"id": "c1", "text": "Built ETL pipelines in Python and SQL with Airflow for a $10M NSF-funded alliance, cutting run time by 40%.",
+             "status": "approved"},
+            {"id": "c2", "text": "Built Tableau dashboards for 500 users across a $10M NSF-funded alliance.", "status": "approved"}]
+        got = rewrite.Rewrites()
+        got.requirements = [{"id": "R1", "text": "Build ETL pipelines with Airflow", "kind": "required"},
+                            {"id": "R2", "text": "Build dashboards", "kind": "required"}]
+        got.shows = {"c1": ["R1"], "c2": ["R2"]}
+        sel = resume.select(facts, JD, "Data Engineer", "data-engineer", rewrites=got)
+        texts = bullet_texts(sel)
+        self.assertIn("$10M", texts["c1"])
+        self.assertEqual(texts["c2"], "Built Tableau dashboards for 500 users.")
+        self.assertEqual(resume.check(facts, sel, 1), [])
+        bad = copy.deepcopy(sel)
+        next(g for g in bad["experience"] if g["id"] == "r1")["bullets"].reverse()  # the line that states it no longer comes first
+        self.assertTrue(any("leaves out context" in f for f in resume.check(facts, bad, 1)))
+
+
+class PartialCoverageTest(unittest.TestCase):
+    """A requirement shows fully only when every tool group it asks for is in a line and its years add up."""
+
+    def test_tool_groups(self):
+        self.assertEqual(resume.tool_groups("3+ years with Spark, Hive or Presto and streaming like Kafka/Flink"),
+                         [{"spark", "hive", "presto"}, {"kafka", "flink"}])
+        self.assertEqual(resume.tool_groups("Build ETL pipelines and data models"), [])  # general ideas aren't tools
+        self.assertEqual(resume.tool_groups("Reporting tools such as Tableau, Superset and Looker"), [{"tableau", "looker"}])  # one list
+        self.assertEqual(resume.tool_groups("Proficiency in Python and SQL"), [{"python"}, {"sql"}])  # both
+
+    def test_a_group_only_on_the_skills_lines_or_too_few_years_is_partial(self):
+        facts = copy.deepcopy(FACTS)
+        facts["skills"][0]["items"].append("Kafka")
+        got = rewrite.Rewrites()
+        got.requirements = [{"id": "R1", "text": "3+ years with Airflow and streaming like Kafka", "kind": "required"},
+                            {"id": "R2", "text": "1+ years building ETL pipelines with Airflow", "kind": "required"}]
+        got.shows = {"r1a": ["R1", "R2"]}
+        sel = resume.select(facts, JD, "Data Engineer", "data-engineer", rewrites=got)
+        report = {r["id"]: r for r in sel["requirements"]}
+        self.assertEqual(report["R1"]["status"], "partial")
+        self.assertIn("Kafka only on your skills lines", report["R1"]["gaps"])
+        self.assertIn("your roles show about 2 years with Airflow; it asks 3+", report["R1"]["gaps"])
+        self.assertEqual((report["R2"]["status"], report["R2"]["gaps"]), ("full", []))
+        self.assertTrue(any("only partly shown" in a["text"] for a in sel["advice"]))
+
+    def test_conditions_of_the_job_are_listed_apart(self):
+        self.assertTrue(rewrite.is_logistics("Located near one of the listed engineering hubs"))
+        self.assertTrue(rewrite.is_logistics("Must be authorized to work in the US without sponsorship"))
+        self.assertFalse(rewrite.is_logistics("Experience with hybrid cloud on AWS"))
+        self.assertFalse(rewrite.is_logistics("3+ years with Spark and Kafka"))
+        got = rewrite.Rewrites()
+        got.requirements = [{"id": "R1", "text": "Build ETL pipelines with Airflow", "kind": "required"},
+                            {"id": "R2", "text": "Located near one of our hubs", "kind": "logistics"}]
+        got.shows = {"r1a": ["R1"]}
+        sel = resume.select(FACTS, JD, "Data Engineer", "data-engineer", rewrites=got)
+        self.assertEqual([r["id"] for r in sel["requirements"]], ["R1"])
+        self.assertEqual(sel["logistics"], [{"id": "R2", "text": "Located near one of our hubs"}])
+        self.assertNotIn("hubs", " ".join(a["text"] for a in sel["advice"]))
+
+
+class HeaderOnlyTest(unittest.TestCase):
+    """A role far from the job keeps its heading and dates on a tailored page, without a line."""
+
+    def test_a_far_role_shows_no_line_unless_you_pin_one(self):
+        got = rewrite.Rewrites()
+        got.requirements = [{"id": "R1", "text": "Build ETL pipelines with Airflow", "kind": "required"}]
+        got.shows = {"r1a": ["R1"]}
+        sel = resume.select(FACTS, JD, "Data Engineer", "data-engineer", rewrites=got)
+        r2 = next(g for g in sel["experience"] if g["id"] == "r2")
+        self.assertEqual((r2["bullets"], r2["tech"]), ([], []))
+        self.assertEqual(resume.check(FACTS, sel, 1), [])
+        self.assertIn("Research Assistant", resume.render(FACTS, sel))
+        plain = resume.select(FACTS, JD, "Data Engineer", "data-engineer")  # without requirements it keeps its best line
+        self.assertEqual(len(next(g for g in plain["experience"] if g["id"] == "r2")["bullets"]), 1)
+        pinned = resume.select(FACTS, JD, "Data Engineer", "data-engineer", include={"r2a"}, rewrites=got)
+        self.assertEqual(len(next(g for g in pinned["experience"] if g["id"] == "r2")["bullets"]), 1)
+
+    def test_a_far_role_gets_a_line_only_for_a_requirement_no_other_line_shows(self):
+        got = rewrite.Rewrites()
+        got.requirements = [{"id": "R1", "text": "Build ETL pipelines with Airflow", "kind": "required"},
+                            {"id": "R2", "text": "Improve forecast accuracy", "kind": "required"}]
+        got.shows = {"r1a": ["R1"], "r2a": ["R2"]}
+        sel = resume.select(FACTS, JD, "Data Engineer", "data-engineer", rewrites=got)
+        self.assertIn("r2a", bullet_texts(sel))  # only it shows R2
+        got.shows = {"r1a": ["R1", "R2"], "r2a": ["R2"]}
+        sel = resume.select(FACTS, JD, "Data Engineer", "data-engineer", rewrites=got)
+        self.assertNotIn("r2a", bullet_texts(sel))  # another line shows R2 already
+
+    def test_a_current_role_or_one_of_the_jobs_kind_always_keeps_a_line(self):
+        got = rewrite.Rewrites()
+        got.requirements = [{"id": "R1", "text": "Build ETL pipelines with Airflow", "kind": "required"}]
+        got.shows = {"r1a": ["R1"]}
+        facts = copy.deepcopy(FACTS)
+        facts["roles"][1]["dates"] = "2025 – Present"
+        sel = resume.select(facts, JD, "Data Engineer", "data-engineer", rewrites=got)
+        self.assertIn("r2a", bullet_texts(sel))  # a current role
+        facts = copy.deepcopy(FACTS)
+        facts["roles"][1]["title"] = "Data Analyst"
+        sel = resume.select(facts, JD, "Senior Data Analyst", "data-analyst", rewrites=got)
+        self.assertIn("r2a", bullet_texts(sel))  # the job's kind: an analyst role for an analyst job
+
 if __name__ == "__main__":
     unittest.main()
