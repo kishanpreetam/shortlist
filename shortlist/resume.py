@@ -479,8 +479,10 @@ def derived_numbers(text: str) -> set[str]:
     return out | {n for word, n in _SCHEDULE.items() if re.search(rf"\b{word}\b", text, re.I)}
 
 
-def faithful(original: str, alt: dict, supporting: tuple[str, ...] = ()) -> list[str]:
-    """Check original facts, permitting additions only from explicitly approved supporting text."""
+def faithful(original: str, alt: dict, supporting: tuple[str, ...] = (), claims: bool = True) -> list[str]:
+    """Check original facts, permitting additions only from explicitly approved supporting text. With `claims`, also
+    the claim rules (claim_problems: ownership, limits, status and tense, domain, cause and result, scope words), where
+    the version's own `adds`, which you saw when you approved it, count as your line's."""
     text = str(alt.get("text", ""))
     source = " ".join((original, *supporting))
     why = []
@@ -519,8 +521,11 @@ def faithful(original: str, alt: dict, supporting: tuple[str, ...] = ()) -> list
         why.append("it has a dash")
     # the tools a rewrite names that your line doesn't don't count against its length: adding several is allowed
     tools_added = sum(len(label(t)) + 2 for t in set(terms(text)) - set(terms(original)) if not t.startswith("theme:"))
+    tools_added += sum(len(x) + 3 for x in _spelled_out(source, text))  # "retrieval-augmented generation (RAG)" for RAG
     if not (10 <= len(text) <= 450 and 0.6 * len(original) <= len(text) <= 1.35 * len(source) + tools_added):
         why.append("its length is too far from your line's")
+    if claims:
+        why += claim_problems(original, text, supporting, alt.get("adds") or ())
     return why
 
 
@@ -535,8 +540,9 @@ def rewrite_terms(text: str, extra: set[str] | frozenset = frozenset()) -> set[s
     """What a rewrite of your line may name: the line's own terms (so the job's synonyms for them are fine), ETL
     for a line that already says pipelines, and `extra`, the tools you said you used in that line's role
     (mapped_tools). Anything else, dashboards, automation or production included, is a claim your line has to
-    make first. A tool's name doesn't make a claim: "OpenAI API" doesn't let a rewrite say production."""
-    mine = _claims(text)
+    make first. A tool's name doesn't make a claim: "OpenAI API" doesn't let a rewrite say production. A term the
+    line backs without naming it counts too (IMPLIED: Airflow DAGs are pipelines, "the lake" is a data lake)."""
+    mine = _claims(text) | {t for t, rx in _IMPLIED_RX.items() if rx.search(text or "")}
     return mine | ({"etl"} if "theme:pipelines" in mine else set()) | set(extra)
 
 
@@ -596,14 +602,18 @@ def _claims(text: str) -> set[str]:
     return tools | {t for t in terms(bare) if t.startswith("theme:")}
 
 
-def _new_words(original: str, text: str, extra: set[str] | frozenset = frozenset(), phrases=()) -> list[str]:
+def _new_words(original: str, text: str, extra: set[str] | frozenset = frozenset(), phrases=(), strict: bool = False) -> list[str]:
     """Words a rewrite adds that are neither plain words (GENERIC), nor one of your line's terms, nor a word of one's
-    label ("quality" for a line about validation), nor the posting's own keyword for something the line has
-    (phrase_roots): a word planted in the posting, a tool, or a domain such as patients."""
+    label ("quality" for a line about validation) or of its spelled-out acronym (SPELLED_OUT), nor the posting's own
+    keyword for something the line has (phrase_roots): a word planted in the posting, a tool, or a domain such as
+    patients. The scope and status words among the plain ones (NOT_FREE: platform, real-time, live) are the claim
+    rules' to judge (R5, R8). `strict`: those and the plain words that carry a claim (CLAIM_WORDS: improved,
+    delivered, accuracy) count too, as soft flag S1 reads them."""
     may, verbs = rewrite_terms(original, extra), _verbs(original)
     mine = {_root(p) for c in _compounds(original) for p in [c, *c.split("-")]}
-    named = {_root(p) for t in may for c in _compounds(label(t)) for p in [c, *c.split("-")]} | phrase_roots(phrases, may)
-    plain = _GENERIC_ROOTS | named
+    named = {_root(p) for t in may for c in _compounds(" ".join((label(t), SPELLED_OUT.get(t, ""))))
+             for p in [c, *c.split("-")]} | phrase_roots(phrases, may)
+    plain = (_STRICT_PLAIN if strict else _GENERIC_ROOTS) | named
 
     def fine(w: str) -> bool:
         if _root(w) in mine or (_SCOPE.fullmatch(w) and _stem(w) in verbs):  # "leading" for your "Led"
@@ -659,13 +669,460 @@ def _strong(text: str) -> set[str]:
     return {_stem(m.group(0)) for m in _SCOPE.finditer(text)} | {m.group(0).lower() for m in _STRONG.finditer(text)}
 
 
+# ---------- claim rules: what a rewrite may not make bigger ----------
+# R3 to R8 read a rewrite, a version or a summary against E, the evidence: your line plus its approved supporting_facts.
+# They read words, not meaning, so each says what it saw; rewrite_flags() lists softer signs (S1 to S4) for a reviewer
+# or a model judge, and drops nothing.
+
+# Terms a line backs without naming them, for what a rewrite of it may say (rewrite_terms): an orchestrator's jobs are
+# pipelines, "the lake" is a data lake, checks for nulls or duplicates are data quality checks
+IMPLIED = {"theme:pipelines": r"\bairflow\b|\bdags?\b|\bdagster\b|\bprefect\b|\bluigi\b|\boozie\b|\bazkaban\b|\bnifi\b|"
+                              r"data factory|step functions",
+           "data_lake": r"\blakes?\b",
+           "theme:data_quality": r"\bnulls?\b|\bduplicat\w*|\bdedup\w*"}
+_IMPLIED_RX = {k: re.compile(v, re.I) for k, v in IMPLIED.items()}
+# Acronyms a rewrite may spell out: "retrieval-augmented generation (RAG)" says no more than RAG
+SPELLED_OUT = {"rag": "retrieval-augmented generation", "llm": "large language models", "nlp": "natural language processing",
+               "mcp": "model context protocol", "aws": "amazon web services"}
+
+
+def _spelled_out(source: str, text: str) -> list[str]:
+    """The acronyms of `source` that `text` spells out and `source` doesn't."""
+    have = set(terms(source))
+    return [x for t, x in SPELLED_OUT.items() if t in have and f" {_flat(x).strip()} " in _flat(text)
+            and f" {_flat(x).strip()} " not in _flat(source)]
+
+
+# GENERIC words that state scope or status. They lose their free pass to the claim rules, which let a rewrite say one
+# only where your line does (R8: platform, systems, frameworks, real-time; R5: live), so GENERIC itself stays as it
+# is: the posting's keywords are read against it too. Soft flag S1 lists them as claims
+NOT_FREE = "platforms systems system frameworks real-time live"
+# GENERIC words that carry a claim (a result, a status, a quality): soft flag S1 lists them when your line lacks them
+CLAIM_WORDS = """lift lifted lifting deliver delivered deploy deployed enable enabled support supported improve improved
+    reduce reduced increase increased cut cutting lower lowered raise raised transform transformed optimize optimized
+    streamline streamlined enhance enhanced ensure ensured help helped serve served launch launched ship
+    shipped shipping achieve achieved establish established design designed faster quality accuracy reliability
+    consistency efficiency speed visibility availability"""
+_STRICT_PLAIN = _GENERIC_ROOTS - frozenset(_root(w) for w in (NOT_FREE + " " + CLAIM_WORDS).split())
+
+# Past forms that don't end in -ed, read as their verbs ("found" is find's; "founded" reads found)
+_IRREGULAR = {"built": "build", "rebuilt": "rebuild", "wrote": "write", "written": "write", "rewrote": "rewrite",
+              "ran": "run", "led": "lead", "co-led": "co-lead", "drove": "drive", "driven": "drive", "oversaw": "oversee",
+              "overseen": "oversee", "made": "make", "began": "begin", "begun": "begin", "brought": "bring",
+              "taught": "teach", "sought": "seek", "held": "hold", "kept": "keep", "found": "find", "chose": "choose",
+              "chosen": "choose", "grew": "grow", "grown": "grow", "took": "take", "taken": "take", "gave": "give",
+              "given": "give", "met": "meet", "sent": "send", "spent": "spend", "won": "win", "shown": "show",
+              "thought": "think", "understood": "understand", "undertook": "undertake", "fell": "fall", "fallen": "fall",
+              "rose": "rise", "risen": "rise", "sped": "speed", "fed": "feed", "sold": "sell", "told": "tell",
+              "stood": "stand", "dealt": "deal", "got": "get", "went": "go", "did": "do", "done": "do", "saw": "see",
+              "seen": "see", "knew": "know", "known": "know", "shrank": "shrink", "hit": "hit", "cut": "cut", "set": "set",
+              "put": "put", "split": "split", "spread": "spread"}
+_NOT_INFLECTED = frozenset("""speed need seed feed embed exceed proceed succeed shed string spring during morning evening
+    nothing something anything everything ceiling""".split())  # end in -ed or -ing without being a verb form
+_EITHER = frozenset("cut set put read hit split spread shut let cost quit".split())  # the same word now and in the past
+_VERB_PREFIXES = frozenset("fine co re pre cross".split())  # "fine-tuned" is a verb; "NSF-funded" and "LLM-powered" aren't
+
+
+def _vstem(word: str) -> str:
+    """One form per verb, so built, building and builds read the same, and so do led and leading: an irregular past
+    form first, then -ing, -ed, -es or -s (with a doubled last letter undone, as in shipped), then a final e."""
+    w = word.lower().replace("’", "'")
+    if w in _IRREGULAR:
+        w = _IRREGULAR[w]
+    elif w not in _NOT_INFLECTED:
+        for suffix in ("ing", "ed", "es", "s"):
+            if w.endswith(suffix) and len(w) - len(suffix) >= 3 and not (suffix == "s" and w.endswith(("ss", "us", "is"))):
+                w = w[:-len(suffix)]
+                if suffix in ("ing", "ed") and len(w) >= 4 and w[-1] == w[-2] and w[-1] not in "lsfz":
+                    w = w[:-1]
+                break
+    return w.rstrip("e") if len(w) > 3 else w
+
+
+def _inflected(word: str) -> bool:
+    """Whether a word is an -ed, -ing or irregular past form of a verb: built, led, deploying, fine-tuned, but not
+    speed, during or a compound such as NSF-funded."""
+    w = word.lower().replace("’", "'")
+    if "-" in w and w.split("-")[0] not in _VERB_PREFIXES:
+        return False
+    return w not in _NOT_INFLECTED and (w in _IRREGULAR or (len(w) > 4 and w.endswith(("ed", "ing"))))
+
+
+# R3: how much of the work a line's own action verb says was yours, lowest first; a rewrite's highest may not pass
+# E's highest. A verb not listed is plain work, level 2, as GENERIC's verbs are: automated, engineered, integrated,
+# orchestrated, translated, presented, enhanced, rebuilt. Deployed sits with launched and shipped: the work went out.
+OWNERSHIP = (
+    "proposed explored evaluated researched planned drafted",                                              # 0: considered it
+    "assisted supported helped contributed participated",                                                 # 1: a part of it
+    "built developed wrote implemented created set configured maintained analyzed tested migrated trained",  # 2: did it
+    "designed optimized redesigned established introduced delivered launched shipped deployed",            # 3: shaped or shipped it
+    "led owned architected spearheaded drove directed managed headed oversaw championed founded supervised mentored",  # 4: ran it
+)
+_LEVEL = {_vstem(w): i for i, words in enumerate(OWNERSHIP) for w in words.split()}
+# Verbs a line may start with in the present ("Maintain 60 dbt models"), so its tense reads
+BASE_VERBS = """build develop design create implement deliver deploy engineer produce generate prepare enable support improve
+    reduce increase cut lower raise transform convert process partner collaborate work use leverage apply run write
+    maintain enhance extend optimize streamline translate explain present communicate review track monitor identify
+    highlight summarize examine compare define align ensure help make turn provide serve combine join connect organize
+    refine standardize consolidate document launch ship test validate achieve reach allow replace handle keep surface flag
+    load store pull gather collect update configure establish check explore bring lead own manage architect direct oversee
+    drive train migrate analyze automate integrate orchestrate backfill scrape fine-tune benchmark ingest scale refactor
+    debug fix add rebuild redesign propose plan draft research evaluate assist contribute participate mentor supervise
+    coordinate operate install set"""
+_KNOWN_VERBS = frozenset(_vstem(w) for w in BASE_VERBS.split()) | frozenset(_LEVEL)
+_ACT_SKIP = frozenset("also then later first personally independently successfully jointly directly initially quickly "
+                      "further i we".split())  # may stand between a comma or "and" and the verb: "and personally built"
+_PASSIVE_NEXT = frozenset("on in for with by to at across into from as via through under over within inside onto per "
+                          "throughout".split())  # after a participle that describes a thing: "dashboards, deployed on AWS"
+
+
+def _acts(text: str) -> list[tuple[str, bool]]:
+    """The verbs a line uses as its own actions, in order, each with whether it starts its sentence: a sentence's first
+    word when it reads as a verb, and an -ed, -ing or past form right after a comma, "and", "then" or "or" (an adverb
+    such as Personally, or I or we, may come first). Not a participle that describes a thing ("dashboards, deployed
+    on AWS"), not "leading to", and never a verb after which, that or to, which aren't the line's own."""
+    toks = re.findall(r"[A-Za-z][\w'’-]*|[.,;:!?()]", text or "")
+    out, state = [], "start"
+    for i, t in enumerate(toks):
+        low = t.lower()
+        if t in ".!?;:":
+            state = "start"
+        elif t == ",":
+            state = "start" if state == "start" else "soft"
+        elif t in "()":
+            state = "none"
+        elif state == "none":
+            state = "soft" if low in ("and", "then", "or") else "none"
+        elif low in _ACT_SKIP or (low.endswith("ly") and len(low) > 4) or (state == "soft" and low in ("and", "then", "or")):
+            continue
+        else:
+            nxt = toks[i + 1].lower() if i + 1 < len(toks) else ""
+            if state == "start" and (_inflected(t) or _vstem(t) in _KNOWN_VERBS):
+                out.append((t, True))
+            elif state == "soft" and _inflected(t) and not (nxt in _PASSIVE_NEXT and not low.endswith("ing")) \
+                    and not (low in ("leading", "led") and nxt == "to"):
+                out.append((t, False))
+            state = "none"
+    return out
+
+
+def _actions(text: str) -> list[str]:
+    return [w for w, _ in _acts(text)]
+
+
+def _tense(text: str) -> str:
+    """The tense of a line's lead verb, its first action: "present" (Building, Maintain), "past" (Built, Led), or ""
+    when it can't tell (Cut, Set) or the line doesn't lead with a verb."""
+    acts = _actions(text)
+    w = acts[0].lower() if acts else ""
+    if not w or w in _EITHER:
+        return ""
+    if w.endswith("ing") and _inflected(w):
+        return "present"
+    if _inflected(w):
+        return "past"
+    return "present" if _vstem(w) in _KNOWN_VERBS else ""
+
+
+# R4 (agency): E says the work was shared; a rewrite keeps one such word. People a line did the work with or alongside:
+_PEOPLE = (r"(?:people|persons?|team(?:mate)?s?|colleagues?|peers?|partners?|stakeholders?|engineers?|scientists?|"
+           r"analysts?|developers?|designers?|researchers?|managers?|leads?|leaders(?:hip)?|staff|members?|faculty|"
+           r"mentors?|specialists?|experts?|owners?|pms?|squads?|departments?|counterparts?|contributors?|others)")
+_AGENCY = re.compile(r"\b(?:with|alongside)\s+(?:(?!(?:for|to|in|on|at|by|from|into|using|via|through|across|over|under)\b)"
+                     rf"[\w/&'+-]+(?:\.[\w-]+)*,?\s+){{0,6}}?{_PEOPLE}\b|\bteam(?:mate)?s?(?:['’]s|['’])?(?![\w-])|"
+                     r"\bwe\b|\bour\b|\bco-[a-z]+|\bjointly\b|\bpart of\b", re.I)
+_AGENCY_KEEP = re.compile(r"\bcollaborat\w*|\bpartner(?:ed|ing|ship|s)?\b|\bcross-functional\b", re.I)  # also shared work
+_AUDIENCE = re.compile(r"\b(?:for|to|across|serving|supporting|among|between|by|of)\s+(?:[\w'.-]+\s+){0,3}$", re.I)
+# R4 (hedges): a part of the work, or help with it: these words anywhere, or helped, assisted, contributed and
+# participated as the line's own action
+_PARTIAL = re.compile(r"\bpartial(?:ly)?\b|\bpartly\b|\bin part\b|\bmost of\b|\bsome of\b|\ba portion of\b", re.I)
+_HEDGES = frozenset(_vstem(w) for w in "helped assisted contributed participated".split())
+_PARTIAL_KEEP = re.compile(r"\bhelp\w*|\bassist\w*|\bcontribut\w*|\bparticipat\w*|\bsupport(?:ed|ing)\b", re.I)
+# R4 (status and hedges): (what E says, what a rewrite keeps in its place)
+LIMITS = {
+    "early": (r"\binitial\b|\bdraft(?:ed)?\b|\bpreliminary\b|\bearly[- ]stage\b|\bfirst version\b",
+              r"\binitial\b|\bdraft(?:ed)?\b|\bpreliminary\b|\bearly\b|\bfirst version\b|\bprototyp\w*|\bv1\b"),
+    "prerelease": (r"\bprototyp\w*|\bproofs? of concept\b|\bproof-of-concept\b|\bpocs?\b|\bmvps?\b|\bpilot(?:s|ed|ing)?\b|"
+                   r"\bbeta\b|\bdemos?\b|\bsimulated\b|\bin (?:a )?simulation\b",
+                   r"\bprototyp\w*|\bproofs? of concept\b|\bproof-of-concept\b|\bpocs?\b|\bmvps?\b|\bpilot(?:s|ed|ing)?\b|"
+                   r"\bbeta\b|\bdemos?\b|\bsimulat\w*"),
+    "internal": (r"\binternal(?:ly)?\b|\bin-house\b", r"\binternal(?:ly)?\b|\bin-house\b"),
+    "unfinished": (r"\bin progress\b|\bongoing\b|\bunderway\b", r"\bin progress\b|\bongoing\b|\bunderway\b"),
+    "plan": (r"\bplans?\b|\bplanned\b|\bproposals?\b|\bpropos(?:ed|ing)\b|\bdesign doc(?:ument)?s?\b|\bevaluat(?:ed|ing)\b",
+             r"\bplans?\b|\bplanned\b|\bproposals?\b|\bpropos(?:ed|ing)\b|\bdesign doc(?:ument)?s?\b|\bevaluat\w*|"
+             r"\bassess\w*|\bcompar(?:ed|ing|ison)\b|\bbenchmark\w*|\bscop(?:ed|ing)\b|\bstud(?:y|ied|ying)\b|\bdraft\w*"),
+}
+_LIMIT_RX = {k: (re.compile(a, re.I), re.compile(b, re.I)) for k, (a, b) in LIMITS.items()}
+
+
+def _agency(text: str) -> list[str]:
+    """Where a line says the work was shared: we or our, a team's, part of a team, co-led, jointly, or with or
+    alongside people. A team the work was for ("for the data team") is who it served, not who did it."""
+    out = []
+    for m in _AGENCY.finditer(text or ""):
+        word = m.group(0)
+        if word.lower().startswith("team") and not re.search(r"['’]s?$", word) and _AUDIENCE.search(text[:m.start()]):
+            continue
+        out.append(word.lower())
+    return out
+
+
+def _partial(text: str) -> list[str]:
+    return [m.group(0).lower() for m in _PARTIAL.finditer(text or "")] + [w.lower() for w in _actions(text) if _vstem(w) in _HEDGES]
+
+
+# R5: words that say the work went out or is in use: (the word in a rewrite, what in E backs it)
+DONE = {
+    "deployed": (r"\bdeploy\w*|\bproduction\b|\bproductioni[sz]\w*|\bin prod\b",
+                 r"\bdeploy\w*|\bproduction\b|\bproductioni[sz]\w*|\bhost(?:ed|ing)\b"),
+    "launched": (r"\blaunch\w*|\bship(?:ped|s|ping)?\b|\breleas(?:e|ed|es|ing)\b|\broll(?:ed|s|ing)? out\b|\b(?:went|go|goes|going) live\b",
+                 r"\blaunch\w*|\bship(?:ped|s|ping)?\b|\breleas\w*|\broll(?:ed|s|ing)? out\b|\blive\b"),
+    "live": (r"\blive\b", r"\blive\b|\blaunch\w*"),
+    "hosted": (r"\bhost(?:ed|s|ing)\b", r"\bhost\w*|\bdeploy\w*"),
+    "in use": (r"\badopt(?:ed|ion|s|ing)?\b|\bused by\b|\bin use\b|\bserv(?:ing|es|ed)\b(?!\s+as\b)",
+               r"\badopt\w*|\bused (?:by|across|at|in|throughout)\b|\bin use\b|\bserv(?:ing|es|ed)\b|\busers?\b"),
+    "scaled": (r"\bscal(?:ed|es|ing) (?:up |out )?to\b", r"\bscal\w*"),
+}
+_DONE_RX = {k: (re.compile(a, re.I), re.compile(b, re.I)) for k, (a, b) in DONE.items()}
+# R6: fields and kinds of data a rewrite names only when E does; the words of one entry stand for each other. The new
+# word check already stops most (no domain word is plain), so this mainly covers versions and compounds
+DOMAINS = {
+    "healthcare": r"\bhealth\s?care\b|\bhealth\b(?!\s*checks?)|\bmedical\b|\bhospitals?\b|\bclinics?\b",
+    "clinical": r"\bclinical\b|\bclinicians?\b", "patients": r"\bpatients?\b",
+    "pharma": r"\bpharma\w*|\bbiotech\w*|\bgenomic\w*|\bdrug discovery\b",
+    "HIPAA": r"\bhipaa\b|\bphi\b|\bprotected health\b|\behrs?\b|\belectronic health records?\b",
+    "financial": r"\bfinanc(?:e|es|ial|ially)\b|\bfintech\b", "banking": r"\bbank(?:s|ing)?\b",
+    "payments": r"\bpayments?\b|\bcardholders?\b", "credit": r"\bcredit\b",
+    "lending": r"\blend(?:ing|ers?)\b|\bloans?\b|\bmortgages?\b|\bborrowers?\b|\bunderwrit\w*",
+    "trading": r"\btrad(?:ing|ers?)\b|\bbrokerage\b|\bwealth management\b",
+    "insurance": r"\binsur\w*|\bpolicyholders?\b|\bactuar\w*",
+    "claims": r"\bclaims? (?:data|processing|adjudication|records|management)\b|\b(?:insurance|medical|health|healthcare) claims?\b",
+    "retail": r"\bretail\w*|\bshoppers?\b|\bmerchants?\b", "e-commerce": r"\be-?commerce\b|\bonline stores?\b",
+    "supply chain": r"\bsupply[- ]chains?\b|\blogistics\b|\bfulfill?ment\b|\bprocurement\b",
+    "ad tech": r"\bad[- ]?tech\b|\bprogrammatic\b|\bad (?:spend|campaigns?|targeting|impressions|auctions?)\b",
+    "advertising": r"\badvertis\w*", "marketing": r"\bmarketing\b",
+    "government": r"\bgovernments?\b|\bpublic sector\b|\bfederal\b|\bmunicipal\b|\bcivic\b", "defense": r"\bdefen[cs]e\b|\bmilitary\b",
+    "PII": r"\bpii\b|\bpersonally identifiable\b|\bgdpr\b|\bccpa\b|\bpci\b",
+    "education": r"\beducation(?:al)?\b|\bedtech\b|\bk-12\b|\bferpa\b", "students": r"\bstudents?\b",
+    "academic": r"\bacademic\w*|\buniversit(?:y|ies)\b", "nonprofit": r"\bnon-?profits?\b",
+    "telecom": r"\btelecom\w*", "energy": r"\benergy\b|\boil and gas\b", "legal": r"\blegal\b|\blaw firms?\b",
+    "real estate": r"\breal estate\b", "manufacturing": r"\bmanufactur\w*", "automotive": r"\bautomotive\b",
+    "travel": r"\btravel\b|\bhospitality\b|\bairlines?\b", "gaming": r"\bgaming\b|\bvideo games?\b",
+    "crypto": r"\bcrypto\w*|\bblockchain\b", "customers": r"\bcustomers?\b", "employees": r"\bemployees?\b|\bpayroll\b|\bhuman resources\b",
+}
+_DOMAIN_RX = {k: re.compile(v, re.I) for k, v in DOMAINS.items()}
+# R7: verbs that state a result. A rewrite ties no more results to causes, and claims no more results as its own
+# actions, than E does. Not achieve or reach: "reaching 0.81 AUC" says what a model scored, not what caused it.
+OUTCOMES = """reduce cut improve enable drive boost save increase lower accelerate ensure raise lift eliminate minimize
+    maximize decrease shorten speed halve double triple prevent allow replace free streamline simplify strengthen make"""
+_OUTCOME = frozenset(_vstem(w) for w in OUTCOMES.split())
+_TO_OUTCOME = _OUTCOME - {_vstem("make")}  # "to make decisions" isn't a result
+# Phrases that tie a result to its cause whatever comes around them; "so" as in "so drafts are flagged"
+_CAUSAL = re.compile(r"\bthanks to\b|\bdue to\b|\bresult(?:ing|ed|s)? in\b|\b(?:lead(?:ing|s)?|led) to\b|\bthereby\b|"
+                     r"\bso(?: that)?\b(?![- ](?:far|on|many|much|well|called|forth)\b)", re.I)
+_MEANS = re.compile(r"\b(by|through|via)\s+([A-Za-z][\w'-]*)", re.I)
+# R8: words that make the work bigger or better than it was; a rewrite says one only when E does
+SCOPE_WORDS = {
+    "platform": r"\bplatforms?\b", "system": r"\bsystems?\b", "infrastructure": r"\binfrastructures?\b",
+    "framework": r"\bframeworks?\b", "suite": r"\bsuites?\b", "architecture": r"\barchitectur(?:e|es|al)\b",
+    "end-to-end": rf"\bend{_DASH}+to{_DASH}+end\b", "full-stack": rf"\bfull{_DASH}*stack\b",
+    "company-wide": rf"\b(?:company|organi[sz]ation|org|enterprise){_DASH}*wide\b", "enterprise": r"\benterprise\b",
+    "at scale": rf"\bat scale\b|\blarge{_DASH}*scale\b|\bscalab(?:le|ility)\b", "robust": r"\brobust(?:ly|ness)?\b",
+    "reliable": r"\breliab(?:le|ly|ility)\b", "production-grade": rf"\bproduction{_DASH}*(?:grade|ready|quality)\b",
+    "real-time": rf"\breal{_DASH}*time\b|\brealtime\b", "mission-critical": rf"\bmission{_DASH}*critical\b",
+}
+# What else in E says one: a platform is a system (so "system" for your "platform" claims less), "scaled" says at
+# scale, and a frontend and a backend are a full stack
+SCOPE_BACKING = {"system": r"\bsystems?\b|\bplatforms?\b|\binfrastructures?\b", "at scale": rf"\bscal\w*|\blarge{_DASH}*scale\b",
+                 "full-stack": rf"\bfull{_DASH}*stack\b|\bfront{_DASH}*end\b.*\bback{_DASH}*end\b|\bback{_DASH}*end\b.*\bfront{_DASH}*end\b"}
+_SCOPE_RX = {k: (re.compile(v, re.I), re.compile(SCOPE_BACKING.get(k, v), re.I)) for k, v in SCOPE_WORDS.items()}
+# Scope nouns that can name the setting rather than the work: "pipelines for recommendation systems", where the line
+# says recommendation, names what the data fed; "Built a data platform" claims the platform
+SETTING_NOUNS = ("platform", "system", "infrastructure", "framework", "suite")
+_SETTING_PREP = frozenset("for of with in into across on to within inside behind".split())
+
+
+def _names_setting(text: str, m: re.Match, mine: set[str]) -> bool:
+    """Whether the scope noun at `m` sits in a phrase that says what the work was for or ran on: right after a word
+    of your line, with "for", "with", "on" or the like a few words before it in the same clause."""
+    before = re.findall(r"[A-Za-z][\w'-]*", re.split(r"[,;.!?()]", text[:m.start()])[-1])
+    return bool(before) and _root(before[-1]) in mine and any(w.lower() in _SETTING_PREP for w in before[-5:-1])
+
+
+def _links(text: str) -> list[str]:
+    """Where a line ties a result to what caused it (R7), once per clause, however many means it lists: thanks to,
+    due to, resulting in, leading to, thereby, so (that); by, through or via after a result verb ("Cut runtime 40% by
+    repartitioning", never "by 40%", "by the team" or "processed by Glue"); to before a result verb ("to reduce
+    effort"); or a clause led by a result participle after a comma (", reducing errors and improving recall")."""
+    out, lead = [], True
+    for part in re.split(r"([,;.!?()])", text or ""):
+        if len(part) == 1 and part in ",;.!?()":
+            lead = part in ".!?;"
+            continue
+        words = re.findall(r"[A-Za-z][\w'-]*", part)
+        cue = next((m.group(0) for m in _CAUSAL.finditer(part)), "")
+        for m in _MEANS.finditer(part) if not cue else ():
+            if m.group(1).lower() == "by" and not (m.group(2).lower().endswith("ing") and _inflected(m.group(2))):
+                continue
+            if any(_vstem(w) in _OUTCOME for w in re.findall(r"[A-Za-z][\w'-]*", part[:m.start()])):
+                cue = m.group(0)
+                break
+        cue = cue or next(("to " + m.group(1) for m in re.finditer(r"\bto\s+([A-Za-z]+)\b", part)
+                           if _vstem(m.group(1)) in _TO_OUTCOME and not _inflected(m.group(1))), "")
+        lead_word = next((w for w in words if w.lower() not in _ACT_SKIP | {"and", "then"} and not (w.lower().endswith("ly") and len(w) > 4)), "")
+        if not cue and not lead and lead_word.lower().endswith("ing") and _inflected(lead_word) and _vstem(lead_word) in _OUTCOME:
+            cue = lead_word
+        if cue:
+            out.append(cue.lower())
+        lead = False if words else lead
+    return out
+
+
+def _results(text: str) -> list[str]:
+    """The results a line claims as its own doing (R7): result verbs it uses as its actions ("Reduced X", ", cutting
+    Y") or as its purpose ("to reduce effort"). "Failures fell 40%" and "accuracy reached 92%" aren't."""
+    return [w.lower() for w in _actions(text) if _vstem(w) in _OUTCOME] + \
+        [m.group(1).lower() for m in re.finditer(r"\bto\s+([A-Za-z]+)\b", text or "")
+         if _vstem(m.group(1)) in _TO_OUTCOME and not _inflected(m.group(1))]
+
+
+CLAIM_RULES = ("R3", "R4", "R5", "R5 tense", "R6", "R7", "R8")
+# A summary joins several lines in its own sentences: it has no one tense to keep, and it may leave out who shared the
+# work, a help or an internal use as it shortens a line; it still keeps a prototype, a simulation or a plan said
+# ("R4 status": the early, prerelease, unfinished and plan limits)
+SUMMARY_CLAIM_RULES = ("R3", "R4 status", "R5", "R6", "R7", "R8")
+_STATUS_LIMITS = ("early", "prerelease", "unfinished", "plan")
+
+
+def _claim_checks(original: str, text: str, supporting: tuple[str, ...] = (), granted=(), rules=CLAIM_RULES) -> list[tuple[str, str]]:
+    """(rule, why) for each claim rule `text` breaks against your line and its supporting facts. `granted`: terms a
+    version declares it adds (its `adds`, which you approved), which count as your line's for R5, R6 and R8."""
+    pieces = tuple(x for x in (original, *supporting) if x)
+    source = " ".join(pieces + tuple(label(t) for t in granted or ()))
+    out = []
+    if "R3" in rules:  # ownership: no bigger part in the work
+        level = lambda w: _LEVEL.get(_vstem(w), 2)
+        top = max((level(w) for p in pieces for w in _actions(p)), default=2)
+        big = list(dict.fromkeys(w.lower() for w in _actions(text) if level(w) > top))
+        if big:
+            out.append(("R3", "it claims a bigger part in the work than your line: " + ", ".join(big)))
+    if "R4" in rules or "R4 status" in rules:  # limits: shared work, help, prototypes, internal use and plans stay said
+        lost = []
+        agency = [w for p in pieces for w in _agency(p)] if "R4" in rules else []
+        if agency and not (_agency(text) or _AGENCY_KEEP.search(text)):
+            lost.append(agency[0])
+        partial = [w for p in pieces for w in _partial(p)] if "R4" in rules else []
+        if partial and not (_partial(text) or _PARTIAL_KEEP.search(text)):
+            lost.append(partial[0])
+        for name, (said, kept) in _LIMIT_RX.items():
+            if "R4" not in rules and name not in _STATUS_LIMITS:
+                continue
+            m = next((m for p in pieces for m in [said.search(p)] if m), None)
+            if m and not kept.search(text) and not (name == "unfinished" and _tense(text) == "present"):
+                lost.append(m.group(0).lower())
+        if lost:
+            out.append(("R4", "it drops a limit your line states: " + ", ".join(lost)))
+    if "R5" in rules:  # status: nothing went out or is in use unless E says so
+        done = [m.group(0).lower() for said, backed in _DONE_RX.values() if not backed.search(source) for m in [said.search(text)] if m]
+        if done:
+            out.append(("R5", "it says the work went out or is in use where your line doesn't: " + ", ".join(dict.fromkeys(done))))
+    if "R5 tense" in rules:  # and the lead verb keeps its tense: ongoing work doesn't read finished, nor finished work ongoing
+        was, now = _tense(original), _tense(text)
+        if was and now and was != now:
+            out.append(("R5 tense", f"it changes your line's tense: {_actions(original)[0].lower()} to {_actions(text)[0].lower()}"))
+    if "R6" in rules:  # domain: no field or kind of data E doesn't name
+        new = [name for name, rx in _DOMAIN_RX.items() if rx.search(text) and not rx.search(source)]
+        if new:
+            out.append(("R6", "it names a field or kind of data your line doesn't: " + ", ".join(new)))
+    if "R7" in rules:  # cause and result: no new link, and no result newly claimed as your own doing
+        for find, why in ((_links, "it ties a result to a cause your line doesn't: "),
+                          (_results, "it claims a result as your own work where your line doesn't: ")):
+            mine, theirs = Counter(x for p in pieces for x in find(p)), Counter(find(text))
+            if sum(theirs.values()) > sum(mine.values()):
+                out.append(("R7", why + ", ".join(sorted(set((theirs - mine).elements())) or sorted(theirs))))
+    if "R8" in rules:  # scope and quality words only where E says them, or as the setting of something E names
+        mine = {_root(p) for c in _compounds(source) for p in [c, *c.split("-")]}
+        wide = [name for name, (said, backed) in _SCOPE_RX.items() if not backed.search(source)
+                and any(not (name in SETTING_NOUNS and _names_setting(text, m, mine)) for m in said.finditer(text))]
+        if wide:
+            out.append(("R8", "it claims more scope or quality than your line: " + ", ".join(wide)))
+    return out
+
+
+def claim_problems(original: str, text: str, supporting: tuple[str, ...] = (), granted=(), rules=CLAIM_RULES) -> list[str]:
+    """Why `text` claims more than your line and its supporting facts (R3 to R8); empty means it claims no more."""
+    return [why for _, why in _claim_checks(original, text, supporting, granted, rules)]
+
+
+# S3: verbs that make a "which" or "that" clause a result ("which reduced", "that shaped")
+RESULT_CLAUSE_VERBS = OUTCOMES + " shape influence inform guide power help lead result cause"
+_S3_VERBS = frozenset(_vstem(w) for w in RESULT_CLAUSE_VERBS.split())
+_RESULT_CLAUSE = re.compile(r"\b(?:which|that|who)\s+(?:\w+ly\s+)?([A-Za-z][\w'-]*)", re.I)
+# S1, S3 and S4: result verbs by the way they move, so "cut" for your "reducing" is the same verb
+RESULT_VERBS = {"down": "reduced cut lowered decreased shrank trimmed slashed dropped fell shortened halved eliminated minimized saved",
+                "up": "improved raised lifted increased boosted grew rose doubled tripled accelerated maximized",
+                "reach": "achieved reached hit attained scored", "enable": "enabled allowed"}
+_RESULT_CLASS = {_vstem(w): k for k, words in RESULT_VERBS.items() for w in words.split()}
+
+
+def _number_verbs(text: str) -> dict[str, str]:
+    """Each number's verb: the last result verb before it in its clause ("Improved forecasting accuracy from 72%":
+    improved), else the nearest -ed, -ing or past form ("accuracy reached 92%"), else the clause's first word when it
+    reads as a verb."""
+    out: dict[str, str] = {}
+    for m in _NUM.finditer(text or ""):
+        words = re.findall(r"[A-Za-z][\w'-]*", re.split(r"[,;.!?()]", text[:m.start()])[-1])
+        verb = next((w for w in reversed(words) if _vstem(w) in _RESULT_CLASS), "") or \
+            next((w for w in reversed(words) if _inflected(w) or w.lower() in _EITHER), "")
+        if not verb and words and _vstem(words[0]) in _KNOWN_VERBS:
+            verb = words[0]
+        out.setdefault(m.group(0).rstrip(",."), verb)
+    return out
+
+
+def rewrite_flags(original: str, text: str, extra: set[str] | frozenset = frozenset(),
+                  supporting: tuple[str, ...] = (), phrases=()) -> list[str]:
+    """Softer signs that a rewrite may say more than your line, for a reviewer or a later model-based judge; none
+    drops a rewrite on its own. S1: a content word that your line, its terms and the plain words don't have (a
+    plain word that carries a claim, such as improved or accuracy, counts); S2: a posting term or a tool in the
+    place of a word of yours; S3: a "which" or "that" clause with a result verb your line doesn't have; S4: a
+    number of yours now stated by a different verb, when either verb states a result."""
+    source = " ".join((original, *supporting))
+    flags = []
+    moves = {_RESULT_CLASS.get(_vstem(w)) for w in re.findall(r"[A-Za-z][\w'-]*", source)} - {None}
+    words = [w for w in _new_words(source, text, extra, phrases, strict=True) if _RESULT_CLASS.get(_vstem(w)) not in moves]  # cut for your reduced
+    if words:
+        flags.append("S1: words your line doesn't have: " + ", ".join(words))
+    theirs = {_root(p) for c in _compounds(text) for p in [c, *c.split("-")]}
+    gone = list(dict.fromkeys(c.lower() for c in _compounds(original) if c.lower() not in _FUNCTION and not _LEAD_NUM.match(c)
+                              and _root(c) not in theirs and not all(_root(p) in theirs for p in c.split("-"))))
+    new_terms = [label(t) for t in sorted(set(terms(text)) - set(terms(source))) if not t.startswith("theme:")]
+    new_terms += [p for p in phrases or () if _flat(p).strip() and _flat(p) in _flat(text) and _flat(p) not in _flat(source)]
+    if new_terms and gone:
+        flags.append(f"S2: {', '.join(dict.fromkeys(new_terms))} where your line says {', '.join(gone[:4])}")
+    said = {_vstem(w) for w in re.findall(r"[A-Za-z][\w'-]*", source)}  # a clause with a result verb your line uses is a reorder
+    extra_clauses = sorted({m.group(0).lower() for m in _RESULT_CLAUSE.finditer(text) if _vstem(m.group(1)) in _S3_VERBS
+                            and _vstem(m.group(1)) not in said and _RESULT_CLASS.get(_vstem(m.group(1)), "?") not in moves})
+    if extra_clauses:
+        flags.append("S3: a result clause your line doesn't have: " + ", ".join(extra_clauses))
+    was, now = _number_verbs(source), _number_verbs(text)
+    kind = lambda w: _RESULT_CLASS.get(_vstem(w), _vstem(w))
+    moved = [f"{n} ({was[n].lower()} to {now[n].lower()})" for n in was if was[n] and now.get(n)
+             and kind(was[n]) != kind(now[n]) and {kind(was[n]), kind(now[n])} & set(RESULT_VERBS)]
+    if moved:
+        flags.append("S4: a number now stated by another verb: " + ", ".join(moved))
+    return flags
+
+
 def rewrite_problems(original: str, text: str, extra: set[str] | frozenset = frozenset(),
                      supporting: tuple[str, ...] = (), phrases=()) -> list[str]:
     """Why a rewrite of your line for one job can't stand for it; empty means it keeps your facts. On top of
-    faithful(): every word is your line's, a plain word or one of your line's terms, with no arrow or long dash,
-    and no colon, semicolon or unusual character your line doesn't have."""
+    faithful(): it claims no more than your line (claim_problems, R3 to R8, where your line's terms and tools back no
+    claim: "backend" never says deployed), every word is your line's, a plain word or one of your line's terms, with no
+    arrow or long dash, and no colon, semicolon or unusual character your line doesn't have."""
     source = " ".join((original, *supporting))
-    why = faithful(original, {"text": text, "adds": sorted(rewrite_terms(source, extra))}, supporting)
+    why = faithful(original, {"text": text, "adds": sorted(rewrite_terms(source, extra))}, supporting, claims=False)
+    why += claim_problems(original, text, supporting)
     new = _new_words(source, text, extra, phrases)
     if new:
         why.append("it uses words your line doesn't: " + ", ".join(new))
@@ -1557,6 +2014,9 @@ def summary_problems(text: str, facts: dict, opening: str, uses: list[str], phra
     scope = {_stem(m.group(0)) for m in _SCOPE.finditer(rest)} - {_stem(m.group(0)) for m in _SCOPE.finditer(src)}
     if scope:
         why.append("it claims more scope: " + ", ".join(sorted(scope)))
+    # the claim rules that read a summary as they read a line, against your opening and each line it cites (with where)
+    cited = tuple(x for e in summary_evidence(facts) if e["id"] in uses for x in (e.get("where", ""), e["text"]))
+    why += claim_problems(opening, rest, cited, rules=SUMMARY_CLAIM_RULES)
     # a sentence that names a company or project uses only that place's lines: a result never moves to another role
     places: dict[str, list[str]] = {}
     for e in summary_evidence(facts):
