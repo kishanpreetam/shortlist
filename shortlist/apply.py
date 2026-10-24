@@ -973,7 +973,9 @@ def build_items(picked: list[dict], profile: dict, messages: int = 20) -> list[d
 
 def make_queue(profile: dict, n=30, spares=10, cap=2, max_age=60, min_score=3.0, messages=20,
                max_age_hours: float | None = 24) -> dict:
-    rows = _read(POSTINGS)
+    from .roles import off_field
+    # a scan made before a field rule changed still keeps to your degree's field
+    rows = [r for r in _read(POSTINGS) if not off_field(r.get("title", ""), profile.get("roles") or [])]
     apps, skips = _read(APPS, APP_FIELDS), _read(SKIPS, SKIP_FIELDS)
     offset = (date.today() - datetime.fromtimestamp(POSTINGS.stat().st_mtime).date()).days if POSTINGS.exists() else 0
     exclude = tuple(EXCLUDE_TITLES) + tuple(profile.get("exclude_titles") or ())

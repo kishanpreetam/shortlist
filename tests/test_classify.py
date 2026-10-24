@@ -69,3 +69,13 @@ class SoftwareFieldTest(unittest.TestCase):
             self.assertFalse(software_field(title), title)
         self.assertEqual(discipline_role("Software Engineer II - Data Foundations").key, "data_engineer")
         self.assertEqual(discipline_role("Software Engineer, Machine Learning").key, "ml_engineer")
+
+
+class LabScienceTest(unittest.TestCase):
+    def test_lab_scientists_are_another_field(self):
+        from shortlist.roles import lab_science, software_field
+        self.assertTrue(lab_science("Research Scientist, in vivo Pharmacology-Oncology"))
+        self.assertTrue(lab_science("Research Scientist Electrophysiology Neurology"))
+        self.assertFalse(lab_science("Computational Biology Scientist"))
+        self.assertFalse(lab_science("Data Scientist - Retail Demand Sensing"))
+        self.assertTrue(software_field("Software Development Engineer - AI Infrastructure"))

@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 
 from . import classify, wages
 from .boards import Posting
-from .roles import ROLE_BY_KEY, SOFTWARE_TITLE, Role, discipline_role, role_for_title, software_field
+from .roles import ROLE_BY_KEY, SOFTWARE_TITLE, Role, discipline_role, off_field, role_for_title
 
 
 @dataclass
@@ -130,8 +130,8 @@ def score_posting(p: Posting, company: Company, profile: dict, sponsor_record: d
     signal = classify.sponsorship_signal(p.text)
     s.years_required = classify.years_required(p.text)
     have = float(profile["years_experience"])
-    if "software_engineer" not in profile["roles"] and software_field(p.title):
-        s.excluded = "software field (OPT needs work directly related to your degree)"
+    if off_field(p.title, profile["roles"]):
+        s.excluded = off_field(p.title, profile["roles"])
     elif seniority == "senior":
         s.excluded = "senior title"
     elif seniority == "internship":
