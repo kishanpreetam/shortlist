@@ -71,6 +71,28 @@ ROLE_BY_KEY = {r.key: r for r in ROLES}
 _COMPILED = [(r, re.compile(r.pattern)) for r in ROLES]
 
 
+# A software title: the job is building software, whatever product it's for ("Software Engineer, AI Teammates")
+SOFTWARE_TITLE = re.compile(r"software (engineer|engineering|developer)|full[- ]?stack|front[- ]?end|back[- ]?end|"
+                            r"\bmobile\b|\bios\b|android|web developer", re.I)
+# The work a software title can name that is data, ML or AI engineering itself, most specific first
+_DISCIPLINE = [("ml_engineer", re.compile(r"machine learning|\bml\b|mlops|deep learning", re.I)),
+               ("ai_engineer", re.compile(r"\bai engineer|\bllm\b|generative|gen ?ai|applied ai|\bai/ml\b|\bnlp\b|computer vision", re.I)),
+               ("data_engineer", re.compile(r"\bdata\b|analytics|\betl\b|pipeline", re.I))]
+
+
+def discipline_role(title: str) -> Role | None:
+    """The data, ML or AI family a software title names ("Software Engineer II - Data Foundations" is data
+    engineering), or None when it names none of them."""
+    return next((ROLE_BY_KEY[k] for k, rx in _DISCIPLINE if rx.search(title or "")), None)
+
+
+def software_field(title: str) -> bool:
+    """Whether a title is general software work: a software title that names no data, ML or AI-engineering work.
+    OPT and the STEM OPT extension need work directly related to the degree, so for an analytics degree these
+    are left out unless the profile asks for software roles."""
+    return bool(SOFTWARE_TITLE.search(title or "")) and discipline_role(title) is None
+
+
 def role_for_title(title: str) -> Role | None:
     """First matching family wins; the order above puts specific families before broad ones."""
     t = title.lower()
