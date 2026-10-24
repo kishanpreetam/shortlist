@@ -73,7 +73,7 @@ SKILLS: dict[str, str] = {
     "fastapi": r"fastapi", "flask": r"\bflask\b", "django": r"django", "react": r"\breact\b",
     "nextjs": r"next\.?js", "typescript": r"typescript", "javascript": r"javascript|\bnode(\.js)?\b",
     "java": r"\bjava\b", "scala": r"\bscala\b", "go": r"\bgolang\b|\bgo\b(?= programming| language|,)",
-    "cpp": r"c\+\+", "r_lang": r"\br\b(?= programming| language|,|/)", "statistics": r"statistic",
+    "cpp": r"c\+\+", "r_lang": r"\br\b(?= programming| language|,|/)", "statistics": r"\bstatistic",
     "ab_testing": r"a/b test|experimentation", "ml": r"machine learning", "deep_learning": r"deep learning|neural net",
     "nlp": r"\bnlp\b|natural language", "etl": r"\betl\b|\belt\b|data pipeline", "data_modeling": r"data model",
     "postgres": r"postgres", "nosql": r"mongodb|dynamodb|nosql|cassandra", "git": r"\bgit\b",

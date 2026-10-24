@@ -481,7 +481,8 @@ class JobToolsTest(unittest.TestCase):
         self.assertEqual(resume.faithful_rewrites(facts, {"r2a": other}), {})  # r2: you didn't
         sel = resume.select(facts, self.JD_SF, "Data Engineer", "data-engineer", rewrites={"r1a": text})
         r1 = next(g for g in sel["experience"] if g["id"] == "r1")
-        self.assertIn("Snowflake", r1["tech"])
+        self.assertIn("Snowflake", " ".join(b["text"] for b in r1["bullets"]))  # in its line, so not again on its tools line
+        self.assertNotIn("Snowflake", r1["tech"])
         self.assertNotIn("Snowflake", next(g for g in sel["experience"] if g["id"] == "r2")["tech"])
         self.assertEqual(resume.check(facts, sel, 1), [])
 
@@ -801,7 +802,10 @@ class StuffingTest(unittest.TestCase):
         texts = bullet_texts(sel)
         self.assertEqual(len(texts), 4)  # every line stays on the page
         self.assertEqual(sum("Snowflake" in t for t in texts.values()), resume.ADDED_TOOL_MAX)
-        self.assertEqual(sum("Snowflake" in g["tech"] for g in sel["experience"]), resume.ADDED_TOOL_MAX)
+        # a tools line never repeats a tool its own entry's lines already name
+        for g in sel["experience"]:
+            named = {t for b in g["bullets"] for t in resume.terms(b["text"]) if not t.startswith("theme:")}
+            self.assertFalse(resume._item_terms(g["tech"]) & named, g["id"])
         self.assertEqual(resume.check(facts, sel, 1), [])
 
     def test_a_mention_comes_out_only_when_it_comes_out_cleanly(self):
@@ -891,32 +895,28 @@ class PartialCoverageTest(unittest.TestCase):
 
 
 class HeaderOnlyTest(unittest.TestCase):
-    """A role far from the job keeps its heading and dates on a tailored page, without a line."""
+    """A role far from the job keeps one line on a tailored page: a heading and dates alone read as a gap, and
+    screeners count a role's years only when a line says what was done there."""
 
-    def test_a_far_role_shows_no_line_unless_you_pin_one(self):
+    def test_a_far_role_keeps_its_best_line(self):
         got = rewrite.Rewrites()
         got.requirements = [{"id": "R1", "text": "Build ETL pipelines with Airflow", "kind": "required"}]
         got.shows = {"r1a": ["R1"]}
         sel = resume.select(FACTS, JD, "Data Engineer", "data-engineer", rewrites=got)
         r2 = next(g for g in sel["experience"] if g["id"] == "r2")
-        self.assertEqual((r2["bullets"], r2["tech"]), ([], []))
+        self.assertEqual(len(r2["bullets"]), 1)
         self.assertEqual(resume.check(FACTS, sel, 1), [])
         self.assertIn("Research Assistant", resume.render(FACTS, sel))
-        plain = resume.select(FACTS, JD, "Data Engineer", "data-engineer")  # without requirements it keeps its best line
-        self.assertEqual(len(next(g for g in plain["experience"] if g["id"] == "r2")["bullets"]), 1)
         pinned = resume.select(FACTS, JD, "Data Engineer", "data-engineer", include={"r2a"}, rewrites=got)
         self.assertEqual(len(next(g for g in pinned["experience"] if g["id"] == "r2")["bullets"]), 1)
 
-    def test_a_far_role_gets_a_line_only_for_a_requirement_no_other_line_shows(self):
+    def test_a_far_role_keeps_one_line_even_when_another_line_shows_its_requirement(self):
         got = rewrite.Rewrites()
         got.requirements = [{"id": "R1", "text": "Build ETL pipelines with Airflow", "kind": "required"},
                             {"id": "R2", "text": "Improve forecast accuracy", "kind": "required"}]
-        got.shows = {"r1a": ["R1"], "r2a": ["R2"]}
-        sel = resume.select(FACTS, JD, "Data Engineer", "data-engineer", rewrites=got)
-        self.assertIn("r2a", bullet_texts(sel))  # only it shows R2
         got.shows = {"r1a": ["R1", "R2"], "r2a": ["R2"]}
         sel = resume.select(FACTS, JD, "Data Engineer", "data-engineer", rewrites=got)
-        self.assertNotIn("r2a", bullet_texts(sel))  # another line shows R2 already
+        self.assertIn("r2a", bullet_texts(sel))
 
     def test_a_current_role_or_one_of_the_jobs_kind_always_keeps_a_line(self):
         got = rewrite.Rewrites()
@@ -935,13 +935,40 @@ class KeywordTest(unittest.TestCase):
     """The posting's keywords: ranked, matched as the posting writes them, and put on the page where they're yours."""
 
     def test_forms_and_matching(self):
-        self.assertEqual(resume.keyword_forms("Amazon Web Services (AWS)"), ["amazon web services", "amazon web services aws", "aws"])
+        self.assertEqual(resume.keyword_forms("Amazon Web Services (AWS)"), ["amazon web services", "amazon web services aws"])
+        self.assertEqual(resume.case_acronyms("Amazon Web Services (AWS)"), ["AWS"])  # matched only in capitals
+        self.assertEqual(resume.keyword_shown("Amazon Web Services (AWS)", ["Built ETL on AWS with S3."]), "exact")
         self.assertIn("gcp", resume.keyword_forms("AWS/GCP"))
         self.assertEqual(resume.keyword_forms("CI/CD"), ["ci/cd"])  # one practice, not a choice
         self.assertEqual(resume.keyword_shown("data quality checks", ["Implemented data quality checks on 1M+ rows."]), "exact")
         self.assertEqual(resume.keyword_shown("data models", ["Data & Pipelines : ETL, Data Modeling, SQL"]), "close")
         self.assertEqual(resume.keyword_shown("AWS Glue", ["AWS (S3, Lambda, Glue, EC2)"]), "close")
         self.assertEqual(resume.keyword_shown("Claude Code", ["AI Coding Tools, Anthropic Claude API, FAISS"]), "")  # a tool needs its name
+
+    def test_a_different_word_that_starts_the_same_way_never_matches(self):
+        self.assertEqual(resume.keyword_shown("Marketo", ["Built a job-market data pipeline."]), "")
+        self.assertEqual(resume.keyword_shown("Agentforce", ["Built 10 AI Agents on AWS."]), "")
+        self.assertEqual(resume.keyword_shown("Marketing Automation Platforms (MAPs)", ["Built web maps for wildfire mitigation."]), "")
+        self.assertEqual(resume.keyword_shown("Node.js", ["Python, JavaScript, HTML"]), "")  # its own skill, not JavaScript
+        self.assertEqual(resume.keyword_shown("communication skills", ["Communicating results to leadership."]), "close")
+        self.assertEqual(resume.terms("Econometrics"), {})  # no metrics work inside a longer word
+
+    def test_years_asked_reads_the_low_end_and_spelled_numbers(self):
+        for text, need in (("2\u20135 years in data engineering", 2), ("3-5 years", 3), ("One (1) year of experience", 1),
+                           ("3 or more years", 3), ("two to four years", 2), ("5+ years with Spark", 5)):
+            self.assertEqual(resume.years_asked(text), need, text)
+        self.assertIsNone(resume.years_asked("Experience with SQL"))
+
+    def test_skills_items_say_only_skills_you_have(self):
+        yours = {"ab_testing", "statistics"}
+        themes = {"theme:modeling", "theme:metrics"}
+        self.assertTrue(resume.worded_item("Experimentation", yours, themes))  # your A/B testing in the posting's word
+        self.assertTrue(resume.worded_item("Statistical Modeling", yours, themes))
+        self.assertFalse(resume.worded_item("Model Monitoring", yours, themes))  # monitoring is a skill of its own
+        self.assertFalse(resume.worded_item("KPI Frameworks", yours, themes))
+        self.assertFalse(resume.worded_item("Econometrics", yours, themes))
+        kws = resume.job_keywords("Data Scientist", "Strong background in Statistics and forecasting.", [], "", [])
+        self.assertIn("Statistics", [k["text"] for k in kws])  # the posting's whole word, never "Statistic"
 
     def test_ranking_adds_the_tools_the_list_missed_and_never_the_employer(self):
         given = [{"text": "data quality checks", "kind": "skill", "from": "responsibility"}, {"text": "Acme Cloud", "kind": "tool", "from": "required"}]
