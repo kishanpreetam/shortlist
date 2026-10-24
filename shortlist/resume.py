@@ -122,6 +122,23 @@ EXTRA_SKILLS: dict[str, tuple[str, str]] = {
     "informatica": (r"informatica", "Informatica"), "talend": (r"\btalend\b", "Talend"), "ssis": (r"\bssis\b", "SSIS"),
     "relational_db": (r"relational databases?|\brdbms\b|\bsql databases\b", "Relational Databases"),
     "metadata": (r"\bmetadata\b", "Metadata Management"),
+    # named AI coding tools: a posting that names one is asked about it by name (AI Coding Tools stays their parent)
+    "claude_code": (r"claude code", "Claude Code"), "codex": (r"\bcodex\b", "Codex"),
+    "cursor": (r"(?-i:\bCursor\b)(?! (?:position|pagination|based))", "Cursor"), "copilot": (r"github copilot|\bcopilot\b", "GitHub Copilot"),
+    # more of the tools data and AI postings name
+    "aws_glue": (r"\bglue\b", "AWS Glue"), "s3": (r"\bs3\b", "Amazon S3"), "athena": (r"amazon athena|(?-i:\bAthena\b)", "Amazon Athena"),
+    "step_functions": (r"step functions", "AWS Step Functions"), "oozie": (r"\boozie\b", "Oozie"), "azkaban": (r"\bazkaban\b", "Azkaban"),
+    "druid": (r"\bdruid\b", "Apache Druid"), "superset": (r"apache superset|(?-i:\bSuperset\b)", "Apache Superset"),
+    "metabase": (r"\bmetabase\b", "Metabase"), "airbyte": (r"\bairbyte\b", "Airbyte"), "prefect": (r"(?-i:\bPrefect\b)", "Prefect"),
+    "luigi": (r"(?-i:\bLuigi\b)", "Luigi"), "nifi": (r"\bnifi\b", "Apache NiFi"), "beam": (r"apache beam|(?-i:\bBeam\b)", "Apache Beam"),
+    "pubsub": (r"\bpub/?sub\b", "Pub/Sub"), "dataflow": (r"(?-i:\bDataflow\b)", "Dataflow"), "dataproc": (r"\bdataproc\b", "Dataproc"),
+    "dax": (r"\bdax\b", "DAX"), "ssrs": (r"\bssrs\b", "SSRS"), "looker_studio": (r"looker studio|data studio", "Looker Studio"),
+    "prometheus": (r"prometheus", "Prometheus"), "splunk": (r"\bsplunk\b", "Splunk"), "ansible": (r"\bansible\b", "Ansible"),
+    # practices postings ask for by name
+    "data_governance": (r"data governance", "Data Governance"), "distributed_systems": (r"distributed (?:systems?|computing)", "Distributed Systems"),
+    "automated_testing": (r"unit test|automated tests?|test automation|integration tests?", "Automated Testing"),
+    "sdlc": (r"software development life ?cycle|\bsdlc\b", "SDLC"), "agile": (r"\bagile\b|\bscrum\b", "Agile"),
+    "observability": (r"observability", "Observability"),
 }
 _TERM_RX = dict(classify._SKILL_RX)
 _TERM_RX.update({k: re.compile(p, re.I) for k, (p, _) in EXTRA_SKILLS.items()})
@@ -135,13 +152,16 @@ CATEGORY = {t: kind for kind, names in {
     "data": "spark airflow etl dbt kafka snowflake databricks postgres nosql data_modeling redshift bigquery hadoop hive flink dagster "
             "fivetran iceberg delta_lake trino presto duckdb mysql sql_server oracle redis elasticsearch opensearch mongodb dynamodb "
             "data_warehouse data_lake streaming supabase kinesis web_scraping salesforce google_workspace pyspark azure_data_factory "
-            "adls fabric synapse event_hubs snowpipe snowsql informatica talend ssis relational_db metadata",
+            "adls fabric synapse event_hubs snowpipe snowsql informatica talend ssis relational_db metadata aws_glue s3 athena "
+            "step_functions oozie azkaban druid airbyte prefect luigi nifi beam pubsub dataflow dataproc data_governance",
     "cloud": "aws gcp azure docker kubernetes terraform ci_cd fastapi flask django rest_api linux sagemaker ec2 jenkins graphql grafana "
-             "datadog vertex_ai bedrock pydantic streamlit ui_bakery azure_devops",
+             "datadog vertex_ai bedrock pydantic streamlit ui_bakery azure_devops prometheus splunk ansible distributed_systems "
+             "automated_testing sdlc agile observability",
     "ml": "ml deep_learning pytorch tensorflow scikit_learn xgboost statistics forecasting ab_testing tableau power_bi looker excel nlp "
           "mlflow mlops computer_vision time_series causal_inference sas stata matlab spss alteryx google_analytics amplitude mixpanel "
-          "qlik sheets vba huggingface fine_tuning",
-    "ai": "llm rag agents langchain mcp evals vector_db openai anthropic crewai autogen prompt_engineering ai_coding",
+          "qlik sheets vba huggingface fine_tuning superset metabase dax ssrs looker_studio",
+    "ai": "llm rag agents langchain mcp evals vector_db openai anthropic crewai autogen prompt_engineering ai_coding claude_code "
+          "codex cursor copilot",
 }.items() for t in names.split()}
 # How a skill reads on a skills line, when its short label doesn't (each still matches its own pattern)
 ITEM_LABELS = {"ml": "Machine Learning", "deep_learning": "Deep Learning", "data_modeling": "Data Modeling", "statistics": "Statistics",
@@ -182,7 +202,8 @@ LINE10_PT, ENTRY_HEAD_PT, LINE9_PT, BULLET_GAP_PT = 10.5, 11.25, 10.2, 0.0
 TOOLS_TO_BULLET_PT, HEAD_TO_BULLET_PT = 9.0, 10.0   # an entry's tools line, or its header, to its first bullet
 ENTRY_GAP_PT, PROJECT_GAP_PT, EDU_GAP_PT = 4.8, 3.6, 0.75
 SUMMARY_CHARS, SKILL_CHARS, BULLET_CHARS, TECH_CHARS = 130, 104, 129, 120   # SKILL_CHARS: a full skills row
-NO_FILL = {"rest_api", "etl", "ml", "llm", "agents", "forecasting", "statistics"}  # too general to pad a skills row with
+NO_FILL = {"rest_api", "etl", "ml", "llm", "agents", "forecasting", "statistics", "sdlc", "agile", "aws_glue", "s3"}  # too general,
+# or already inside another item ("AWS (S3, Lambda, Glue)"), to pad a skills row with
 BUDGETS = tuple(PAGE_PT + d for d in (44, 36, 28, 20, 12, 4, -4, -12, -20, -32, -44))  # fullest first; the PDF decides
 LENS_BONUS = 0.25         # a version written for this resume's job type wins a tie with your own wording
 BANNED = ("—", "--")
@@ -534,12 +555,13 @@ def _claims(text: str) -> set[str]:
     return tools | {t for t in terms(bare) if t.startswith("theme:")}
 
 
-def _new_words(original: str, text: str, extra: set[str] | frozenset = frozenset()) -> list[str]:
+def _new_words(original: str, text: str, extra: set[str] | frozenset = frozenset(), phrases=()) -> list[str]:
     """Words a rewrite adds that are neither plain words (GENERIC), nor one of your line's terms, nor a word of one's
-    label ("quality" for a line about validation): a word planted in the posting, a tool, or a domain such as patients."""
+    label ("quality" for a line about validation), nor the posting's own keyword for something the line has
+    (phrase_roots): a word planted in the posting, a tool, or a domain such as patients."""
     may, verbs = rewrite_terms(original, extra), _verbs(original)
     mine = {_root(p) for c in _compounds(original) for p in [c, *c.split("-")]}
-    named = {_root(p) for t in may for c in _compounds(label(t)) for p in [c, *c.split("-")]}
+    named = {_root(p) for t in may for c in _compounds(label(t)) for p in [c, *c.split("-")]} | phrase_roots(phrases, may)
     plain = _GENERIC_ROOTS | named
 
     def fine(w: str) -> bool:
@@ -589,13 +611,13 @@ def _strong(text: str) -> set[str]:
 
 
 def rewrite_problems(original: str, text: str, extra: set[str] | frozenset = frozenset(),
-                     supporting: tuple[str, ...] = ()) -> list[str]:
+                     supporting: tuple[str, ...] = (), phrases=()) -> list[str]:
     """Why a rewrite of your line for one job can't stand for it; empty means it keeps your facts. On top of
     faithful(): every word is your line's, a plain word or one of your line's terms, with no arrow or long dash,
     and no colon, semicolon or unusual character your line doesn't have."""
     source = " ".join((original, *supporting))
     why = faithful(original, {"text": text, "adds": sorted(rewrite_terms(source, extra))}, supporting)
-    new = _new_words(source, text, extra)
+    new = _new_words(source, text, extra, phrases)
     if new:
         why.append("it uses words your line doesn't: " + ", ".join(new))
     lost = sorted(_strong(original) - _strong(text))
@@ -613,9 +635,10 @@ def rewrite_problems(original: str, text: str, extra: set[str] | frozenset = fro
     return why
 
 
-def faithful_rewrites(facts: dict, rewrites: dict[str, str] | None) -> dict[str, str]:
+def faithful_rewrites(facts: dict, rewrites: dict[str, str] | None, phrases=()) -> dict[str, str]:
     """The job-specific rewrites (from rewrite.py) that keep their line's facts (rewrite_problems): nothing your
-    line doesn't already say, not even a tool you listed for that role or project."""
+    line doesn't already say, not even a tool you listed for that role or project. `phrases`: the posting's keywords,
+    whose own words a rewrite may use for what its line already has."""
     out = {}
     for grp in ("roles", "projects"):
         for g in facts[grp]:
@@ -624,7 +647,7 @@ def faithful_rewrites(facts: dict, rewrites: dict[str, str] | None) -> dict[str,
             extra = mapped_tools(facts, g["id"])
             for b in g["bullets"]:
                 text = (rewrites or {}).get(b["id"])
-                if ok(b) and text and text != b["text"] and not rewrite_problems(b["text"], text, extra, supporting_facts(b)):
+                if ok(b) and text and text != b["text"] and not rewrite_problems(b["text"], text, extra, supporting_facts(b), phrases):
                     out[b["id"]] = text
     return out
 
@@ -710,10 +733,11 @@ TOOLS_MAX = 6
 CONCEPTS = {"data_warehouse", "data_lake", "data_modeling", "relational_db", "metadata", "streaming", "etl", "statistics",
             "ab_testing", "ml", "deep_learning", "nlp", "computer_vision", "time_series", "causal_inference", "forecasting",
             "mlops", "fine_tuning", "prompt_engineering", "web_scraping", "rest_api", "ci_cd", "llm", "rag", "agents", "evals",
-            "vector_db", "nosql"}
+            "vector_db", "nosql", "data_governance", "distributed_systems", "automated_testing", "sdlc", "agile", "observability"}
 # a general name the specific one already says: Azure Data Factory, not Azure as well
 PARENT = {"azure": {"azure_data_factory", "adls", "synapse", "fabric", "event_hubs", "azure_devops"}, "spark": {"pyspark"},
-          "aws": {"redshift", "sagemaker", "ec2", "kinesis", "bedrock"}, "gcp": {"bigquery", "vertex_ai"}}
+          "aws": {"redshift", "sagemaker", "ec2", "kinesis", "bedrock", "aws_glue", "s3", "athena", "step_functions"},
+          "gcp": {"bigquery", "vertex_ai", "pubsub", "dataflow", "dataproc"}, "ai_coding": {"claude_code", "codex", "cursor", "copilot"}}
 
 
 def _and_list(items: list[str]) -> str:
@@ -830,6 +854,277 @@ def tool_groups(text: str) -> list[set[str]]:
         found = {t for t in terms(part) if not t.startswith("theme:") and t not in CONCEPTS}
         if found:
             out.append(found)
+    return out
+
+
+# ---------- the posting's keywords ----------
+
+KEYWORDS_MAX = 30
+KEYWORD_WEIGHT = {"required": 3.0, "responsibility": 2.0, "preferred": 1.0}
+_ACRONYM = re.compile(r"\s*\(([^)]{2,40})\)\s*")  # "Amazon Web Services (AWS)": the full form and its acronym
+
+
+def _flat(text: str) -> str:
+    """Text as keywords are matched: lowercase words, hyphens and punctuation read as spaces."""
+    return " " + " ".join(re.sub(r"[^a-z0-9+#./]+", " ", (text or "").lower()).split()) + " "
+
+
+def keyword_forms(text: str) -> list[str]:
+    """The ways a keyword can be written and still be the same one: as the posting writes it, its full form and acronym
+    apart ("Amazon Web Services (AWS)" reads as either), and each side of a choice of tools ("AWS/GCP" reads as
+    either; "CI/CD" stays one)."""
+    t = " ".join((text or "").split())
+    forms = {t}
+    m = _ACRONYM.search(t)
+    if m:
+        forms |= {_ACRONYM.sub(" ", t).strip(), m.group(1).strip()}
+    sides = [x.strip() for x in re.split(r"\s*/\s*", t)]
+    if len(sides) > 1 and all(any(not k.startswith("theme:") for k in terms(x)) for x in sides):
+        forms |= set(sides)
+    return sorted({_flat(f).strip() for f in forms if _flat(f).strip()})
+
+
+_KW_STOP = {"skill", "skills", "experience", "knowledge", "ability", "abilities", "proficiency", "understanding",
+            "familiarity", "strong", "excellent", "solid", "working", "good", "great", "degree", "degrees", "s"}
+
+
+def _kw_roots(text: str) -> set[str]:
+    return {_root(w) for w in _flat(text).split() if w not in _FUNCTION}
+
+
+def _same_word(a: str, b: str) -> bool:
+    return a == b or (min(len(a), len(b)) >= 5 and (a.startswith(b) or b.startswith(a)))  # communicat, communication
+
+
+def _near(roots: list[str], line: str) -> bool:
+    """Whether every one of `roots` is in `line` as a form of the word, all within a few words of each other."""
+    words = [_root(w) for w in _flat(line).split()]
+    spots = [[i for i, w in enumerate(words) if _same_word(r, w)] for r in roots]
+    if not roots or not all(spots):
+        return False
+    first = [min(p) for p in spots]
+    return max(first) - min(first) <= len(roots) + 2
+
+
+@lru_cache(maxsize=16384)
+def _term_set(text: str) -> frozenset[str]:
+    return frozenset(terms(text))
+
+
+def keyword_shown(kw: str, lines: list[str]) -> str:
+    """How a keyword shows in the page's lines: "exact" (as the posting writes it, or its acronym or full form, in a
+    line), "close" (for a tool, every skill it names in one line, as "AWS Glue" in "AWS (S3, Lambda, Glue)"; for an
+    idea, every word of it near the others in one line, in another form, as "data models" in "Data Modeling" or
+    "communication" in "communicating"), or ""."""
+    forms, flats = keyword_forms(kw), [_flat(x) for x in lines]
+    if any(f" {f} " in x for f in forms for x in flats):
+        return "exact"
+    for f in forms:
+        tools = {t for t in _term_set(f) if not t.startswith("theme:") and t not in CONCEPTS}
+        if tools:
+            if any(tools <= _term_set(x) for x in lines):
+                return "close"
+        elif any(_near([_root(w) for w in f.split() if w not in _FUNCTION and w not in _KW_STOP], x) for x in lines):
+            return "close"
+    return ""
+
+
+_THEME_KIND = {"dashboards": "ml", "metrics": "ml", "analysis": "ml", "modeling": "ml", "experimentation": "ml",
+               "recommendations": "ml", "research": "ml", "data_quality": "data", "pipelines": "data", "integrations": "data",
+               "extraction": "data", "automation": "cloud", "production": "cloud", "frontend": "code", "search": "ai",
+               "llm": "ai", "agents": "ai"}
+
+
+def your_skills(facts: dict) -> set[str]:
+    """Skills that are yours: ones your approved lines show, ones you added as used, and the ones on your approved skills rows."""
+    return evidence(facts) | _added(facts, "used") | _item_terms([it for x in facts.get("skills") or [] if ok(x) for it in x["items"]])
+
+
+def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
+    """Put each keyword that's yours but still missing from the page on the skills row it belongs to, in the posting's
+    words: a tool or idea as the posting says it ("Business Intelligence"), a general phrase with the tool of yours it
+    stands for ("Version Control (Git)"). A row makes room by dropping items the posting doesn't name; nothing goes on
+    that worded_item wouldn't pass. How many went on."""
+    rows = [r for r in sel["skills"] if r["id"] != "learning"]
+    if not rows:
+        return 0
+    yours = your_skills(facts)
+    themes = {t for t in terms(" ".join(b["text"] for grp in ("roles", "projects") for g in facts[grp] if ok(g)
+                                        for b in g["bullets"] if ok(b))) if t.startswith("theme:")}
+    named = " ".join(k["text"] for k in report)
+    wanted = lambda it: any(keyword_shown(k["text"], [it]) for k in report) or bool(set(terms(it)) & set(terms(named)))
+    kind_of = {r["id"]: _kind(next((x for x in facts["skills"] if x["id"] == r["id"]), r)) for r in rows}
+    placed = 0
+    for k in [k for k in report if k["status"] == "missing"]:
+        found = set(terms(k["text"]))
+        tools = {t for t in found if not t.startswith("theme:")}
+        general = synonym_tools(k["text"]) & yours if not tools else set()
+        words = " ".join(w if any(c.isupper() or c.isdigit() for c in w) else w.capitalize() for w in k["text"].split())
+        item = f"{words} ({', '.join(item_label(t) for t in sorted(general)[:3])})" if general else words
+        if not worded_item(item, yours, themes):
+            continue
+        kind = CATEGORY.get(next(iter(sorted(tools | general)), ""), "") or \
+            next((_THEME_KIND[t[6:]] for t in sorted(found) if t[6:] in _THEME_KIND), "data")
+        for row in sorted(rows, key=lambda r: (kind_of[r["id"]] != kind, len(", ".join(r["items"])))):
+            need = len(", ".join(row["items"] + [item])) - SKILL_CHARS
+            drop = []
+            for x in reversed(row["items"]):
+                if need <= 0:
+                    break
+                if not wanted(x):
+                    drop.append(x)
+                    need -= len(x) + 2
+            if need <= 0:
+                for x in drop:
+                    row["items"].remove(x)
+                row["items"].append(item)
+                row.setdefault("added", []).append(item)
+                placed += 1
+                break
+    return placed
+
+
+def keyword_report(kws: list[dict], sel: dict, facts: dict) -> list[dict]:
+    """Each of the posting's keywords on this page. status: "on page" (match "exact" or "close"), "learning" (on your
+    Currently learning line), "missing" (yours, but nothing on the page says it yet), "ask" (a skill it names that you
+    haven't said you have; the preview asks), "declined" (you said you haven't used it) or "only you" (none of your
+    lines shows it; write one only if you've done it)."""
+    groups = sel["experience"] + sel["projects"]
+    lines = [(sel.get("summary") or {}).get("text", "")] + [b["text"] for g in groups for b in g["bullets"]] \
+        + [", ".join(g.get("tech") or []) for g in groups] + [", ".join(x["items"]) for x in sel["skills"] if x["id"] != "learning"] \
+        + [f"{e.get('degree', '')} {e.get('school', '')}" for e in facts.get("education") or [] if ok(e)]
+    learning = [", ".join(x["items"]) for x in sel["skills"] if x["id"] == "learning"]
+    yours, said_no = your_skills(facts), _added(facts, "no")
+    approved_lines = [b["text"] for grp in ("roles", "projects") for g in facts[grp] if ok(g) for b in g["bullets"] if ok(b)]
+    themes = {t for t in terms(" ".join(approved_lines)) if t.startswith("theme:")}
+    out = []
+    for k in kws:
+        found, topics = set(k["terms"]), {t for t in terms(k["text"]) if t.startswith("theme:")}
+        either = len(keyword_forms(k["text"])) > 1 and "/" in k["text"]  # a choice: any one of its tools is enough
+        have = (found & yours) if either else (found if found <= yours else set())
+        how = keyword_shown(k["text"], lines)
+        general = synonym_tools(k["text"]) if not found else set()
+        status = ("on page" if how else "learning" if keyword_shown(k["text"], learning) else
+                  "missing" if (found and have and (either or _spoken_for(k["text"], set(terms(k["text"]))))) or (general & yours)
+                  or (not found and topics and topics <= themes and _spoken_for(k["text"], topics))
+                  or (not found and keyword_shown(k["text"], approved_lines)) else
+                  "declined" if found & said_no else "ask" if (found - yours) or general else "only you")
+        out.append({"text": k["text"], "kind": k["kind"], "from": k["from"], "count": k["count"], "status": status, "match": how})
+    return out
+
+
+def job_keywords(job_title: str, job_text: str, given: list[dict] | tuple = (), employer: str = "",
+                 reqs: list[dict] | tuple = ()) -> list[dict]:
+    """The posting's keywords, most important first: the ones read off it (rewrite.keywords), plus every tool the
+    engine recognizes in it that the list misses, as the posting writes it. Each weighs by where the posting asks for
+    it (required, then responsibilities, then preferred), how often it says it, and whether the title says it. The
+    employer's own name never counts."""
+    text = without_employer(f"{job_title}\n{job_text}", employer)
+    flat, title = _flat(text), _flat(job_title)
+    out, seen, named = [], set(), set()
+    for k in given or ():
+        phrase = " ".join(str((k or {}).get("text") or "").split())
+        if not phrase or phrase.lower() in seen or NEVER.search(phrase) or (employer and employer.lower() in phrase.lower()):
+            continue
+        seen.add(phrase.lower())
+        found = {t for t in terms(phrase) if not t.startswith("theme:")}
+        named |= found
+        out.append({"text": phrase, "kind": k.get("kind") or "skill", "from": k.get("from") or "responsibility", "terms": sorted(found)})
+    asked = {kind: " ".join(r["text"] for r in reqs if r.get("kind") == kind) for kind in ("required", "preferred")}
+    for t in terms(text):  # a tool the posting names that the list missed, in the posting's own words
+        m = _TERM_RX[t].search(text) if t in _TERM_RX else None
+        if t.startswith("theme:") or t in named or not m or m.group(0).lower() in seen:
+            continue
+        seen.add(m.group(0).lower())
+        where = "required" if _TERM_RX[t].search(asked["required"]) else "preferred" if _TERM_RX[t].search(asked["preferred"]) else "responsibility"
+        out.append({"text": m.group(0), "kind": "skill" if t in CONCEPTS else "tool", "from": where, "terms": [t]})
+    for k in out:
+        k["count"] = max([1] + [flat.count(f" {f} ") for f in keyword_forms(k["text"])])
+        k["weight"] = round(KEYWORD_WEIGHT.get(k["from"], 2.0) * (1 + 0.5 * math.log2(k["count"]))
+                            * (1.25 if any(f" {f} " in title for f in keyword_forms(k["text"])) else 1.0), 2)
+    out.sort(key=lambda k: -k["weight"])  # the order it was read in breaks ties
+    return out[:KEYWORDS_MAX]
+
+
+def _theme_rx(t: str):
+    return _THEME_RX.get(t[6:]) if t.startswith("theme:") else _TERM_RX.get(t)
+
+
+# A posting's general words for tools you may name instead: "version control" is Git, "containers" Docker
+SYNONYMS = {
+    re.compile(r"version control|source control", re.I): {"git"},
+    re.compile(r"containeri[sz]ation|containers?\b|container orchestration", re.I): {"docker", "kubernetes"},
+    re.compile(r"cloud (?:platforms?|services|computing|providers?)|public cloud", re.I): {"aws", "gcp", "azure"},
+    re.compile(r"(?:bi|business intelligence|reporting|visuali[sz]ation|dashboarding) tools?", re.I): {"tableau", "power_bi", "looker", "superset", "metabase"},
+    re.compile(r"(?:workflow )?orchestration tools?|workflow orchestration|job schedulers?", re.I): {"airflow", "dagster", "prefect", "luigi", "oozie", "azkaban"},
+    re.compile(r"cloud data (?:platforms?|warehouses?)", re.I): {"snowflake", "databricks", "bigquery", "redshift", "synapse"},
+    re.compile(r"(?:etl|data integration) tools?", re.I): {"informatica", "talend", "ssis", "airbyte", "fivetran", "azure_data_factory"},
+    re.compile(r"(?:machine learning|ml|deep learning) (?:frameworks?|libraries)", re.I): {"pytorch", "tensorflow", "scikit_learn", "xgboost"},
+    re.compile(r"scripting languages?", re.I): {"python", "bash"},
+    re.compile(r"programming languages?", re.I): {"python", "java", "scala", "go", "cpp", "javascript", "typescript", "csharp", "rust"},
+}
+
+
+def synonym_tools(phrase: str) -> set[str]:
+    """The tools a posting's general phrase stands for ("version control" for Git)."""
+    return {t for rx, ts in SYNONYMS.items() if rx.search(phrase or "") for t in ts}
+
+
+def _spoken_for(phrase: str, found: set[str]) -> bool:
+    """Whether every word of `phrase` belongs to one of `found` (tools and themes, as their patterns match it, or a
+    general phrase that stands for a tool) or is a plain word, so nothing else rides in with it."""
+    spans = [m.span() for t in found if _theme_rx(t) for m in _theme_rx(t).finditer(phrase)]
+    spans += [m.span() for rx in SYNONYMS for m in rx.finditer(phrase)]
+    return all(any(a < w.end() and w.start() < b for a, b in spans) or _root(w.group(0)) in _GENERIC_ROOTS
+               or w.group(0).lower() in _FUNCTION | _KW_STOP for w in re.finditer(r"[A-Za-z0-9+#./-]+", phrase))
+
+
+def phrase_roots(phrases, may: set[str]) -> set[str]:
+    """The words of the posting's keywords a rewrite may use in one line: only a keyword whose skills and themes that
+    line already has, and only the words those skills and themes match in it ("distributed computing" for a line about
+    a distributed system), so a keyword never carries in a word the line doesn't back."""
+    out: set[str] = set()
+    for p in phrases or ():
+        found = _claims(p)  # read the way a line's own claims are (rewrite_terms), so the two compare
+        if not found or not found <= may or len(p.split()) > 4:
+            continue
+        spans = [m.span() for t in found if _theme_rx(t) for m in _theme_rx(t).finditer(p)]
+        for w in re.finditer(r"[A-Za-z0-9+#./-]+", p):
+            if any(a < w.end() and w.start() < b for a, b in spans):
+                out |= {_root(x) for x in re.split(r"[-/]", w.group(0)) if x}
+    return out
+
+
+def worded_item(item: str, yours: set[str], themes: set[str] | frozenset = frozenset()) -> bool:
+    """Whether a skills item is a posting's wording of skills you have: every skill it names is yours, every idea it
+    names your lines show (`themes`), a general phrase in it stands for a tool of yours ("Version Control (Git)"), and
+    its other words are plain ones, so "Data Warehouse" stands for your data warehousing and "Clinical NLP" never
+    gets in on your NLP."""
+    found = set(terms(item))
+    tools, topics = {t for t in found if not t.startswith("theme:")}, {t for t in found if t.startswith("theme:")}
+    general = synonym_tools(item)
+    if not (tools or topics or general) or not tools <= yours or not topics <= set(themes) or len(item) > 48:
+        return False
+    if general and not general & yours:
+        return False
+    return _spoken_for(item, found)
+
+
+def keyword_wording(kws: list[dict]) -> dict[str, str]:
+    """{skill: the posting's word for it} for keywords that name one skill in a few words, as a skills item reads: a
+    tool keeps its own spelling (dbt, PySpark), and an idea in the posting's other words reads capitalized ("Data
+    Warehouse" where your skill is data warehousing)."""
+    out = {}
+    for k in kws:
+        t = k["terms"][0] if len(k["terms"]) == 1 else None
+        if not t or t in out or len(k["text"].split()) > 3:
+            continue
+        if _flat(k["text"]) == _flat(item_label(t)) or not _spoken_for(k["text"], set(terms(k["text"]))):
+            out[t] = item_label(t)  # "Clinical NLP" stays NLP: the posting's other words would be a claim
+        elif t in CONCEPTS:
+            out[t] = " ".join(w if any(c.isupper() or c.isdigit() for c in w) else w.capitalize() for w in k["text"].split())
+        else:
+            out[t] = item_label(t) if k["text"].islower() else k["text"]  # "spark" written small still reads Spark
     return out
 
 
@@ -1096,7 +1391,7 @@ def rank_draft(text: str, requirement: str, page: list[str], in_experience: bool
     return {"score": round(score, 3), "covers": covers, "share": round(share, 2), "named": round(named_share, 2), "dup": round(dup, 2)}
 
 
-def summary_problems(text: str, facts: dict, opening: str, uses: list[str]) -> list[str]:
+def summary_problems(text: str, facts: dict, opening: str, uses: list[str], phrases=()) -> list[str]:
     """Why a summary written for a job can't stand; empty means it keeps your facts. It begins with your opening,
     and every number, before-and-after, tool, claim and word after it comes from the lines and highlights it
     draws on (tools also from any of your lines or the places you tied them to)."""
@@ -1118,7 +1413,7 @@ def summary_problems(text: str, facts: dict, opening: str, uses: list[str]) -> l
     new = _claims(rest) - _claims(src) - extra
     if new:
         why.append("it names something your lines don't: " + ", ".join(label(t) for t in sorted(new)))
-    words = _new_words(f"{src} {opening}", rest, extra)
+    words = _new_words(f"{src} {opening}", rest, extra, phrases)
     if words:
         why.append("it uses words your lines don't: " + ", ".join(words))
     scope = {_stem(m.group(0)) for m in _SCOPE.finditer(rest)} - {_stem(m.group(0)) for m in _SCOPE.finditer(src)}
@@ -1272,22 +1567,26 @@ def _page_height(summary, educations, skills, exp, proj) -> float:
     return h
 
 
-def _skill_lines(facts: dict, job: dict[str, float], skip: set[str] | frozenset, keep_order: bool = False) -> list[dict]:
-    """Your skills lines for this job: its skills first, plus skills it names that your lines back or you added."""
+def _skill_lines(facts: dict, job: dict[str, float], skip: set[str] | frozenset, keep_order: bool = False,
+                 wording: dict[str, str] | None = None) -> list[dict]:
+    """Your skills lines for this job: its skills first, plus skills it names that your lines back or you added.
+    `wording`: {term: the posting's own word for it}, so a skill it names reads the way it says it ("Data Warehouse"
+    where it says data warehouse). A job skill that doesn't fit on its own row goes on a row with room."""
+    wording = wording or {}
     lines = [s for s in facts["skills"] if ok(s)]
     backed, used, learning = evidence(facts), _added(facts, "used"), _added(facts, "learning")
     on_lines = _item_terms([it for s in lines for it in s["items"]])
     extra: dict[str, list[str]] = {s["id"]: [] for s in lines}
     learn = []
     for t in sorted((t for t in job if not t.startswith("theme:")), key=lambda t: -job[t]):
-        if t in on_lines or item_label(t) in skip:
+        if t in on_lines or item_label(t) in skip or wording.get(t) in skip:
             continue
         if t in backed or t in used:
             lid = _line_for(t, lines)
             if lid:
-                extra[lid].append(item_label(t))
+                extra[lid].append(wording.get(t) or item_label(t))
         elif t in learning:
-            learn.append(item_label(t))
+            learn.append(wording.get(t) or item_label(t))
     out = []
     weight = lambda it: sum(job[t] for t in terms(it) if t in job and not t.startswith("theme:"))  # skills, not themes
     shown = _item_terms([it for s in lines for it in s["items"]])
@@ -1308,8 +1607,33 @@ def _skill_lines(facts: dict, job: dict[str, float], skip: set[str] | frozenset,
             mine = [it for it in s["items"] if it in items]
             items = mine + [it for it in items if it not in mine]
         if items:
-            out.append({"id": s["id"], "label": s["label"], "items": items,
+            out.append({"id": s["id"], "label": s["label"], "items": items, "left": [it for it in named if it not in items],
                         "added": [it for it in items if it in extra[s["id"]] or it in fill]})
+    def place(row: dict, it: str) -> bool:
+        """Put job skill `it` on `row`, taking off the row's items the job doesn't name (last first) only when that
+        makes enough room; whether it went on."""
+        need = len(", ".join(row["items"] + [it])) - SKILL_CHARS
+        drop: list[str] = []
+        for x in reversed(row["items"]):
+            if need <= 0:
+                break
+            if weight(x) <= 0:
+                drop.append(x)
+                need -= len(x) + 2
+        if need > 0:
+            return False
+        for x in drop:
+            row["items"].remove(x)
+        row["items"].append(it)
+        row["added"].append(it)
+        return True
+    for row in out:  # a job skill its own row had no room for: its row, else the row with the most room, makes way
+        for it in row.pop("left"):
+            if any(it in r["items"] for r in out):
+                continue
+            for other in [row] + sorted((r for r in out if r is not row), key=lambda r: len(", ".join(r["items"]))):
+                if place(other, it):
+                    break
     if learn:
         fitted = []
         for it in learn:
@@ -1345,12 +1669,15 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     `rewrites`: your points reworded for this job (rewrite.py), used only where they keep your facts."""
     job = terms(without_employer(f"{job_title}\n{job_text}", employer))
     variant_bullets = set((facts.get("variants") or {}).get(variant, []))
-    for_job = faithful_rewrites(facts, rewrites)
     # the posting's requirements (rewrite.requirements) and which of them each of your points shows: a line counts
     # for the requirements it demonstrates, required ones most
     every = list(getattr(rewrites, "requirements", None) or [])
     logistics = [r for r in every if r.get("kind") == "logistics"]  # where and when the work is, who may do it: no line shows these
     reqs = [r for r in every if r.get("kind") != "logistics"]
+    # the posting's keywords, ranked: a rewrite or a skills line may use their own words for what you have
+    kws = job_keywords(job_title, job_text, getattr(rewrites, "keywords", None) or [], employer, reqs) if (job_text or "").strip() else []
+    phrases = [k["text"] for k in kws]
+    for_job = faithful_rewrites(facts, rewrites, phrases)
     weight = {r["id"]: REQ_WEIGHT.get(r.get("kind"), 1.0) * (1 + 0.25 * (len(reqs) - 1 - i) / max(1, len(reqs) - 1))
               for i, r in enumerate(reqs)}  # a posting lists what matters most first
     shows = {k: [r for r in v if r in weight] for k, v in (getattr(rewrites, "shows", None) or {}).items()}
@@ -1375,7 +1702,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         written = getattr(rewrites, "summary", None)
         if written and not base and summary_id is None:  # the summary Claude wrote for this job, if it keeps your facts
             opening = summary_opening(facts, title, variant)
-            if not summary_problems(written["text"], facts, opening, written["uses"]):
+            if not summary_problems(written["text"], facts, opening, written["uses"], phrases):
                 summary = {"id": "job", "variant": variant, "version": "job", "tools": [], "tools_line": "", "impact": None,
                            "uses": list(written["uses"]), "covers": [r for r in written.get("covers") or [] if r in weight],
                            "text": " ".join(x for x in (written["text"], closer) if x)}
@@ -1426,7 +1753,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         for a requirement that only those tools showed."""
         g, b = facts_bullet[e["id"]]
         text = strip_tools(e["text"], tools)
-        if text and text != b["text"] and not rewrite_problems(b["text"], text, mapped_tools(facts, g["id"]), supporting_facts(b)):
+        if text and text != b["text"] and not rewrite_problems(b["text"], text, mapped_tools(facts, g["id"]), supporting_facts(b), phrases):
             v = {"version": "job", "text": text, "lens": variant}
         else:
             v = version(b, job_ok=False)[0] or {"version": e["version"], "text": e["text"], "lens": e["lens"]}  # no other version may print
@@ -1477,7 +1804,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     # a project you put a line from on the page always gets a place, ahead of the ranked ones
     projects.sort(key=lambda gb: not any(b["forced"] for b in gb[1]))
     chosen_projects = projects[:MAX_PROJECTS]
-    skills = _skill_lines(facts, job, skill_skip, keep_order=base)
+    skills = _skill_lines(facts, job, skill_skip, keep_order=base, wording=keyword_wording([k for k in kws if k["kind"] in ("tool", "skill", "domain")]))
 
     overlap: dict[str, set[str]] = {}
     for grp in ("roles", "projects"):
@@ -1587,7 +1914,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     # only its best line, and a role shown by its heading alone gets a line only for a requirement no line shows yet;
     # a line you put on yourself always stays
     worth = lambda b, owner: base or b["forced"] or (b["fit"] > 0 and fit_of.get(owner, 0.0) >= closest / 3) \
-        or (owner in header_only and gain(b) > 0)
+        or (owner in header_only and (gain(b) > 0 or kw_gain(b) > 0))
     # and each next line is the one that adds the most requirements the page doesn't show yet
     section_of = lambda owner: "experience" if owner in role_ids else "projects"
     owner_of = {b["id"]: gid for (b, gid, _) in pool}
@@ -1596,6 +1923,15 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     for bid in picked:
         covered_in[section_of(owner_of.get(bid, ""))] |= set(picked[bid]["shows"])
     required = {r["id"] for r in reqs if r.get("kind") == "required"}
+    # the posting's keywords each line says, and the ones the page says already (its skills rows count half: a
+    # keyword reads stronger in a line about the work)
+    said: dict[str, set[int]] = {}
+    kw_in = lambda text: said.setdefault(text, {i for i, k in enumerate(kws) if keyword_shown(k["text"], [text])})
+    in_skills = {i for i, k in enumerate(kws) if keyword_shown(k["text"], [", ".join(x["items"]) for x in skills if x["id"] != "learning"])}
+    kw_done = set(kw_in(summary["text"])) if summary else set()
+    for bid in picked:
+        kw_done |= kw_in(picked[bid]["text"])
+    kw_gain = lambda b: sum(kws[i]["weight"] * (0.5 if i in in_skills else 1.0) for i in kw_in(b["text"]) - kw_done)
     # with a few required items each can show in both experience and projects; with many, one line each comes first
     spread = len(required) <= SPREAD_MAX
     gain = lambda b: sum(weight[r] for r in b.get("shows") or [] if r not in covered) + \
@@ -1606,8 +1942,9 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         if shows and not base:  # required items the page lacks first, then any other item it lacks, then lines that
             # show any of the job's requirements before lines that show none, then the usual order
             remaining.sort(key=lambda t: (not t[0]["forced"], -sum(1 for r in t[0].get("shows") or [] if r in required and r not in covered),
-                                          not any(r not in covered for r in t[0].get("shows") or []), not t[0].get("shows"),
-                                          tier(t[0]["id"]), -(t[0]["score"] + gain(t[0])) / _lines(t[0]["text"]) ** 0.5))
+                                          not (any(r not in covered for r in t[0].get("shows") or []) or kw_gain(t[0]) > 0),
+                                          not (t[0].get("shows") or kw_gain(t[0]) > 0),
+                                          tier(t[0]["id"]), -(t[0]["score"] + gain(t[0]) + kw_gain(t[0])) / _lines(t[0]["text"]) ** 0.5))
         b, owner, cap = remaining.pop(0)
         if b["id"] in picked or b["id"] in drop or \
                 (not b["forced"] and (per.get(owner, 0) >= cap or clashes(b["id"]) or not worth(b, owner))):
@@ -1622,6 +1959,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
             continue
         per[owner] = per.get(owner, 0) + 1
         tool_count.update(b["added"])
+        kw_done |= kw_in(b["text"])
         covered |= set(b.get("shows") or [])
         covered_in[section_of(owner)] |= set(b.get("shows") or [])
 
@@ -1701,7 +2039,11 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         "emphasis": emphasis,
         "height": round(height(), 1),
         "rewrites": {bid: e["text"] for bid, e in picked.items() if e["version"] == "job"},  # check() verifies each
+        "phrases": phrases,
     })
+    sel["keywords"] = keyword_report(kws, sel, facts)
+    if not base and place_keywords(sel, sel["keywords"], facts):  # what's yours but still missing goes on a skills row
+        sel["keywords"] = keyword_report(kws, sel, facts)
     return sel
 
 
@@ -1931,7 +2273,7 @@ def check(facts: dict, sel: dict, pages: int | None) -> list[str]:
                 for b in g["bullets"]:
                     if ok(b):
                         allowed_text[b["id"]] = {b["text"]} | {a["text"] for a in usable_versions(b)}
-    for bid, text in faithful_rewrites(facts, sel.get("rewrites")).items():
+    for bid, text in faithful_rewrites(facts, sel.get("rewrites"), sel.get("phrases") or ()).items():
         allowed_text.setdefault(bid, set()).add(text)
     for g in sel["experience"] + sel["projects"]:
         said: set[str] = set()  # the numbers this entry's earlier lines state
@@ -1956,7 +2298,8 @@ def check(facts: dict, sel: dict, pages: int | None) -> list[str]:
         closers = sorted({s.get("closer", "") for s in facts["summaries"] if ok(s)}, key=len, reverse=True)
         text = sel["summary"]["text"]
         body = next((text[: -len(c) - 1] for c in closers if c and text.endswith(" " + c)), text)
-        if summary_problems(body, facts, summary_opening(facts, sel["title"], sel["summary"].get("variant", "")), sel["summary"].get("uses") or []):
+        if summary_problems(body, facts, summary_opening(facts, sel["title"], sel["summary"].get("variant", "")), sel["summary"].get("uses") or [],
+                            sel.get("phrases") or ()):
             fail.append("The summary written for this job doesn't keep your facts.")
     elif sel["summary"]:
         tools, line = list(sel["summary"].get("tools") or []), sel["summary"].get("tools_line") or ""
@@ -1968,8 +2311,13 @@ def check(facts: dict, sel: dict, pages: int | None) -> list[str]:
         if sel["summary"]["text"].replace(" " + line if line else "", "", 1) not in allowed_summaries:
             fail.append("The summary isn't an approved summary.")
     allowed_items = allowed_skill_items(facts)
+    yours = {"learning": _added(facts, "learning")}
+    themes = {t for t in terms(" ".join(b["text"] for grp in ("roles", "projects") for g in facts[grp] if ok(g)
+                                        for b in g["bullets"] if ok(b))) if t.startswith("theme:")}
     for s in sel["skills"]:
-        if s["id"] not in allowed_items or not set(s["items"]) <= allowed_items[s["id"]]:
+        mine = yours.get(s["id"], your_skills(facts))
+        if s["id"] not in allowed_items or not all(it in allowed_items[s["id"]] or worded_item(it, mine, themes if s["id"] != "learning" else ())
+                                                   for it in s["items"]):
             fail.append(f"Skills line {s['label']} has an item that isn't approved, backed by your lines, or added by you.")
         if (s["id"] == "learning") != (s["label"] == LEARNING_LINE):
             fail.append(f"Skills line {s['label']} is labeled wrong.")

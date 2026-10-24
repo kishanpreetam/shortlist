@@ -238,14 +238,30 @@ def _job_of(d: dict) -> tuple[str, str, int, str, str]:
     return company, title, n, variant, jd
 
 
-def _summary_ctx(facts: dict, job_title: str, variant: str) -> dict:
-    """What the summary written for a job starts from: its opening, your evidence and the tools you can name."""
+def _summary_ctx(facts: dict, job_title: str, variant: str, phrases=()) -> dict:
+    """What the summary written for a job starts from: its opening, your evidence, the tools you can name and the
+    posting's keywords (`phrases`), which it uses in the posting's words where your evidence shows the work."""
     title = engine.choose_title(job_title, facts["titles"]["items"] if engine.ok(facts["titles"]) else [], variant)
     opening = engine.summary_opening(facts, title, variant)
     return {"opening": opening, "evidence": engine.summary_evidence(facts),
             "tools": sorted({engine.item_label(t) for t in engine.placed(facts) | engine.evidence(facts)}
                             | {it for x in facts.get("skills") or [] if engine.ok(x) for it in x["items"]}),
-            "check": lambda text, uses: engine.summary_problems(text, facts, opening, uses)}
+            "keywords": list(phrases)[:engine.KEYWORDS_MAX],
+            "check": lambda text, uses: engine.summary_problems(text, facts, opening, uses, phrases)}
+
+
+def _job_reading(facts: dict, title: str, jd: str, company: str, variant: str, claude: str | None) -> tuple[list, dict, list]:
+    """Your points for one job, each with the posting's keywords for what it shows; the summary's context; and the
+    posting's ranked keywords. The posting is read first (once, cached), so its keywords reach every rewrite."""
+    given, reqs = [], []
+    if claude and jd.strip():
+        try:
+            reqs = rewrite.requirements(title, jd, claude, RESULTS / "requirements")
+            given = rewrite.keywords(title, jd, claude, RESULTS / "requirements")
+        except rewrite.RewriteError:
+            pass
+    kws = engine.job_keywords(title, jd, given, company, reqs)
+    return (rewrite.points_for(facts, title, jd, company, kws), _summary_ctx(facts, title, variant, [k["text"] for k in kws]), kws)
 
 
 def resume_suggest(d: dict, profile: dict) -> dict:
@@ -308,14 +324,15 @@ def resume_preview(d: dict, profile: dict) -> dict:
     pid = engine.new_preview_id()
     ids = lambda key: set(map(str, d.get(key) or []))
     # your points reworded for this job by Claude; the engine keeps only rewrites that keep your facts
-    rewrites, note, failed, points = {}, "", False, rewrite.points_for(facts, title, jd, company)
+    claude = rewrite.claude_path(profile) if d.get("rewrite", True) and profile.get("rewrite_points", True) else None
+    points, ctx, _ = _job_reading(facts, title, jd, company, variant, claude)
+    rewrites, note, failed = {}, "", False
     if d.get("rewrite", True) and profile.get("rewrite_points", True):
-        claude = rewrite.claude_path(profile)
         if not claude:
             note = "Claude Code isn't installed, so your own wording is used."
         else:
             try:
-                rewrites = rewrite.rewrite(points, title, jd, claude, RESULTS / "rewrites", summary_ctx=_summary_ctx(facts, title, variant))
+                rewrites = rewrite.rewrite(points, title, jd, claude, RESULTS / "rewrites", summary_ctx=ctx)
                 note = getattr(rewrites, "note", "")
             except rewrite.RewriteError as exc:
                 note, failed = f"{exc} Your own wording is used for now.", True
@@ -334,7 +351,7 @@ def resume_preview(d: dict, profile: dict) -> dict:
     except OSError:
         pass
     sel = out["selection"]
-    mine, kept = {x["id"]: x["text"] for x in points}, engine.faithful_rewrites(facts, rewrites)
+    mine, kept = {x["id"]: x["text"] for x in points}, engine.faithful_rewrites(facts, rewrites, sel.get("phrases") or ())
     # the preview shows each line as the page prints it; actions use ids, never this text
     for b in [b for g in sel["experience"] + sel["projects"] for b in g["bullets"]] + list(sel["available"]):
         b["text"] = engine.sentence(b["text"])
@@ -353,6 +370,7 @@ def resume_preview(d: dict, profile: dict) -> dict:
             "skills_detail": sel["skills_detail"], "coverage": sel["coverage"], "available": sel["available"],
             "pending": engine.pending_count(facts), "pending_versions": engine.pending_versions(facts),
             "requirements": sel.get("requirements") or [], "advice": sel.get("advice") or [], "logistics": sel.get("logistics") or [],
+            "keywords": sel.get("keywords") or [],
             "places": [{"id": g["id"], "name": g.get("org") or g.get("title", "")} for grp in ("roles", "projects")
                        for g in facts[grp] if engine.ok(g)],
             "rewrite_note": note, "rewrite_failed": failed, "rewritten": len(sel.get("rewrites") or {}),
@@ -403,8 +421,8 @@ def _warm_round(profile: dict, claude: str, ahead: int) -> None:
             continue
         facts = engine.load_facts(_facts_path(profile))  # fresh for each job, so lines you just approved count
         try:  # the rewrites for this job, ready before you click Tailor
-            rewrite.rewrite(rewrite.points_for(facts, item["title"], jd, item["company"]), item["title"], jd, claude,
-                            RESULTS / "rewrites", parallel=False, summary_ctx=_summary_ctx(facts, item["title"], item.get("resume") or variant_for_title(item["title"])))
+            points, ctx, _ = _job_reading(facts, item["title"], jd, item["company"], item.get("resume") or variant_for_title(item["title"]), claude)
+            rewrite.rewrite(points, item["title"], jd, claude, RESULTS / "rewrites", parallel=False, summary_ctx=ctx)
         except rewrite.RewriteError as exc:
             WARM["note"] = str(exc)
             return
@@ -1454,6 +1472,18 @@ function reqBox(r,key){  /* what the job asks for, and which of your lines on th
   box.append(row);}
  if((r.logistics||[]).length)box.append(el('div',{class:'row small muted'},el('b',{text:'Check these yourself, no resume line shows them: '}),r.logistics.map(x=>x.text).join('; ')));
  return box;}
+function kwBox(r){  /* the posting's keywords, and where each one stands on this page */
+ const ks=r.keywords||[];if(!ks.length)return null;
+ const on=ks.filter(k=>k.status==='on page').length;
+ const box=el('details',{class:'wait',open:'open'},el('summary',{},el('b',{text:'Keywords from this posting: '+on+' of '+ks.length+' on this page'})));
+ const groups=[['on page','On the page','chip new'],['missing','Yours, not on the page yet','chip warn'],
+  ['ask','Answer the skills question for these','chip'],['learning','On your Currently learning line','chip'],
+  ['declined','You said you have not used these','chip'],['only you','None of your lines shows these; add a line only if you did the work','chip']];
+ for(const [st,label,cls] of groups){const xs=ks.filter(k=>k.status===st);if(!xs.length)continue;
+  const row=el('div',{class:'row small'},el('b',{text:label+': '}));
+  for(const k of xs)row.append(el('span',{class:cls,text:k.text+(k.match==='close'?' (close form)':'')}),' ');
+  box.append(row);}
+ return box;}
 function skillsAsk(r,p,key){  /* every skill this job wants that your resume doesn't show: asked once, remembered for every job */
  const ask=(r.skills_detail||[]).filter(x=>x.state==='missing');if(!ask.length)return null;
  const places=r.places||[];let left=ask.length;
@@ -1489,6 +1519,7 @@ function drawPreview(key){const p=PV[key];const box=p&&p.box();if(!box||!p.r)ret
  if(r.rewrite_note)k.push(el('p',{class:'small warn-row',text:r.rewrite_note}));
  const ask=skillsAsk(r,p,key);if(ask)k.push(ask);
  const rq=reqBox(r,key);if(rq)k.push(rq);
+ const kb=kwBox(r);if(kb)k.push(kb);
  if(r.rewritten)k.push(el('p',{class:'small muted',text:r.rewritten+' of your points were rewritten for this job, with the added words marked and your wording under each. Read them before you save, and tap "my wording" on any you want back'+(r.rejected?'. '+r.rejected+' rewrites that changed a fact were dropped':'')+'.'}));
  const parts=(r.title_line||'').split(' · ');
  k.push(el('div',{class:'row'},el('b',{text:'Title (names the file): '}),el('span',{class:'chip',text:parts[0]||'(none yet)'})));

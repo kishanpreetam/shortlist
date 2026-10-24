@@ -857,7 +857,7 @@ class PartialCoverageTest(unittest.TestCase):
         self.assertEqual(resume.tool_groups("3+ years with Spark, Hive or Presto and streaming like Kafka/Flink"),
                          [{"spark", "hive", "presto"}, {"kafka", "flink"}])
         self.assertEqual(resume.tool_groups("Build ETL pipelines and data models"), [])  # general ideas aren't tools
-        self.assertEqual(resume.tool_groups("Reporting tools such as Tableau, Superset and Looker"), [{"tableau", "looker"}])  # one list
+        self.assertEqual(resume.tool_groups("Reporting tools such as Tableau, Superset and Looker"), [{"tableau", "superset", "looker"}])  # one list
         self.assertEqual(resume.tool_groups("Proficiency in Python and SQL"), [{"python"}, {"sql"}])  # both
 
     def test_a_group_only_on_the_skills_lines_or_too_few_years_is_partial(self):
@@ -930,6 +930,54 @@ class HeaderOnlyTest(unittest.TestCase):
         facts["roles"][1]["title"] = "Data Analyst"
         sel = resume.select(facts, JD, "Senior Data Analyst", "data-analyst", rewrites=got)
         self.assertIn("r2a", bullet_texts(sel))  # the job's kind: an analyst role for an analyst job
+
+class KeywordTest(unittest.TestCase):
+    """The posting's keywords: ranked, matched as the posting writes them, and put on the page where they're yours."""
+
+    def test_forms_and_matching(self):
+        self.assertEqual(resume.keyword_forms("Amazon Web Services (AWS)"), ["amazon web services", "amazon web services aws", "aws"])
+        self.assertIn("gcp", resume.keyword_forms("AWS/GCP"))
+        self.assertEqual(resume.keyword_forms("CI/CD"), ["ci/cd"])  # one practice, not a choice
+        self.assertEqual(resume.keyword_shown("data quality checks", ["Implemented data quality checks on 1M+ rows."]), "exact")
+        self.assertEqual(resume.keyword_shown("data models", ["Data & Pipelines : ETL, Data Modeling, SQL"]), "close")
+        self.assertEqual(resume.keyword_shown("AWS Glue", ["AWS (S3, Lambda, Glue, EC2)"]), "close")
+        self.assertEqual(resume.keyword_shown("Claude Code", ["AI Coding Tools, Anthropic Claude API, FAISS"]), "")  # a tool needs its name
+
+    def test_ranking_adds_the_tools_the_list_missed_and_never_the_employer(self):
+        given = [{"text": "data quality checks", "kind": "skill", "from": "responsibility"}, {"text": "Acme Cloud", "kind": "tool", "from": "required"}]
+        reqs = [{"id": "R1", "text": "3+ years with Airflow and SQL", "kind": "required"}]
+        kws = resume.job_keywords("Data Engineer", "Build pipelines with Airflow and SQL. Add data quality checks. Nice to have: Tableau.",
+                                  given, "Acme", reqs)
+        texts = [k["text"] for k in kws]
+        self.assertNotIn("Acme Cloud", texts)
+        self.assertTrue({"Airflow", "SQL", "Tableau", "data quality checks"} <= set(texts))
+        self.assertLess(texts.index("Airflow"), texts.index("Tableau"))  # required before the rest
+
+    def test_the_posting_words_only_carry_in_what_a_line_backs(self):
+        may = resume.rewrite_terms("Built a distributed system of 10 AI agents.")
+        self.assertTrue({"distribut", "comput"} <= resume.phrase_roots(["distributed computing"], may))
+        self.assertNotIn("patient", resume.phrase_roots(["ETL processes for patients"], resume.rewrite_terms("Built ETL pipelines.")))
+        self.assertTrue(resume.worded_item("Data Warehouse", {"data_warehouse"}))
+        self.assertFalse(resume.worded_item("Data Warehouse for patients", {"data_warehouse"}))
+        self.assertFalse(resume.worded_item("Snowflake", {"data_warehouse"}))
+
+    def test_keywords_you_have_go_on_the_page_in_the_postings_words_and_the_report_says_where_each_stands(self):
+        facts = copy.deepcopy(FACTS)
+        facts["added_skills"] = [{"term": "data_warehouse", "level": "used", "status": "approved"},
+                                 {"term": "flink", "level": "no", "status": "approved"}]
+        got = rewrite.Rewrites()
+        got.requirements = [{"id": "R1", "text": "Build ETL pipelines with Airflow", "kind": "required"}]
+        got.shows = {"r1a": ["R1"]}
+        got.keywords = [{"text": "data warehouse", "kind": "domain", "from": "required"}, {"text": "Airflow", "kind": "tool", "from": "required"},
+                        {"text": "Flink", "kind": "tool", "from": "preferred"}, {"text": "Kubernetes", "kind": "tool", "from": "preferred"}]
+        jd = "Build ETL pipelines with Airflow into the data warehouse. Nice to have: Flink and Kubernetes."
+        sel = resume.select(facts, jd, "Data Engineer", "data-engineer", rewrites=got)
+        items = [it for row in sel["skills"] for it in row["items"]]
+        self.assertIn("Data Warehouse", items)  # the posting's words, not "Data Warehousing"
+        status = {k["text"]: k["status"] for k in sel["keywords"]}
+        self.assertEqual((status["data warehouse"], status["Airflow"], status["Flink"], status["Kubernetes"]),
+                         ("on page", "on page", "declined", "ask"))
+        self.assertEqual(resume.check(facts, sel, 1), [])
 
 if __name__ == "__main__":
     unittest.main()

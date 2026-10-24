@@ -194,6 +194,16 @@ class RequirementsTest(FakeClaude):
         self.run_fake(self.SHOWS)
         self.assertEqual((len(self.req_calls()), len(self.calls())), (1, len(rewrite.chunks(rewrite.points_for(FACTS)))))  # all cached
 
+    def test_keywords_are_read_with_the_requirements_and_only_what_the_posting_says_counts(self):
+        out = json.dumps({"type": "result", "is_error": False, "structured_output": {
+            "requirements": [{"id": "x", "text": "Build ETL pipelines with SQL", "kind": "required"}],
+            "keywords": [{"text": "ETL pipelines", "kind": "skill", "from": "required"}, {"text": "SQL", "kind": "tool", "from": "required"},
+                         {"text": "Kubernetes", "kind": "tool", "from": "preferred"}]}})
+        with mock.patch.dict(os.environ, {"FAKE_REQ_OUT": out}):
+            got = self.run_fake(self.SHOWS)
+        self.assertEqual([k["text"] for k in got.keywords], ["ETL pipelines", "SQL"])  # Kubernetes isn't in the posting
+        self.assertEqual(len(self.req_calls()), 1)  # one reading gives both
+
     def test_without_requirements_the_rewrite_still_works(self):
         bad = json.dumps({"type": "result", "is_error": False, "structured_output": {"requirements": []}})
         with mock.patch.dict(os.environ, {"FAKE_REQ_OUT": bad}):
