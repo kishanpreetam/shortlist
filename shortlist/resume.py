@@ -206,7 +206,8 @@ KEYWORD_PAGE_MAX = 4  # a tool or keyword reads 2 to 3 times on a page, never mo
 _TRAIT = re.compile(r"fast[- ]?paced|self[- ]?start|self[- ]?organi[sz]|self[- ]?motivat|\battitude\b|\bhumble\b|"
                     r"\bpassion|\bcurio|\beager\b|team player|detail[- ]oriented|work ethic|\bambiguity\b|\bgrit\b", re.I)
 # A measured result: a percentage, a change from one number to another, money, or a multiple ("3x faster")
-_RESULT = re.compile(r"\d\s*%|\bfrom\s+(?:about\s+)?[\d$]|\$\s?\d|\b\d+(?:\.\d+)?\s?x\b", re.I)
+_RESULT = re.compile(r"\d\s*%|\bfrom\s+(?:about\s+)?[\d$]|\$\s?\d|\b\d+(?:\.\d+)?\s?x\b|"
+                     r"\d[\d,.+]*\s*[a-z]*\s+(?:versus|vs\.?|instead of|compared with)\s+(?:about\s+)?\d", re.I)
 
 
 def asked_tools_only(facts: dict, rewrites: dict[str, str], job: dict[str, float], phrases=()) -> dict[str, str]:
@@ -254,13 +255,29 @@ def _shows_credit(parts) -> float:
     return sum(ps[:3]) + 0.3 * sum(ps[3:])
 
 
+_PROOF = re.compile(r"\blive\b|\blaunched\b|\bin production\b|\bproduction\b|\bdeployed\b|\busers?\b|\bpublic\b|open[- ]source", re.I)
+
+
 def _result_bonus(text: str) -> float:
-    """How much a line's numbers add on a tailored page: a measured result most, a scale ("1M+ rows") less."""
-    return 2.0 if _RESULT.search(text) else 1.0 if _nums(text) else 0.0
+    """How much a line's evidence adds on a tailored page: a measured result most, a scale ("1M+ rows") less, and
+    proof a reader can check (a live or production system, real users) counts like a scale."""
+    return 2.0 if _RESULT.search(text) else 1.0 if _nums(text) or _PROOF.search(text) else 0.0
 ADDED_TOOL_MAX = 2  # a tool a rewrite adds to your wording goes in at most this many lines and tools lines of a page
 EXPERIENCE_PRIOR = 0.8    # with equal fit, a work bullet beats a project bullet
 SAME_KIND_PRIOR = 1.0     # a role whose title is the job's kind (an analyst role for an analyst job) leads
 _KIND = re.compile(r"\b(analyst|engineer|scientist|developer|consultant|manager|researcher|assistant)s?\b", re.I)
+# Role families that count as the same kind of job: an AI Engineer role for an ML engineer job, a Data Analyst role
+# for a BI analyst job; never just a shared last word ("AI Engineer" is not the kind of a Data Engineer job)
+_FAMILY_GROUP = {"ai_engineer": "ai", "ml_engineer": "ai", "data_engineer": "data", "analytics_engineer": "data",
+                 "data_analyst": "analyst", "bi_engineer": "analyst", "business_analyst": "analyst",
+                 "data_scientist": "science", "research_engineer": "research"}
+
+
+def _kinds(title: str) -> set[str]:
+    """The kind of job a title names, as a family group ({"data"} for "Data Engineer"), or nothing."""
+    from .roles import role_for_title
+    role = role_for_title(title or "")
+    return {_FAMILY_GROUP[role.key]} if role and role.key in _FAMILY_GROUP else set()
 # Vertical rhythm in points (Charter; experience headers 9.5 pt, bullets and tools lines 8.6 pt, everything
 # else 8.8 pt on 10.5 pt lines; Letter with about 0.35 in margins), so the page holds as many of your lines as it can
 PAGE_PT = 743             # top margin to the lowest baseline that still fits
@@ -2452,7 +2469,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         better = max((v for v in waiting if value(v) > value(best) + 1e-9), key=value, default=None)
         return best, better
 
-    job_kind = {m.lower() for m in _KIND.findall(job_title or "")}
+    job_kind = _kinds(job_title)
     tool_terms = lambda text: {t for t in terms(text) if not t.startswith("theme:")}
     req_tools = {r["id"]: tool_terms(r["text"]) for r in reqs}
     facts_bullet = {b["id"]: (g, b) for grp in ("roles", "projects") for g in facts[grp] if ok(g) for b in g["bullets"]}
@@ -2493,7 +2510,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         for g in facts[group]:
             if not ok(g):
                 continue
-            same_kind = group == "roles" and not base and bool(job_kind & {m.lower() for m in _KIND.findall(g.get("title", ""))})
+            same_kind = group == "roles" and not base and bool(job_kind & _kinds(g.get("title", "")))
             bs = []
             for i, b in enumerate(g["bullets"]):
                 if not ok(b) or b["id"] in exclude:
@@ -2518,15 +2535,21 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
                 return (not b["forced"], priority.get(b["id"], 1000 + ids.index(b["id"])))
             return k
         roles = [(g, sorted(bs, key=your_order(g))) for g, bs in roles]
-    def project_rank(gb):  # best bullet, half the second, +1 when it's in this resume version by default
+    def project_rank(gb):
+        """Best line (a measured result counts double, as readers weigh results most), half the second line, +1 when
+        it's in this resume version by default."""
         bs = gb[1]
-        return -(bs[0]["score"] + (0.5 * bs[1]["score"] if len(bs) > 1 else 0) + (1.0 if any(b["id"] in variant_bullets for b in bs) else 0))
+        top = max(b["score"] + (0.0 if base else 2 * _result_bonus(b["text"])) for b in bs)
+        return -(top + (0.5 * bs[1]["score"] if len(bs) > 1 else 0) + (1.0 if any(b["id"] in variant_bullets for b in bs) else 0))
     projects = sorted(candidates("projects"), key=project_rank)
     if base:  # the projects whose lines come first in the version's list
         projects = sorted(((g, sorted(bs, key=your_order(g))) for g, bs in projects),
                           key=lambda gb: min(priority.get(b["id"], 1000) for b in gb[1]))
-    # a project you put a line from on the page always gets a place, ahead of the ranked ones
-    projects.sort(key=lambda gb: not any(b["forced"] for b in gb[1]))
+    # a project you put a line from on the page always gets a place, ahead of the ranked ones; then a project the
+    # summary written for this job cites, so every claim in the summary shows in a line below it
+    cited = set((summary or {}).get("uses") or []) if not base else set()
+    projects.sort(key=lambda gb: (not any(b["forced"] for b in gb[1]),
+                                  not any(x["id"] in cited for x in gb[0]["bullets"])))
     chosen_projects = projects[:MAX_PROJECTS + (1 if variant == "ai-engineer" and not base else 0)]
     skills = _skill_lines(facts, job, skill_skip, keep_order=base, wording=keyword_wording([k for k in kws if k["kind"] in ("tool", "skill", "domain")]))
 
@@ -2545,7 +2568,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     closest = max(fit_of.values(), default=0.0)
     role_ids = {g["id"] for g, _ in roles}
     current = {g["id"] for g, _ in roles if re.search(r"present|current", g.get("dates", ""), re.I)}
-    kind_roles = {g["id"] for g, _ in roles if job_kind & {m.lower() for m in _KIND.findall(g.get("title", ""))}}
+    kind_roles = {g["id"] for g, _ in roles if job_kind & _kinds(g.get("title", ""))}
     # mandatory: the best bullet of every role and of each chosen project. Every role keeps at least one line, far
     # ones too: screeners count the years of a role only when a line says what was done there (a heading and dates
     # alone read as a gap), so a far role shows its one best line
@@ -2593,7 +2616,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     second = {bs[1]["id"] for g, bs in roles if g["id"] in current and len(bs) > 1}
     # who gets space first: current roles' second lines; then, for a tailored resume, up to four lines of the role
     # that is the job's kind (your analyst role, for an analyst job); then every other role's second line
-    kind_lines = set() if base else {b["id"] for g, bs in roles if job_kind & {m.lower() for m in _KIND.findall(g.get("title", ""))}
+    kind_lines = set() if base else {b["id"] for g, bs in roles if job_kind & _kinds(g.get("title", ""))
                                      for b in bs[1:4]}
     current_second = set(second)
     others = {bs[1]["id"] for g, bs in roles if len(bs) > 1} - current_second - kind_lines
