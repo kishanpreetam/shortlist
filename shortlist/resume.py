@@ -197,8 +197,10 @@ REQ_WEIGHT = {"required": 3.0, "responsibility": 2.0, "preferred": 1.0}
 SPREAD_MAX = 8  # up to this many required items, each is pulled into both experience and projects; beyond it, one line each  # how much a line counts for each requirement it shows
 NUMBER_BONUS = 1.0  # on a tailored resume a line with a number beats an otherwise equal one: numbers make a point land
 MIN_LINE_VALUE = 1.0  # a line beyond a role's best that adds less than this to a tailored page stays off it
-AVERAGE_FLOOR = 0.6  # a line beyond a role's best needs at least this share of the page's average line strength
+AVERAGE_FLOOR = 0.5  # a line beyond a role's best needs at least this share of the page's average line strength
 EXTRA_MIN = 3  # a skills row keeps at least this many of your items the posting doesn't name
+RELATED_KINDS = {"data": ("cloud",), "cloud": ("data",), "ml": ("ai",), "ai": ("ml",)}  # where a full row's skill may go
+TOOLS_KEEP = 3  # a role whose lines name all its tools still shows this many on its tools line, as every role does
 KEYWORD_PAGE_MAX = 4  # a tool or keyword reads 2 to 3 times on a page, never more than 4; tools lines stop adding it there
 # Traits a posting asks for that no line can prove ("comfortable in a fast paced environment", "self starter")
 _TRAIT = re.compile(r"fast[- ]?paced|self[- ]?start|self[- ]?organi[sz]|self[- ]?motivat|\battitude\b|\bhumble\b|"
@@ -1539,8 +1541,10 @@ def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
             continue
         kind = CATEGORY.get(next(iter(sorted(tools | general)), ""), "") or \
             next((_THEME_KIND[t[6:]] for t in sorted(found) if t[6:] in _THEME_KIND), "data")
-        fits = [r for r in rows if kind_of[r["id"]] == kind] or sorted(rows, key=lambda r: len(", ".join(r["items"])))[:1]
-        for row in sorted(fits, key=lambda r: len(", ".join(r["items"]))):
+        fits = sorted((r for r in rows if kind_of[r["id"]] == kind), key=lambda r: len(", ".join(r["items"]))) + \
+            sorted((r for r in rows if kind_of[r["id"]] in RELATED_KINDS.get(kind, ())), key=lambda r: len(", ".join(r["items"])))
+        fits = fits or sorted(rows, key=lambda r: len(", ".join(r["items"])))[:1]
+        for row in fits:
             need = len(", ".join(row["items"] + [item])) - SKILL_CHARS
             drop = []
             for x in reversed(row["items"]):
@@ -1557,6 +1561,13 @@ def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
                 placed += 1
                 break
     return placed
+
+
+def _evidenced(kw: str, lines: list[str]) -> bool:
+    """Whether one of `lines` says keyword `kw`: a phrase as keyword_shown reads it, and a one-word keyword only as
+    that word or its acronym, so "Monitored outgoing goods" never stands for pipeline monitoring."""
+    how = keyword_shown(kw, lines)
+    return how == "exact" or (bool(how) and len(kw.split()) > 1)
 
 
 def keyword_report(kws: list[dict], sel: dict, facts: dict) -> list[dict]:
@@ -1580,10 +1591,14 @@ def keyword_report(kws: list[dict], sel: dict, facts: dict) -> list[dict]:
         have = (found & yours) if either else (found if found <= yours else set())
         how = keyword_shown(k["text"], lines)
         general = synonym_tools(k["text"]) if not found else set()
+        in_lines = _evidenced(k["text"], approved_lines)  # one of your lines says it, in its own words
+        single = len(found | topics) <= 1 or bool(general)
         status = ("on page" if how else "learning" if keyword_shown(k["text"], learning) else
-                  "missing" if (found and have and (either or _spoken_for(k["text"], set(terms(k["text"])), strict=True))) or (general & yours)
-                  or (not found and topics and topics <= themes and _spoken_for(k["text"], topics, strict=True))
-                  or keyword_shown(k["text"], approved_lines) else
+                  "missing" if (found and have and (either or _spoken_for(k["text"], set(terms(k["text"])), strict=True))
+                                and (single or in_lines)) or (general & yours)
+                  or (not found and topics and topics <= themes and _spoken_for(k["text"], topics, strict=True)
+                      and topics <= _SKILL_THEMES and k.get("kind") != "soft" and (single or in_lines))
+                  or in_lines else
                   "declined" if found & said_no else "ask" if (found - yours) or general else "only you")
         out.append({"text": k["text"], "kind": k["kind"], "from": k["from"], "count": k["count"], "status": status, "match": how})
     return out
@@ -2316,8 +2331,11 @@ def _skill_lines(facts: dict, job: dict[str, float], skip: set[str] | frozenset,
         for it in row.pop("left"):
             if any(it in r["items"] for r in out):
                 continue
+            near = RELATED_KINDS.get(kind_of.get(row["id"]), ())
             same_kind = [r for r in out if r is not row and kind_of.get(r["id"]) == kind_of.get(row["id"])]
-            for other in [row] + sorted(same_kind, key=lambda r: len(", ".join(r["items"]))):  # never a row of another kind
+            related = [r for r in out if r is not row and kind_of.get(r["id"]) in near]
+            for other in [row] + sorted(same_kind, key=lambda r: len(", ".join(r["items"]))) + \
+                    sorted(related, key=lambda r: len(", ".join(r["items"]))):  # never a row of an unrelated kind
                 if place(other, it):
                     break
     shown_terms: set[str] = set()
@@ -2637,7 +2655,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     # the posting's keywords each line says, and the ones the page says already (its skills rows count half: a
     # keyword reads stronger in a line about the work)
     said: dict[str, set[int]] = {}
-    kw_in = lambda text: said.setdefault(text, {i for i, k in enumerate(kws) if keyword_shown(k["text"], [text])})
+    kw_in = lambda text: said.setdefault(text, {i for i, k in enumerate(kws) if _evidenced(k["text"], [text])})
     in_skills = {i for i, k in enumerate(kws) if keyword_shown(k["text"], [", ".join(x["items"]) for x in skills if x["id"] != "learning"])}
     kw_done = set(kw_in(summary["text"])) if summary else set()
     for bid in picked:
@@ -2681,7 +2699,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     def weak(b) -> bool:
         """A reader averages: a mild line next to strong ones lowers the whole page. So a line well under the page's
         average strength stays off, unless it shows something this job asks for that the page lacks."""
-        if any(r not in covered and r not in soft for r in b.get("shows") or []):
+        if any(r not in covered and r not in soft for r in b.get("shows") or []) or kw_gain(b) > 0:
             return False
         on = [strength(e) for e in picked.values()]
         return bool(on) and strength(b) < AVERAGE_FLOOR * sum(on) / len(on)
@@ -2759,8 +2777,10 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     for g, bs in roles + chosen_projects:
         named_here = set().union(set(), *(tool_terms(picked[b["id"]]["text"]) for b in bs if b["id"] in picked))
         full = {t for t, n in times.items() if n >= KEYWORD_PAGE_MAX and t not in yearly}
-        techs[g["id"]] = tech_items(g, job, extra=_item_terms(g.get("tools") or []) | allow.get(g["id"], set()),
-                                    skip=(named_here | full) if not base else frozenset())
+        extra_tools = _item_terms(g.get("tools") or []) | allow.get(g["id"], set())
+        techs[g["id"]] = tech_items(g, job, extra=extra_tools, skip=(named_here | full) if not base else frozenset())
+        if not techs[g["id"]] and named_here and not base:  # every tool is in its lines: the line still shows the top few
+            techs[g["id"]] = tech_items(g, job, extra=extra_tools, skip=full)[:TOOLS_KEEP]
         times.update(_item_terms(techs[g["id"]]))
 
     def section(groups, kind):

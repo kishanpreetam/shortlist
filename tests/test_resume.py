@@ -804,10 +804,11 @@ class StuffingTest(unittest.TestCase):
         texts = bullet_texts(sel)
         self.assertEqual(len(texts), 4)  # every line stays on the page
         self.assertEqual(sum("Snowflake" in t for t in texts.values()), resume.ADDED_TOOL_MAX)
-        # a tools line never repeats a tool its own entry's lines already name
+        # a tools line repeats a tool its own entry's lines name only when they name all of them, and then shows a few
         for g in sel["experience"]:
             named = {t for b in g["bullets"] for t in resume.terms(b["text"]) if not t.startswith("theme:")}
-            self.assertFalse(resume._item_terms(g["tech"]) & named, g["id"])
+            shown = resume._item_terms(g["tech"])
+            self.assertTrue(not (shown & named) or (shown <= named and len(g["tech"]) <= resume.TOOLS_KEEP), g["id"])
         self.assertEqual(resume.check(facts, sel, 1), [])
 
     def test_a_mention_comes_out_only_when_it_comes_out_cleanly(self):
