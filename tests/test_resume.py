@@ -261,7 +261,9 @@ class RewriteTest(unittest.TestCase):
                  "Reduced manual effort by 35% through Y workflows. Deployed X dashboards for 5,000+ users."),
                 ("Raised forecast accuracy from 70% to 90%.", "Improved forecast accuracy from 70% to 90%."),
                 ("Replaced 20-30 minutes of manual research with Python.", "Replaced 20 to 30 minutes of manual research with Python."),
-                ("Led and built ETL pipelines in Python for 1M+ rows.", "Leading and building ETL pipelines in Python for 1M+ rows."),
+                # verb forms in your line's tense (R5: "Leading" for a finished "Led" now fails, see test_factcheck)
+                ("Leading and building ETL pipelines in Python for 1M+ rows.", "Leads and builds ETL pipelines in Python for 1M+ rows."),
+                ("Led and built ETL pipelines in Python for 1M+ rows.", "Built ETL pipelines in Python for 1M+ rows, leading the work."),
                 ("Built ETL pipelines in Python for 1M+ rows, reviewing them.", "Reviewed ETL pipelines in Python built for 1M+ rows.")]
         for line, text in good:
             with self.subTest(text):
