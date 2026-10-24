@@ -965,7 +965,9 @@ class KeywordTest(unittest.TestCase):
         yours = {"ab_testing", "statistics"}
         themes = {"theme:modeling", "theme:metrics"}
         self.assertTrue(resume.worded_item("Experimentation", yours, themes))  # your A/B testing in the posting's word
-        self.assertTrue(resume.worded_item("Statistical Modeling", yours, themes))
+        self.assertFalse(resume.worded_item("Statistical Modeling", yours, themes))  # two skills in one claim
+        self.assertTrue(resume.worded_item("Statistical Modeling", yours, themes, ["Built statistical models for 300+ schools."]))
+        self.assertFalse(resume.worded_item("Mentor", yours, themes | {"theme:leadership"}))  # a trait, not a skill
         self.assertFalse(resume.worded_item("Model Monitoring", yours, themes))  # monitoring is a skill of its own
         self.assertFalse(resume.worded_item("KPI Frameworks", yours, themes))
         self.assertFalse(resume.worded_item("Econometrics", yours, themes))

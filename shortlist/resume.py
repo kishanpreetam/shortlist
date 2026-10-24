@@ -198,12 +198,37 @@ SPREAD_MAX = 8  # up to this many required items, each is pulled into both exper
 NUMBER_BONUS = 1.0  # on a tailored resume a line with a number beats an otherwise equal one: numbers make a point land
 MIN_LINE_VALUE = 1.0  # a line beyond a role's best that adds less than this to a tailored page stays off it
 AVERAGE_FLOOR = 0.6  # a line beyond a role's best needs at least this share of the page's average line strength
+EXTRA_MIN = 3  # a skills row keeps at least this many of your items the posting doesn't name
 KEYWORD_PAGE_MAX = 4  # a tool or keyword reads 2 to 3 times on a page, never more than 4; tools lines stop adding it there
 # Traits a posting asks for that no line can prove ("comfortable in a fast paced environment", "self starter")
 _TRAIT = re.compile(r"fast[- ]?paced|self[- ]?start|self[- ]?organi[sz]|self[- ]?motivat|\battitude\b|\bhumble\b|"
                     r"\bpassion|\bcurio|\beager\b|team player|detail[- ]oriented|work ethic|\bambiguity\b|\bgrit\b", re.I)
 # A measured result: a percentage, a change from one number to another, money, or a multiple ("3x faster")
 _RESULT = re.compile(r"\d\s*%|\bfrom\s+(?:about\s+)?[\d$]|\$\s?\d|\b\d+(?:\.\d+)?\s?x\b", re.I)
+
+
+def asked_tools_only(facts: dict, rewrites: dict[str, str], job: dict[str, float], phrases=()) -> dict[str, str]:
+    """The job rewrites, with any tool a rewrite added that this posting doesn't ask for taken back out (your rule:
+    add a confirmed tool "that the job asks for"): Snowflake added to an Amazon line for a posting that never names
+    Snowflake comes out, or the line keeps your wording. A part of what it asks for (S3 for AWS) may stay."""
+    asked = {t for t in job if not t.startswith("theme:")}
+    asked |= {k for t in asked for k in PARENT.get(t, ())} | {t for t, kids in PARENT.items() if kids & asked}
+    lookup = {b["id"]: (g, b) for grp in ("roles", "projects") for g in facts[grp] if ok(g) for b in g["bullets"]}
+    out = {}
+    for bid, text in (rewrites or {}).items():
+        g, b = lookup.get(bid, (None, None))
+        if not b:
+            out[bid] = text
+            continue
+        own = {t for t in terms(" ".join((b["text"], *supporting_facts(b)))) if not t.startswith("theme:")}
+        unasked = sorted({t for t in terms(text) if not t.startswith("theme:")} - own - asked - CONCEPTS)
+        if not unasked:
+            out[bid] = text
+            continue
+        cut = strip_tools(text, unasked)
+        if cut and cut != b["text"] and not rewrite_problems(b["text"], cut, mapped_tools(facts, g["id"]), supporting_facts(b), phrases):
+            out[bid] = cut
+    return out
 
 
 COPY_RUN = 6  # words in a row a line may share with the posting: past that it reads as the posting pasted in
@@ -1130,7 +1155,9 @@ def rewrite_problems(original: str, text: str, extra: set[str] | frozenset = fro
     if lost:
         why.append("it drops a strong word your line has: " + ", ".join(lost))
     named = {t for t in terms(original) if not t.startswith("theme:") and t not in CONCEPTS}
-    dropped = sorted(named - set(terms(text)))
+    kept = set(terms(text))
+    kept |= {p for p, kids in {**PARENT, "python": {"pyspark"}}.items() if kids & kept}  # PySpark keeps Python and Spark
+    dropped = sorted(named - kept)
     if dropped:
         why.append("it drops a tool your line names: " + ", ".join(label(t) for t in dropped))
     stock = sorted({m.group(0).lower() for m in CLICHES.finditer(text)} - {m.group(0).lower() for m in CLICHES.finditer(source)})
@@ -1501,17 +1528,19 @@ def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
     wanted = lambda it: any(keyword_shown(k["text"], [it]) for k in report) or bool(set(terms(it)) & set(terms(named)))
     kind_of = {r["id"]: _kind(next((x for x in facts["skills"] if x["id"] == r["id"]), r)) for r in rows}
     placed = 0
-    for k in [k for k in report if k["status"] == "missing"]:
+    mine = approved_lines(facts)
+    for k in [k for k in report if k["status"] == "missing" and k.get("kind") != "soft"]:  # a soft skill shows in lines
         found = set(terms(k["text"]))
         tools = {t for t in found if not t.startswith("theme:")}
         general = synonym_tools(k["text"]) & yours if not tools else set()
         words = " ".join(w if any(c.isupper() or c.isdigit() for c in w) else w.capitalize() for w in k["text"].split())
         item = f"{words} ({', '.join(item_label(t) for t in sorted(general)[:3])})" if general else words
-        if not worded_item(item, yours, themes):
+        if not worded_item(item, yours, themes, mine):
             continue
         kind = CATEGORY.get(next(iter(sorted(tools | general)), ""), "") or \
             next((_THEME_KIND[t[6:]] for t in sorted(found) if t[6:] in _THEME_KIND), "data")
-        for row in sorted(rows, key=lambda r: (kind_of[r["id"]] != kind, len(", ".join(r["items"])))):
+        fits = [r for r in rows if kind_of[r["id"]] == kind] or sorted(rows, key=lambda r: len(", ".join(r["items"])))[:1]
+        for row in sorted(fits, key=lambda r: len(", ".join(r["items"]))):
             need = len(", ".join(row["items"] + [item])) - SKILL_CHARS
             drop = []
             for x in reversed(row["items"]):
@@ -1667,7 +1696,20 @@ def phrase_roots(phrases, may: set[str]) -> set[str]:
     return out
 
 
-def worded_item(item: str, yours: set[str], themes: set[str] | frozenset = frozenset()) -> bool:
+# Ideas that name a skill a skills line may list in the posting's words ("Business Intelligence", "Data Quality");
+# the others (stakeholders, leadership, metrics, research, analysis, production) are traits or results, not skills
+_SKILL_THEMES = frozenset("theme:" + t for t in ("dashboards", "data_quality", "pipelines", "modeling", "recommendations",
+                                                   "search", "agents", "llm", "experimentation", "extraction",
+                                                   "automation", "integrations", "frontend"))
+
+
+def approved_lines(facts: dict) -> list[str]:
+    """Your approved lines and skills items, as phrases a skills item may repeat."""
+    return [b["text"] for grp in ("roles", "projects") for g in facts[grp] if ok(g) for b in g["bullets"] if ok(b)] + \
+        [it for x in facts.get("skills") or [] if ok(x) for it in x["items"]]
+
+
+def worded_item(item: str, yours: set[str], themes: set[str] | frozenset = frozenset(), lines: list[str] | None = None) -> bool:
     """Whether a skills item is a posting's wording of skills you have: every skill it names is yours, every idea it
     names your lines show (`themes`), a general phrase in it stands for a tool of yours ("Version Control (Git)"), and
     its other words are plain ones, so "Data Warehouse" stands for your data warehousing and "Clinical NLP" never
@@ -1679,7 +1721,13 @@ def worded_item(item: str, yours: set[str], themes: set[str] | frozenset = froze
         return False
     if general and not general & yours:
         return False
-    return _spoken_for(item, found, strict=True)
+    if not _spoken_for(item, found, strict=True):
+        return False
+    if not tools and not general and not topics <= _SKILL_THEMES:  # "Mentor", "Metrics", "Cross-functional": not skills
+        return False
+    if len(tools | topics) >= 2 and not general:  # two skills made into one claim: only as your own lines put it
+        return lines is not None and bool(keyword_shown(item, lines))
+    return True
 
 
 def keyword_wording(kws: list[dict]) -> dict[str, str]:
@@ -1715,10 +1763,12 @@ def coverage_advice(report: list[dict], shows: dict, kinds: dict, page: dict[str
     partly = [r for r in req if r["by"] and r not in no_line and r.get("status") == "partial"]
     lines_of = {r["id"]: [b for b in r["by"] if b in page] for r in report}
     alone = lambda b: sum(1 for x in page if groups.get(x) == groups.get(b)) <= 1 if groups.get(b) else False
-    repeats = [b for b in page if shows.get(b) and not alone(b) and all(len(lines_of.get(x, [])) >= 3 for x in shows[b])]
-    idle = [b for b in page if not shows.get(b) and not alone(b)]
+    measured = lambda b: bool(_RESULT.search(page.get(b, "")))  # a line with a result is never the one to take off
+    repeats = [b for b in page if shows.get(b) and not alone(b) and not measured(b)
+               and all(len(lines_of.get(x, [])) >= 3 for x in shows[b])]
+    idle = [b for b in page if not shows.get(b) and not alone(b) and not measured(b)]
     pref_only = [b for b in page if shows.get(b) and all(kinds.get(x) == "preferred" for x in shows[b])]
-    pref_missing = [r for r in report if r["kind"] != "required" and not r["by"]]  # the work it asks for, then preferred
+    pref_missing = [r for r in report if r["kind"] != "required" and not r["by"] and not _TRAIT.search(r["text"])]
     pref_missing.sort(key=lambda r: r["kind"] != "responsibility")
     gaps = missing or no_line
     want = (missing or no_line or pref_missing)[:1]
@@ -1811,6 +1861,8 @@ def _coverage(r: dict, picked: dict, shows: dict, summary: dict | None, section:
         by = by or ["dates"]
     elif asked and not tools:
         gaps.append(f"your role dates show {years}+ years; it asks {asked}+")
+    if by == ["skills"] and not gaps:
+        gaps.append("only on your skills lines")
     status = "missing" if not by else "partial" if gaps else "full"
     return {"id": r["id"], "text": r["text"], "kind": r.get("kind", ""), "by": by, "where": where, "status": status, "gaps": gaps}
 
@@ -1947,8 +1999,9 @@ def same_result(a: str, b: str) -> bool:
     # a dollar amount is usually context (a grant, a budget), never one result
     scale = {n for n in shared if not n.startswith("$") and re.search(r"\+|[0-9][MKB]\b|\d{3,}", n)}
     kinds = {t for t in terms(a) if t.startswith("theme:")} & {t for t in terms(b) if t.startswith("theme:")}
+    inside = len(A & B) / min(len(A), len(B)) if A and B else 0.0  # how much of the shorter line the longer says
     return words >= 0.35 or any(n.endswith("%") for n in shared) or (bool(scale) and words >= 0.25) \
-        or (words >= 0.30 and len(kinds) >= 2)
+        or (words >= 0.30 and len(kinds) >= 2) or (inside >= 0.6 and min(len(A), len(B)) >= 6)
 
 
 def duplicate_groups(facts: dict) -> list[dict]:
@@ -2123,6 +2176,11 @@ def _lines(text: str, width: int = BULLET_CHARS) -> int:
     return max(1, math.ceil(len(text) / width))
 
 
+# Terms a line names that are work or practice, not tools: a tools line leaves them to the lines and skills rows
+_NOT_TOOLS = frozenset({"automated_testing", "sdlc", "agile", "observability", "data_governance", "forecasting",
+                        "statistics", "data_modeling", "metadata", "relational_db"})
+
+
 def tech_items(g: dict, job: dict[str, float] | None = None, fit: bool = True, extra: set[str] | frozenset = frozenset(),
                skip: set[str] | frozenset = frozenset()) -> list[str]:
     """The tools line under a role or project: the tools you listed for it, the tools you said you used there
@@ -2137,8 +2195,8 @@ def tech_items(g: dict, job: dict[str, float] | None = None, fit: bool = True, e
     for t, rx in _TERM_RX.items():
         m = rx.search(blob)
         if not m or (t == "rest_api" and not re.search(r"\brest(ful)?\b", blob, re.I)) \
-                or (t == "etl" and not re.search(r"\b(etl|elt)\b", blob, re.I)):
-            continue  # "OpenAI API" isn't REST API work, and "a data pipeline" isn't a tool
+                or (t == "etl" and not re.search(r"\b(etl|elt)\b", blob, re.I)) or t in _NOT_TOOLS:
+            continue  # "OpenAI API" isn't REST API work, "a data pipeline" isn't a tool, and forecasting is work, not a tool
         name = item_label(t)
         if name.lower() not in blob.lower() and m.group(0).lower() not in name.lower():
             name = m.group(0)  # FAISS reads as FAISS, GitHub Actions as GitHub Actions
@@ -2194,7 +2252,8 @@ def _skill_lines(facts: dict, job: dict[str, float], skip: set[str] | frozenset,
     backed, used, learning = evidence(facts), _added(facts, "used"), _added(facts, "learning")
     yours, themes = your_skills(facts), _bullet_themes(facts)
     # the posting's word for a skill only where it says nothing more than the skill (check() holds every item to this)
-    wording = {t: w for t, w in (wording or {}).items() if w == item_label(t) or worded_item(w, yours, themes)}
+    mine = approved_lines(facts)
+    wording = {t: w for t, w in (wording or {}).items() if w == item_label(t) or worded_item(w, yours, themes, mine)}
     on_lines = _item_terms([it for s in lines for it in s["items"]])
     extra: dict[str, list[str]] = {s["id"]: [] for s in lines}
     learn = []
@@ -2208,6 +2267,7 @@ def _skill_lines(facts: dict, job: dict[str, float], skip: set[str] | frozenset,
         elif t in learning:
             learn.append(item_label(t))  # the learning line keeps the skill's own name
     out = []
+    kind_of = {s["id"]: _kind(s) for s in lines}
     weight = lambda it: sum(job[t] for t in terms(it) if t in job and not t.startswith("theme:"))  # skills, not themes
     shown = _item_terms([it for s in lines for it in s["items"]])
     for s in sorted(lines, key=lambda s: -weight(" ".join(s["items"] + extra[s["id"]]))):
@@ -2218,9 +2278,14 @@ def _skill_lines(facts: dict, job: dict[str, float], skip: set[str] | frozenset,
         # skills your lines back that belong on this row, to fill it to the end of the line
         fill = [item_label(t) for t in sorted((backed | used) - shown - set(job)) if _line_for(t, lines) == s["id"]
                 and item_label(t) not in skip and t not in NO_FILL]
-        items, seen = [], set()
+        items, seen, extras = [], set(), 0
+        room = EXTRA_MIN if keep_order else max(EXTRA_MIN, len(named))
         for it in named + rest + fill:  # one line each: whatever fits, most relevant first
             if it not in seen and len(", ".join(items + [it])) <= SKILL_CHARS:
+                if it not in named:
+                    if extras >= room and not keep_order:
+                        continue  # a reader averages: skills the posting doesn't name stay few
+                    extras += 1
                 items.append(it)
                 seen.add(it)
         if keep_order:
@@ -2251,9 +2316,20 @@ def _skill_lines(facts: dict, job: dict[str, float], skip: set[str] | frozenset,
         for it in row.pop("left"):
             if any(it in r["items"] for r in out):
                 continue
-            for other in [row] + sorted((r for r in out if r is not row), key=lambda r: len(", ".join(r["items"]))):
+            same_kind = [r for r in out if r is not row and kind_of.get(r["id"]) == kind_of.get(row["id"])]
+            for other in [row] + sorted(same_kind, key=lambda r: len(", ".join(r["items"]))):  # never a row of another kind
                 if place(other, it):
                     break
+    shown_terms: set[str] = set()
+    for row in out:  # the same skill on two rows ("SQL" twice) reads as padding
+        keep_items = []
+        for it in row["items"]:
+            ts = _item_terms([it])
+            if ts and ts <= shown_terms and it not in (row.get("added") or []):
+                continue
+            keep_items.append(it)
+            shown_terms |= ts
+        row["items"] = keep_items
     if learn:
         fitted = []
         for it in learn:
@@ -2299,9 +2375,18 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     phrases = [k["text"] for k in kws]
     copied = copies_posting(job_text)  # a rewrite never copies a run of COPY_RUN words from the posting
     for_job = {k: v for k, v in faithful_rewrites(facts, rewrites, phrases).items() if not copied(v)}
+    for_job = asked_tools_only(facts, for_job, job, phrases)
     weight = {r["id"]: REQ_WEIGHT.get(r.get("kind"), 1.0) * (1 + 0.25 * (len(reqs) - 1 - i) / max(1, len(reqs) - 1))
               for i, r in enumerate(reqs)}  # a posting lists what matters most first
-    shows = {k: [r for r in v if r in weight] for k, v in (getattr(rewrites, "shows", None) or {}).items()}
+    said_by = {b["id"]: " ".join([b["text"], *supporting_facts(b), for_job.get(b["id"], "")])
+               for grp in ("roles", "projects") for g in facts[grp] for b in g["bullets"] if ok(b)}
+    req_text = {r["id"]: r["text"] for r in reqs}
+
+    def plausible(bid: str, rid: str) -> bool:
+        """Whether a line can show a requirement: Claude's judgment, held to sharing a tool, a kind of work or a word."""
+        line, req = said_by.get(bid, ""), req_text.get(rid, "")
+        return bool(set(terms(line)) & set(terms(req)) or _ask_roots(line) & _ask_roots(req)) if line and req else True
+    shows = {k: [r for r in v if r in weight and plausible(k, r)] for k, v in (getattr(rewrites, "shows", None) or {}).items()}
     kind_of = {r["id"]: r.get("kind") for r in reqs}
     summaries = [s for s in facts["summaries"] if ok(s) and not NEVER.search(summary_parts(s))]
     summary = next((s for s in summaries if s["id"] == summary_id), None) or \
@@ -2424,14 +2509,17 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
                           key=lambda gb: min(priority.get(b["id"], 1000) for b in gb[1]))
     # a project you put a line from on the page always gets a place, ahead of the ranked ones
     projects.sort(key=lambda gb: not any(b["forced"] for b in gb[1]))
-    chosen_projects = projects[:MAX_PROJECTS]
+    chosen_projects = projects[:MAX_PROJECTS + (1 if variant == "ai-engineer" and not base else 0)]
     skills = _skill_lines(facts, job, skill_skip, keep_order=base, wording=keyword_wording([k for k in kws if k["kind"] in ("tool", "skill", "domain")]))
 
     overlap: dict[str, set[str]] = {}
+    keeper = {b["id"]: m.group(1) for grp in ("roles", "projects") for g in facts[grp] for b in g["bullets"]
+              if not ok(b) for m in [re.search(r"repeat of (\w+)", str(b.get("source") or ""))] if m}
     for grp in ("roles", "projects"):
         for g in facts[grp]:
             for b in g["bullets"]:
                 for o in b.get("overlaps") or []:
+                    o = keeper.get(o, o)  # "am_dq" was removed as a repeat of am_you2: the overlap carries over
                     overlap.setdefault(b["id"], set()).add(o)
                     overlap.setdefault(o, set()).add(b["id"])
     clashes = lambda bid: bool(overlap.get(bid, set()) & set(picked))
@@ -2754,7 +2842,7 @@ def skill_item_ok(facts: dict, row_id: str, item: str, allowed: dict | None = No
         return True
     if row_id == "learning":
         return worded_item(item, _added(facts, "learning"), ())
-    return worded_item(item, your_skills(facts), _bullet_themes(facts))
+    return worded_item(item, your_skills(facts), _bullet_themes(facts), approved_lines(facts))
 
 
 def drop_unbacked_items(facts: dict, sel: dict) -> list[str]:
