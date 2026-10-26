@@ -1,0 +1,324 @@
+[
+ {
+  "key": "doordash-de",
+  "company": "DoorDash",
+  "title": "Software Engineer, Data Engineering",
+  "family": "data engineer",
+  "url": "https://job-boards.greenhouse.io/doordashusa/jobs/8192116"
+ },
+ {
+  "key": "montefiore-de",
+  "company": "Montefiore",
+  "title": "Data Engineer - Research Informatics",
+  "family": "data engineer",
+  "url": "https://montefiore.wd12.myworkdayjobs.com/MMC/job/3-Odell-Plaza/Data-Engineer_JR229580"
+ },
+ {
+  "key": "mgb-de",
+  "company": "Mass General Brigham",
+  "title": "Data Engineer",
+  "family": "data engineer",
+  "url": "https://massgeneralbrigham.wd1.myworkdayjobs.com/MGBExternal/job/Somerville-MA/Data-Engineer_RQ4075315-1"
+ },
+ {
+  "key": "usbank-da",
+  "company": "U.S. Bank",
+  "title": "Reporting & Analytics Analyst",
+  "family": "data analyst",
+  "url": "https://usbank.wd1.myworkdayjobs.com/US_Bank_Careers/job/Minneapolis-MN/Reporting---Analytics-Analyst_2026-0032358"
+ },
+ {
+  "key": "lyft-da",
+  "company": "Lyft",
+  "title": "Data Analyst",
+  "family": "data analyst",
+  "url": "https://app.careerpuck.com/job-board/lyft/job/8896685002?gh_jid=8896685002"
+ },
+ {
+  "key": "klaviyo-ai",
+  "company": "Klaviyo",
+  "title": "AI Engineer II",
+  "family": "AI engineer",
+  "url": "https://www.klaviyo.com/careers/jobs/8003261003?gh_jid=8003261003"
+ },
+ {
+  "key": "neu-ai",
+  "company": "Northeastern University",
+  "title": "Associate AI Engineer",
+  "family": "AI engineer",
+  "url": "https://northeastern.wd1.myworkdayjobs.com/careers/job/Boston-MA-Main-Campus/Associate-AI-Engineer_R141445"
+ },
+ {
+  "key": "pinterest-ds",
+  "company": "Pinterest",
+  "title": "Master's University Grad Data Scientist (USA)",
+  "family": "data scientist",
+  "url": "https://www.pinterestcareers.com/jobs/?gh_jid=8140389"
+ },
+ {
+  "key": "waymo-ds",
+  "company": "Waymo",
+  "title": "Product Data Scientist - Marketplace Logistics",
+  "family": "data scientist",
+  "url": "https://careers.withwaymo.com/jobs?gh_jid=8286842"
+ },
+ {
+  "key": "openai-de",
+  "company": "OpenAI",
+  "title": "Data Engineer, Core Experimentation",
+  "family": "data engineer",
+  "url": "https://jobs.ashbyhq.com/openai/2796d32a-9f7c-4008-a2c5-50dd53b0f2fe"
+ },
+ {
+  "key": "mastercard-de",
+  "company": "Mastercard",
+  "title": "Data Engineer II",
+  "family": "data engineer",
+  "url": "https://mastercard.wd1.myworkdayjobs.com/CorporateCareers/job/OFallon-Missouri/Data-Engineer-II_R-289305"
+ },
+ {
+  "key": "riot-de",
+  "company": "Riot Games Inc",
+  "title": "Software Engineer II - Data Foundations, Core Integrations and Architecture",
+  "family": "data engineer",
+  "url": "https://www.riotgames.com/en/work-with-us/job/8113272?gh_jid=8113272"
+ },
+ {
+  "key": "anthropic-ai",
+  "company": "Anthropic",
+  "title": "Applied AI Engineer, Startups (Life Sciences)",
+  "family": "AI engineer",
+  "url": "https://job-boards.greenhouse.io/anthropic/jobs/5454650008"
+ },
+ {
+  "key": "openai-ai",
+  "company": "OpenAI",
+  "title": "Partner Applied AI Engineer",
+  "family": "AI engineer",
+  "url": "https://jobs.ashbyhq.com/openai/552396f4-dc83-43de-9230-6301e5f461bd"
+ },
+ {
+  "key": "stripe-ai",
+  "company": "Stripe",
+  "title": "AI Engineer",
+  "family": "AI engineer",
+  "url": "https://stripe.com/jobs/search?gh_jid=8144196"
+ },
+ {
+  "key": "scopely-ml",
+  "company": "Scopely Inc",
+  "title": "Software Engineer, Machine Learning",
+  "family": "AI engineer",
+  "url": "https://job-boards.greenhouse.io/scopely/jobs/5456049008?gh_jid=5456049008"
+ },
+ {
+  "key": "expedia-ds",
+  "company": "Expedia Group",
+  "title": "Machine Learning Scientist II",
+  "family": "data scientist",
+  "url": "https://expedia.wd108.myworkdayjobs.com/search/job/Austin-Domain-11---HomeAway/Machine-Learning-Scientist-II_R-109347-1"
+ },
+ {
+  "key": "lendingclub-ds",
+  "company": "LendingClub",
+  "title": "Associate Data Scientist, Fraud Strategy",
+  "family": "data scientist",
+  "url": "https://lendingclub.wd1.myworkdayjobs.com/External/job/San-Francisco-CA/Associate-Data-Scientist--Fraud-Strategy_R0007503"
+ },
+ {
+  "key": "gartner-ds",
+  "company": "Gartner",
+  "title": "Associate Data Scientist - Spring 2027 Master's level graduates",
+  "family": "data scientist",
+  "url": "https://gartner.wd5.myworkdayjobs.com/EXT/job/Stamford-CT/Associate-Data-Scientist---Spring-2027-Master-s-level-graduates_113311"
+ },
+ {
+  "key": "lyft-ds",
+  "company": "Lyft",
+  "title": "Data Scientist",
+  "family": "data scientist",
+  "url": "https://app.careerpuck.com/job-board/lyft/job/8896675002?gh_jid=8896675002"
+ },
+ {
+  "key": "hcsc-da",
+  "company": "HCSC",
+  "title": "Enterprise Data Analyst Spec",
+  "family": "data analyst",
+  "url": "https://hcsc.wd1.myworkdayjobs.com/HCSC_External/job/National-Remote/Enterprise-Data-Analyst-Spec_R0055509-2"
+ },
+ {
+  "key": "neu-da",
+  "company": "Northeastern University",
+  "title": "HR Platforms Reporting & Data Analyst",
+  "family": "data analyst",
+  "url": "https://northeastern.wd1.myworkdayjobs.com/careers/job/Boston-MA-Main-Campus/HR-Platforms-Reporting---Data-Analyst_R142147"
+ },
+ {
+  "key": "visa-da",
+  "company": "Visa",
+  "title": "Marketing Analyst, Demand Generation and Nurture",
+  "family": "data analyst",
+  "url": "https://visa.wd5.myworkdayjobs.com/Visa/job/US---Austin-TX/Marketing-Analyst--Demand-Generation-and-Nurture_REF089161W"
+ },
+ {
+  "key": "cisco-da",
+  "company": "Cisco",
+  "title": "Data Analyst I (Full Time) - United States",
+  "family": "data analyst",
+  "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers/job/San-Jose-California-US/Data-Analyst-I--Full-Time----United-States_2024556-1"
+ },
+ {
+  "key": "samsara-de",
+  "company": "Samsara",
+  "title": "Data Engineer",
+  "family": "data engineer",
+  "url": "https://www.samsara.com/company/careers/roles/8141959?gh_jid=8141959"
+ },
+ {
+  "key": "palantir-de",
+  "company": "Palantir",
+  "title": "Data Engineer - Talent Acquisition Operations",
+  "family": "data engineer",
+  "url": "https://jobs.lever.co/palantir/1b690123-1766-4e75-a0ef-0f58afa864b4"
+ },
+ {
+  "key": "travelers-de",
+  "company": "Travelers",
+  "title": "Data Engineer I (AWS, Python, SQL)",
+  "family": "data engineer",
+  "url": "https://travelers.wd5.myworkdayjobs.com/External/job/CT---Hartford/Data-Engineer-I--AWS--Python--SQL-_R-52876"
+ },
+ {
+  "key": "campfire-de",
+  "company": "Campfire Llc",
+  "title": "Data Engineer",
+  "family": "data engineer",
+  "url": "https://jobs.ashbyhq.com/campfire/2b30b7a1-3649-40e5-804a-ea07bfc94318"
+ },
+ {
+  "key": "formlabs-de",
+  "company": "Formlabs",
+  "title": "Data Engineer",
+  "family": "data engineer",
+  "url": "https://careers.formlabs.com/job/8262437/apply/?gh_jid=8262437"
+ },
+ {
+  "key": "pathrobotics-de",
+  "company": "Path Robotics Inc",
+  "title": "Data Engineer",
+  "family": "data engineer",
+  "url": "https://boards.greenhouse.io/pathrobotics/jobs/8868497002?gh_jid=8868497002"
+ },
+ {
+  "key": "reddit-ae",
+  "company": "Reddit",
+  "title": "Analytics Engineer",
+  "family": "data engineer",
+  "url": "https://job-boards.greenhouse.io/reddit/jobs/8282760"
+ },
+ {
+  "key": "elastic-ae",
+  "company": "Elastic",
+  "title": "Analytics Engineer, HR Analytics",
+  "family": "data analyst",
+  "url": "https://jobs.elastic.co/jobs?gh_jid=8244449&gh_jid=8244449"
+ },
+ {
+  "key": "cincy-bi",
+  "company": "Cincinnati Children's",
+  "title": "Business Intelligence Analyst II",
+  "family": "data analyst",
+  "url": "https://cincinnatichildrens.wd5.myworkdayjobs.com/careersatcincinnatichildrens/job/Burnet-Campus/Business-Intelligence-Analyst-II_JR225752"
+ },
+ {
+  "key": "workday-ai",
+  "company": "Workday",
+  "title": "AI Engineer",
+  "family": "AI engineer",
+  "url": "https://workday.wd5.myworkdayjobs.com/Workday/job/USA-CA-Pleasanton/AI-Engineer_JR-0110881"
+ },
+ {
+  "key": "quora-ml",
+  "company": "Quora Inc",
+  "title": "Machine Learning Engineer, New Grad - Quora (Remote)",
+  "family": "AI engineer",
+  "url": "https://jobs.ashbyhq.com/quora/40659fe7-545e-4b08-b6d7-2567b18b9ed3"
+ },
+ {
+  "key": "writer-ai",
+  "company": "Writer",
+  "title": "AI engineer",
+  "family": "AI engineer",
+  "url": "https://jobs.ashbyhq.com/writer/40f9e2b4-3284-4a20-b45d-0f5e5dd9108d"
+ },
+ {
+  "key": "adi-ml",
+  "company": "Analog Devices",
+  "title": "Associate Machine Learning Engineer",
+  "family": "AI engineer",
+  "url": "https://analogdevices.wd1.myworkdayjobs.com/External/job/US-MA-Boston/Associate-Machine-Learning-Engineer_R266607-1"
+ },
+ {
+  "key": "spglobal-ml",
+  "company": "S&P Global",
+  "title": "Machine Learning Operations Engineer I",
+  "family": "AI engineer",
+  "url": "https://spgi.wd5.myworkdayjobs.com/SPGI_Careers/job/Cambridge-MA/ML-Ops-Engineer-II_330647-1"
+ },
+ {
+  "key": "quantifind-ds",
+  "company": "Quantifind Inc",
+  "title": "Associate Data Scientist",
+  "family": "data scientist",
+  "url": "https://www.quantifind.com/open-positions/?gh_jid=8241359"
+ },
+ {
+  "key": "uchicago-ds",
+  "company": "University of Chicago",
+  "title": "Data Scientist",
+  "family": "data scientist",
+  "url": "https://uchicago.wd5.myworkdayjobs.com/External/job/Chicago-IL/Data-Scientist_JR35300"
+ },
+ {
+  "key": "amgen-ds",
+  "company": "Amgen",
+  "title": "Data Scientist",
+  "family": "data scientist",
+  "url": "https://amgen.wd1.myworkdayjobs.com/Careers/job/United-States---Remote/Data-Scientist_R-257589"
+ },
+ {
+  "key": "zillow-ds",
+  "company": "Zillow",
+  "title": "Data Scientist",
+  "family": "data scientist",
+  "url": "https://zillow.wd5.myworkdayjobs.com/Zillow_Group_External/job/Remote-USA/Data-Scientist_P751219-2"
+ },
+ {
+  "key": "hp-da",
+  "company": "HP",
+  "title": "PS Data Analyst",
+  "family": "data analyst",
+  "url": "https://hp.wd5.myworkdayjobs.com/ExternalCareerSite/job/Spring-Texas-United-States-of-America/PS-Data-Analyst_3169457-1"
+ },
+ {
+  "key": "amfam-da",
+  "company": "American Family Insurance",
+  "title": "Product Analyst (Hybrid)",
+  "family": "data analyst",
+  "url": "https://amfam.wd1.myworkdayjobs.com/Careers/job/WI-Madison/Product-Analyst--Hybrid-_R39620"
+ },
+ {
+  "key": "bmc-da",
+  "company": "Boston Medical Center",
+  "title": "Pediatrics Data Analyst",
+  "family": "data analyst",
+  "url": "https://bmc.wd1.myworkdayjobs.com/BMC/job/801-Albany-St/Pediatrics-Data-Analyst_50459"
+ },
+ {
+  "key": "cvs-da",
+  "company": "CVS Health",
+  "title": "Encounter Data Analyst- DSNP (Dual Eligible Special Needs Plan)",
+  "family": "data analyst",
+  "url": "https://cvshealth.wd1.myworkdayjobs.com/CVS_Health_Careers/job/PA---Work-from-home/Encounter-Data-Analyst--DSNP--Dual-Eligible-Special-Needs-Plan-_R1016439"
+ }
+]
