@@ -71,6 +71,47 @@ ROLE_BY_KEY = {r.key: r for r in ROLES}
 _COMPILED = [(r, re.compile(r.pattern)) for r in ROLES]
 
 
+# A software title: the job is building software, whatever product it's for ("Software Engineer, AI Teammates")
+SOFTWARE_TITLE = re.compile(r"software (?:development )?(engineer|engineering|developer)|\bsde\b|full[- ]?stack|front[- ]?end|"
+                            r"back[- ]?end|\bmobile\b|\bios\b|android|web developer", re.I)
+# A lab-science scientist ("Research Scientist, in vivo Pharmacology"): a different field from analytics, unless the
+# title names data, computational or ML work
+_LAB = re.compile(r"in vivo|in vitro|pharmacolog|electrophysiolog|neurolog|oncolog|\bbiolog|chemist|immunolog|toxicolog|"
+                  r"\bassay|wet[- ]lab|formulation|molecular|\bcell\b|materials scien|physicist", re.I)
+_COMPUTE = re.compile(r"\bdata\b|computational|machine learning|\bml\b|\bai\b|statistic|bioinformatic|analytics|modeling", re.I)
+
+
+def lab_science(title: str) -> bool:
+    """Whether a scientist title is lab science rather than data science."""
+    return bool(re.search(r"\bscientist\b", title or "", re.I) and _LAB.search(title or "") and not _COMPUTE.search(title or ""))
+
+
+def off_field(title: str, roles) -> str | None:
+    """Why a title is outside the field your degree covers (OPT needs directly related work), or None."""
+    if "software_engineer" not in roles and software_field(title):
+        return "software field (OPT needs work directly related to your degree)"
+    if lab_science(title):
+        return "lab science, not data science (OPT needs work directly related to your degree)"
+    return None
+# The work a software title can name that is data, ML or AI engineering itself, most specific first
+_DISCIPLINE = [("ml_engineer", re.compile(r"machine learning|\bml\b|mlops|deep learning", re.I)),
+               ("ai_engineer", re.compile(r"\bai engineer|\bllm\b|generative|gen ?ai|applied ai|\bai/ml\b|\bnlp\b|computer vision", re.I)),
+               ("data_engineer", re.compile(r"\bdata\b|analytics|\betl\b|pipeline", re.I))]
+
+
+def discipline_role(title: str) -> Role | None:
+    """The data, ML or AI family a software title names ("Software Engineer II - Data Foundations" is data
+    engineering), or None when it names none of them."""
+    return next((ROLE_BY_KEY[k] for k, rx in _DISCIPLINE if rx.search(title or "")), None)
+
+
+def software_field(title: str) -> bool:
+    """Whether a title is general software work: a software title that names no data, ML or AI-engineering work.
+    OPT and the STEM OPT extension need work directly related to the degree, so for an analytics degree these
+    are left out unless the profile asks for software roles."""
+    return bool(SOFTWARE_TITLE.search(title or "")) and discipline_role(title) is None
+
+
 def role_for_title(title: str) -> Role | None:
     """First matching family wins; the order above puts specific families before broad ones."""
     t = title.lower()

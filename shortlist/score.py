@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 
 from . import classify, wages
 from .boards import Posting
-from .roles import ROLE_BY_KEY, Role, role_for_title
+from .roles import ROLE_BY_KEY, SOFTWARE_TITLE, Role, discipline_role, off_field, role_for_title
 
 
 @dataclass
@@ -118,6 +118,8 @@ def _sponsor(company: Company, signal: str, role: Role, record: dict | None) -> 
 
 def score_posting(p: Posting, company: Company, profile: dict, sponsor_record: dict | None, now: datetime) -> Scored | None:
     role = role_for_title(p.title)
+    if role is not None and role.key not in profile["roles"] and SOFTWARE_TITLE.search(p.title):
+        role = discipline_role(p.title)  # "Software Engineer, Data Engineering" is data engineering
     if role is None or role.key not in profile["roles"]:
         return None
     overrides = profile.get("role_overrides", {}).get(role.key, {})
@@ -128,7 +130,9 @@ def score_posting(p: Posting, company: Company, profile: dict, sponsor_record: d
     signal = classify.sponsorship_signal(p.text)
     s.years_required = classify.years_required(p.text)
     have = float(profile["years_experience"])
-    if seniority == "senior":
+    if off_field(p.title, profile["roles"]):
+        s.excluded = off_field(p.title, profile["roles"])
+    elif seniority == "senior":
         s.excluded = "senior title"
     elif seniority == "internship":
         s.excluded = "internship or part-time"

@@ -102,6 +102,10 @@ All public. Run `python -m shortlist setup` to fetch the static files.
 - **Filing counts are by job title,** so titles the classifier doesn't recognize (for example "Member of Technical Staff") don't count toward any role family.
 - **Pending rules could lower the odds:** the proposed DOL wage-level rule and the proposed $103K cap-subject fee would shift the lottery numbers if finalized.
 
+## Evaluations
+
+[`evals/onet`](evals/onet/README.md) checks whether the US Department of Labor's O\*NET list of 8,753 software names would catch tools Tailor's keyword step misses. On 46 real data and AI postings it found 197 tool mentions, and Tailor had already caught 193. The folder has the script, the posting links and every match.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

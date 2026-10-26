@@ -52,3 +52,30 @@ class SeniorityTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SoftwareFieldTest(unittest.TestCase):
+    """OPT and STEM OPT need work directly related to the degree: for an analytics degree, general software titles
+    stay out, while software titles for data, ML or AI work count as that work."""
+
+    def test_software_titles(self):
+        from shortlist.roles import discipline_role, software_field
+        for title in ("Software Engineer, AI Teammates Experience", "Software Engineer, Backend",
+                      "Software Engineering SMTS / LMTS - AI Core (REMOTE)", "Senior Full Stack Engineer", "iOS Developer"):
+            self.assertTrue(software_field(title), title)
+        for title in ("Software Engineer, Machine Learning", "Software Engineer, Data Engineering", "Data Engineer",
+                      "Software Engineer II - Data Foundations, Core Integrations and Architecture",
+                      "Full Stack AI Engineer (Industrial and Physical AI)", "Applied AI Engineer, Startups"):
+            self.assertFalse(software_field(title), title)
+        self.assertEqual(discipline_role("Software Engineer II - Data Foundations").key, "data_engineer")
+        self.assertEqual(discipline_role("Software Engineer, Machine Learning").key, "ml_engineer")
+
+
+class LabScienceTest(unittest.TestCase):
+    def test_lab_scientists_are_another_field(self):
+        from shortlist.roles import lab_science, software_field
+        self.assertTrue(lab_science("Research Scientist, in vivo Pharmacology-Oncology"))
+        self.assertTrue(lab_science("Research Scientist Electrophysiology Neurology"))
+        self.assertFalse(lab_science("Computational Biology Scientist"))
+        self.assertFalse(lab_science("Data Scientist - Retail Demand Sensing"))
+        self.assertTrue(software_field("Software Development Engineer - AI Infrastructure"))

@@ -1,0 +1,8529 @@
+{
+ "summary": {
+  "postings": 46,
+  "with_saved_read": 46,
+  "onet_names": 8753,
+  "mentions": 197,
+  "in the built-in list": 176,
+  "caught by the posting read": 17,
+  "missed": 4
+ },
+ "postings": [
+  {
+   "key": "doordash-de",
+   "company": "DoorDash",
+   "title": "Software Engineer, Data Engineering",
+   "family": "data engineer",
+   "url": "https://job-boards.greenhouse.io/doordashusa/jobs/8192116",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Java",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Airflow",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Flink",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Oozie",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Azkaban",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AWS/GCP",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Spark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Hive",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Druid",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Presto",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Kafka",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Snowflake",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Redshift",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "PostgreSQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Claude Code",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Codex",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Cursor",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitoring",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "ETL orchestration",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "distributed computing",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "AI coding tools",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Data Warehouse",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "business intelligence",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "software development lifecycle",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Tableau",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Looker",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Superset",
+     "kind": "tool",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Airflow",
+     "onet": "Apache Airflow",
+     "form": "Airflow",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Hive",
+     "onet": "Apache Hive",
+     "form": "Hive",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Kafka",
+     "onet": "Apache Kafka",
+     "form": "Kafka",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Oozie",
+     "onet": "Apache Oozie",
+     "form": "Oozie",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "PostgreSQL",
+     "onet": "PostgreSQL",
+     "form": "PostgreSQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Redshift",
+     "onet": "Amazon Redshift",
+     "form": "Redshift",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Snowflake",
+     "onet": "Snowflake",
+     "form": "Snowflake",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Tableau",
+     "onet": "Tableau",
+     "form": "Tableau",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "montefiore-de",
+   "company": "Montefiore",
+   "title": "Data Engineer - Research Informatics",
+   "family": "data engineer",
+   "url": "https://montefiore.wd12.myworkdayjobs.com/MMC/job/3-Odell-Plaza/Data-Engineer_JR229580",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "information extraction",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "APIs",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "containers",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "GPU",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "high-performance computing",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "research data platforms",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "clinical NLP",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "large language or vision language models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "multimodal learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "medical imaging",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "FAIR data practices",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "common data models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "biomedical ontologies",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data provenance",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "responsible AI assessment",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "clinical research workflows",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "biomedical informatics",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "quality checks",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "version control",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "automated tests",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitoring",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "cohort discovery",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "metadata",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "EHR systems",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Epic Clarity",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Caboodle",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "FHIR",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "OMOP",
+     "kind": "tool",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "mgb-de",
+   "company": "Mass General Brigham",
+   "title": "Data Engineer",
+   "family": "data engineer",
+   "url": "https://massgeneralbrigham.wd1.myworkdayjobs.com/MGBExternal/job/Somerville-MA/Data-Engineer_RQ4075315-1",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Azure",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "PySpark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Spark notebooks",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AWS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "GCP",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "ETL/ELT processes",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data transformation workflows",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data quality",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "metadata",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "workload management",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "dependency management",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data warehousing",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "relational databases",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Microsoft Fabric",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Snowflake",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Azure Data Lake",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Azure Data Factory",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Azure DevOps",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "dbt",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Kafka",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Tableau",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Event Hub",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Snowpipe",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "SnowSQL",
+     "kind": "tool",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Kafka",
+     "onet": "Apache Kafka",
+     "form": "Kafka",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "PySpark",
+     "onet": "PySpark",
+     "form": "PySpark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Snowflake",
+     "onet": "Snowflake",
+     "form": "Snowflake",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Tableau",
+     "onet": "Tableau",
+     "form": "Tableau",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "usbank-da",
+   "company": "U.S. Bank",
+   "title": "Reporting & Analytics Analyst",
+   "family": "data analyst",
+   "url": "https://usbank.wd1.myworkdayjobs.com/US_Bank_Careers/job/Minneapolis-MN/Reporting---Analytics-Analyst_2026-0032358",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Salesforce",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Tableau",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Snowflake",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Databricks",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "nCino",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "PrecisionLender",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data migration",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "dashboards",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "AI-enabled analytics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "business intelligence",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Data Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "reporting modernization",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "KPI frameworks",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "semantic layers",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data quality",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "governance",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Tableau Cloud",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Data Cloud",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Commercial Banking",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Wealth Management",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Azure Synapse",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "CRM Analytics",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Agentforce",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "ETL/ELT processes",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "data warehousing",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "Treasury Management",
+     "kind": "domain",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Salesforce",
+     "onet": "Salesforce software",
+     "form": "Salesforce",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Snowflake",
+     "onet": "Snowflake",
+     "form": "Snowflake",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Tableau",
+     "onet": "Tableau",
+     "form": "Tableau",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "lyft-da",
+   "company": "Lyft",
+   "title": "Data Analyst",
+   "family": "data analyst",
+   "url": "https://app.careerpuck.com/job-board/lyft/job/8896685002?gh_jid=8896685002",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "analytics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "C++",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "R",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "database applications",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "analytical software",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "quantitative analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "predictive modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "business analytics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "optimization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "algorithms",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Operations Research",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Master's degree",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "financial and business modeling",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "analytical frameworks",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "quantitative models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "develop hypotheses",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "product roadmaps",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "pricing dynamics",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "market outcomes",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "driver earning",
+     "kind": "domain",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "C++",
+     "onet": "C++",
+     "form": "C++",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "klaviyo-ai",
+   "company": "Klaviyo",
+   "title": "AI Engineer II",
+   "family": "AI engineer",
+   "url": "https://www.klaviyo.com/careers/jobs/8003261003?gh_jid=8003261003",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "backend systems",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "APIs",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "evaluation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "FastAPI",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Django",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Celery",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Kafka",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "RabbitMQ",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Redis",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AWS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Kubernetes",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "CI/CD",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "containers",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "agentic AI",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "generative AI",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "RAG",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "tool use",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "context management",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "hallucination mitigation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "regression testing",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "guardrails",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "observability",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitoring",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "distributed processing",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "on-call rotation",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "LLM-as-judge",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "fine-tuning",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "RabbitMQ",
+     "onet": "RabbitMQ",
+     "form": "RabbitMQ",
+     "where": "required",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Django",
+     "onet": "Django",
+     "form": "Django",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Kafka",
+     "onet": "Apache Kafka",
+     "form": "Kafka",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Kubernetes",
+     "onet": "Kubernetes",
+     "form": "Kubernetes",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Redis",
+     "onet": "Redis",
+     "form": "Redis",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "neu-ai",
+   "company": "Northeastern University",
+   "title": "Associate AI Engineer",
+   "family": "AI engineer",
+   "url": "https://northeastern.wd1.myworkdayjobs.com/careers/job/Boston-MA-Main-Campus/Associate-AI-Engineer_R141445",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "system integration",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data warehousing",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "large language models (LLMs)",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "natural language processing",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "prompt engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "MLOps",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "TensorFlow",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "PyTorch",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "CI/CD",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "version control",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "containerized deployments",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "feature engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "model training",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "solution architecture",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "performance optimization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "cloud-native AI services",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "AI ethics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data visualization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "enterprise applications",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Statistics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "APIs",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Apache Airflow",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "ETL processes",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data quality checks",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "transfer learning",
+     "kind": "skill",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Apache Airflow",
+     "onet": "Apache Airflow",
+     "form": "Apache Airflow",
+     "where": "responsibility",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "TensorFlow",
+     "onet": "TensorFlow",
+     "form": "TensorFlow",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "pinterest-ds",
+   "company": "Pinterest",
+   "title": "Master's University Grad Data Scientist (USA)",
+   "family": "data scientist",
+   "url": "https://www.pinterestcareers.com/jobs/?gh_jid=8140389",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Machine Learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "R",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Statistical Modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Forecasting",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Econometrics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "modeling",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "large data sets",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "AI-generated suggestions",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "statistics",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "computer science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "critical thinking",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "A/B experiments",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "core metrics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "exploratory analysis",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "experimentation techniques",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "quantitative analysis",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data mining",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "statistical techniques",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "experimentation platform",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "user behavior",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "recommendation systems",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "product opportunities",
+     "kind": "domain",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "waymo-ds",
+   "company": "Waymo",
+   "title": "Product Data Scientist - Marketplace Logistics",
+   "family": "data scientist",
+   "url": "https://careers.withwaymo.com/jobs?gh_jid=8286842",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "marketplace",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "CP-SAT",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "CPLEX",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Gurobi",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "solver packages",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "machine learning models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "quantitative methods",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Operations Research",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Industrial Engineering",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Statistics",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "advanced degree",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "optimization models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "production-grade pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "offline and online experiments",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "vehicle value predictions",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "fleet utilization metrics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "actionable insights",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "fleet",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Partner with engineering",
+     "kind": "soft",
+     "from": "responsibility"
+    },
+    {
+     "text": "A/B testing",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "experiment design",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "marketplace experimentation",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "statistical theory",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "ride-hailing",
+     "kind": "domain",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "openai-de",
+   "company": "OpenAI",
+   "title": "Data Engineer, Core Experimentation",
+   "family": "data engineer",
+   "url": "https://jobs.ashbyhq.com/openai/2796d32a-9f7c-4008-a2c5-50dd53b0f2fe",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "experimentation",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Spark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Scala",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Java",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Hadoop",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Flink",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "HDFS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "S3",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Airflow",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Dagster",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Prefect",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "ETL schedulers",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "distributed processing",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "distributed storage systems",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data warehouse",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "canonical datasets",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "fault-tolerant systems",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data ingestion and processing",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data architecture",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data security",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "compliance",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "user event data",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "product metrics",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "user growth",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "collaborate",
+     "kind": "soft",
+     "from": "responsibility"
+    },
+    {
+     "text": "Statistics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "causal inference",
+     "kind": "skill",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Airflow",
+     "onet": "Apache Airflow",
+     "form": "Airflow",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Hadoop",
+     "onet": "Apache Hadoop",
+     "form": "Hadoop",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Scala",
+     "onet": "Scala",
+     "form": "Scala",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "mastercard-de",
+   "company": "Mastercard",
+   "title": "Data Engineer II",
+   "family": "data engineer",
+   "url": "https://mastercard.wd1.myworkdayjobs.com/CorporateCareers/job/OFallon-Missouri/Data-Engineer-II_R-289305",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Databricks",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "risk analytics",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Apache Spark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Postgress",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "relational databases",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "cloud-based data platforms",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "ETL/ELT pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data transformations",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "database design",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data products",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "distributed data processing",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Agile",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "credit decisioning",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "problem-solving",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "communication",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "data validation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "quality controls",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitoring",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "root cause analysis",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "code reviews",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "cloud migration",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "regulatory reporting",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "machine learning",
+     "kind": "domain",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Apache Spark",
+     "onet": "Apache Spark",
+     "form": "Apache Spark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "riot-de",
+   "company": "Riot Games Inc",
+   "title": "Software Engineer II - Data Foundations, Core Integrations and Architecture",
+   "family": "data engineer",
+   "url": "https://www.riotgames.com/en/work-with-us/job/8113272?gh_jid=8113272",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "data engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Java",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Scala",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AWS RDS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "S3",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "EC2",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "EKS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Lambda",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "code reviews",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Agile",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "DevOps",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "backend services",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "deployment",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitoring",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "on-call rotation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "globally distributed systems",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "data warehouses",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "real time analytics",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "lead without authority",
+     "kind": "soft",
+     "from": "responsibility"
+    },
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Kafka",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Kinesis",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Spark/PySpark",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Airflow",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Luigi",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "data pipeline",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "ML Operations pipelines",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Airflow",
+     "onet": "Apache Airflow",
+     "form": "Airflow",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Kafka",
+     "onet": "Apache Kafka",
+     "form": "Kafka",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Scala",
+     "onet": "Scala",
+     "form": "Scala",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "anthropic-ai",
+   "company": "Anthropic",
+   "title": "Applied AI Engineer, Startups (Life Sciences)",
+   "family": "AI engineer",
+   "url": "https://job-boards.greenhouse.io/anthropic/jobs/5454650008",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "life sciences",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "biotech",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Claude",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "evaluation frameworks",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "genomics",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "collaborative",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "LLM-powered applications",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "prompting",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "context engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "agent architectures",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "technical workshops",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "hackathons",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "drug discovery",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "lab automation",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "clinical development",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "computational biologist",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "technical communication",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "MCP servers",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "agent skills",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "evaluation suites",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "scientifically grounded benchmarks",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "agent design",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "architecture reviews",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "pair programming",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "reference implementations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "technical documentation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "architecture diagrams",
+     "kind": "skill",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": []
+  },
+  {
+   "key": "openai-ai",
+   "company": "OpenAI",
+   "title": "Partner Applied AI Engineer",
+   "family": "AI engineer",
+   "url": "https://jobs.ashbyhq.com/openai/552396f4-dc83-43de-9230-6301e5f461bd",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Generative AI",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Javascript",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "traditional ML",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "technical consulting",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "prototypes",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "systems integrators",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "GSIs, RSIs, and boutique SIs",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "use cases",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "complex implementations",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "technical projects and programs",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "backlog",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "C-level",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "presenter and communicator",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "humble attitude",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "technical lead",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "architectural patterns",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "solution packages",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "technical enablement",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "strategic guidance",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "mentor",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "best practices",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "open-source repositories",
+     "kind": "skill",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Javascript",
+     "onet": "JavaScript",
+     "form": "JavaScript",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "stripe-ai",
+   "company": "Stripe",
+   "title": "AI Engineer",
+   "family": "AI engineer",
+   "url": "https://stripe.com/jobs/search?gh_jid=8144196",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "debug",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "workflow automation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "internal tools",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Node.js",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Ruby",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Next.js",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AWS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "GCP",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AI agents",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "AI-assisted development",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "monitoring",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "DevOps",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "developer platforms",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Solutions Architecture",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "cross-functional collaboration",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "prompt engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "LLMs",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "backend systems",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "PoC applications",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "demo environments",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "production-grade solutions",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Salesforce",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Gong",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "low-code frameworks",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "payments/fintech",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "GTM Engineering",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "APIs",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Ruby",
+     "onet": "Ruby",
+     "form": "Ruby",
+     "where": "required",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Node.js",
+     "onet": "Node.js",
+     "form": "Node.js",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Salesforce",
+     "onet": "Salesforce software",
+     "form": "Salesforce",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "scopely-ml",
+   "company": "Scopely Inc",
+   "title": "Software Engineer, Machine Learning",
+   "family": "AI engineer",
+   "url": "https://job-boards.greenhouse.io/scopely/jobs/5456049008?gh_jid=5456049008",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Machine Learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Generative AI",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "System programming",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Cloud computing",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "ML infrastructure",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Computer Engineering",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Artificial Intelligence (AI)",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "scalable infrastructure",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "automation tools",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "model evaluation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "deployment workflows",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "model inference",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitoring and alerting",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "infrastructure performance",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "troubleshoot",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "root causes",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "code reviews",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "architecture planning",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "cross-functional teams",
+     "kind": "soft",
+     "from": "responsibility"
+    },
+    {
+     "text": "latency",
+     "kind": "domain",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "expedia-ds",
+   "company": "Expedia Group",
+   "title": "Machine Learning Scientist II",
+   "family": "data scientist",
+   "url": "https://expedia.wd108.myworkdayjobs.com/search/job/Austin-Domain-11---HomeAway/Machine-Learning-Scientist-II_R-109347-1",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "marketplace health",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "large language models (LLMs)",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "machine learning libraries and frameworks",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "machine learning models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "statistical modeling",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "measurable objectives",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "optimization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "deploying solutions",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "trust and safety",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Graduate degree in a quantitative field",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "cross-functional stakeholders",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "Marketplace Health Model",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "design experiments",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitor deployed models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "agentic applications",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "LLM-powered agents",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "fraud detection",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "anomaly detection",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "risk modeling",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "behavioral modeling",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "model monitoring",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "production machine learning systems",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "Deep Learning",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "NLP",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "Transformer",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "marketplace optimization",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "experimentation",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "lendingclub-ds",
+   "company": "LendingClub",
+   "title": "Associate Data Scientist, Fraud Strategy",
+   "family": "data scientist",
+   "url": "https://lendingclub.wd1.myworkdayjobs.com/External/job/San-Francisco-CA/Associate-Data-Scientist--Fraud-Strategy_R0007503",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AI tools",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "statistical analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data visualization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "reproducible analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "model or strategy performance measurement",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "fraud analytics",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "decision science",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Bachelor's degree",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "ownership",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "collaborate",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "fraud detection strategies",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "dashboards",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "reporting",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "queries",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "rules",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitor fraud trends",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data quality",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "business intelligence",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "financial services",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Tableau",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "feature engineering",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "predictive modeling",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "model monitoring",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "experimentation",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "credit risk",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "e-commerce",
+     "kind": "domain",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Tableau",
+     "onet": "Tableau",
+     "form": "Tableau",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "gartner-ds",
+   "company": "Gartner",
+   "title": "Associate Data Scientist - Spring 2027 Master's level graduates",
+   "family": "data scientist",
+   "url": "https://gartner.wd5.myworkdayjobs.com/EXT/job/Stamford-CT/Associate-Data-Scientist---Spring-2027-Master-s-level-graduates_113311",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "data modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Spark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "PBI",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Excel",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Power Point",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "NLP",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "MLOps",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "statistical principles",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "predictive",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "prescriptive models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Time Series",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Random Forests",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Clustering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Neural Networks",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Generalized Linear Models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Optimization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "DOE",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Dimensionality Reduction",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "churn analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "recommendation systems",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "feature engineering",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data wrangling",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Machine Learning",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Generative AI",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Statistical Modelling",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "client retention analytics",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Data Science",
+     "kind": "education",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "DOE",
+     "onet": "Design of experiments DOE software",
+     "form": "DOE",
+     "where": "required",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "lyft-ds",
+   "company": "Lyft",
+   "title": "Data Scientist",
+   "family": "data scientist",
+   "url": "https://app.careerpuck.com/job-board/lyft/job/8896675002?gh_jid=8896675002",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "R",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "MATLAB",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "statistics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "causal inference",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data scientific forecasting",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "optimization models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "inference models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "predictive modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "production quality computer code",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "metrics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "analytical tools",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "operations research",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Business Analytics and Information Management",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Data Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "growth",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "exploratory data analysis",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "production modeling code",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "live traffic experiments",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "simulated",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "observational data",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "communicate findings",
+     "kind": "soft",
+     "from": "responsibility"
+    },
+    {
+     "text": "collaborate",
+     "kind": "soft",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "MATLAB",
+     "onet": "The MathWorks MATLAB",
+     "form": "MATLAB",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "hcsc-da",
+   "company": "HCSC",
+   "title": "Enterprise Data Analyst Spec",
+   "family": "data analyst",
+   "url": "https://hcsc.wd1.myworkdayjobs.com/HCSC_External/job/National-Remote/Enterprise-Data-Analyst-Spec_R0055509-2",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "data and analytics",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Agile",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "SDLC (systems development life cycle)",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Agile project management",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Scrum",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "big data",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "analytical technologies",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data processing environments",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "system architecture",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "requirements management",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "prototyping",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "leading projects",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Iterative",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "business acumen",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Technical Certification",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "oral & written communication",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "simplify & standardize complex concepts",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "end-to-end delivery",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Health Tech",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "divisional analytic teams",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "preferred"
+    },
+    {
+     "text": "Information Technology",
+     "kind": "education",
+     "from": "preferred"
+    },
+    {
+     "text": "Business Administration",
+     "kind": "education",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": []
+  },
+  {
+   "key": "neu-da",
+   "company": "Northeastern University",
+   "title": "HR Platforms Reporting & Data Analyst",
+   "family": "data analyst",
+   "url": "https://northeastern.wd1.myworkdayjobs.com/careers/job/Boston-MA-Main-Campus/HR-Platforms-Reporting---Data-Analyst_R142147",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Payroll",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Excel",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data integrity",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "root causes",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Workday HCM",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data reconciliation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "HR systems",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "attention to detail",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "problem-solving",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "data quality",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Workday reports",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "SQL queries",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "pivot tables",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data validation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "test plans and test cases",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "reporting documentation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "gathering requirements",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "HR data analytics",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "employee lifecycle",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Information Systems",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "audit queries",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data governance",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "training materials",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "workforce metrics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Cognos",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "higher education",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Workday Prism Analytics",
+     "kind": "tool",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Cognos",
+     "onet": "IBM Cognos",
+     "form": "Cognos",
+     "where": "preferred",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "HCM",
+     "onet": "SAP Americas mySAP ERP Human Capital Management HCM",
+     "form": "HCM",
+     "where": "required",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "Microsoft Excel",
+     "onet": "Microsoft Excel",
+     "form": "Microsoft Excel",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": false
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "visa-da",
+   "company": "Visa",
+   "title": "Marketing Analyst, Demand Generation and Nurture",
+   "family": "data analyst",
+   "url": "https://visa.wd5.myworkdayjobs.com/Visa/job/US---Austin-TX/Marketing-Analyst--Demand-Generation-and-Nurture_REF089161W",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "lead generation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Bachelor’s Degree",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "AI-powered tools",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "demand generation campaigns",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "user segmentation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "conversion rate optimization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "funnel analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "marketing operations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "customer acquisition",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "B2B marketing",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "collaboration",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "influencing",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "lifecycle nurture campaigns",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "audience segmentation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "lead assignment",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "performance reports",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "ROI and KPIs",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "email",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "payments",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Marketing Automation Platforms (MAPs)",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Eloqua",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Marketo",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Pardot",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Customer Relationship Management (CRM)",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "growth marketing",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "financial services",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Fintech",
+     "kind": "domain",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Eloqua",
+     "onet": "Oracle Eloqua",
+     "form": "Eloqua",
+     "where": "preferred",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "cisco-da",
+   "company": "Cisco",
+   "title": "Data Analyst I (Full Time) - United States",
+   "family": "data analyst",
+   "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers/job/San-Jose-California-US/Data-Analyst-I--Full-Time----United-States_2024556-1",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Supply Chain",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python libraries",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "R",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "statistical analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data visualization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Data analysis",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Data Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Statistics",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Strong mathematical skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "data analytics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "dashboards",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "metrics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "integrated data architecture",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "automating complex processes",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data driven business decisions",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Analyze business processes",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "operational workflow",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Hadoop",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Spark",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Java",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Scala",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "C++",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "AWS",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Google Cloud",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Microsoft Azure",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Machine Learning",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "big-data platforms",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "Cloud Computing Platforms",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "C++",
+     "onet": "C++",
+     "form": "C++",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Google Cloud",
+     "onet": "Google Cloud software",
+     "form": "Google Cloud",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Hadoop",
+     "onet": "Apache Hadoop",
+     "form": "Hadoop",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Microsoft Azure",
+     "onet": "Microsoft Azure software",
+     "form": "Microsoft Azure",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Scala",
+     "onet": "Scala",
+     "form": "Scala",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "samsara-de",
+   "company": "Samsara",
+   "title": "Data Engineer",
+   "family": "data engineer",
+   "url": "https://www.samsara.com/company/careers/roles/8141959?gh_jid=8141959",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "IOT",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Airflow",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Dagster",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Prefect",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "REST APIs",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Git/GitHub",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Spark-based data platforms",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "ETL pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data orchestration",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "model training",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Statistics",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "SparkSQL",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Pyspark",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "computed tables",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "dashboarding",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "causal inference",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data lake",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "metadata",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "growth mindset",
+     "kind": "soft",
+     "from": "preferred"
+    },
+    {
+     "text": "Databricks",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Delta Lakes",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "AWS",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "GCP",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Azure",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "time series data",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Airflow",
+     "onet": "Apache Airflow",
+     "form": "Airflow",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Git",
+     "onet": "Git",
+     "form": "Git",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Pyspark",
+     "onet": "PySpark",
+     "form": "PySpark",
+     "where": "responsibility",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "palantir-de",
+   "company": "Palantir",
+   "title": "Data Engineer - Talent Acquisition Operations",
+   "family": "data engineer",
+   "url": "https://jobs.lever.co/palantir/1b690123-1766-4e75-a0ef-0f58afa864b4",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Recruiting",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "datasets",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "TypeScript",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "BI tools",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Foundry",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Lever",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "dashboards",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data manipulation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "testing frameworks",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data quality checks",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "writeback",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Workday",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data integrations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "role-based permissions",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitor pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "forecast",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Contour",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "pySpark",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "pandas",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "polars",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "workflow automation",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "event-driven integrations",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "APIs",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "data governance",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "ATS",
+     "kind": "domain",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "ATS",
+     "onet": "Automate the Schools ATS",
+     "form": "ATS",
+     "where": "preferred",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "pandas",
+     "onet": "pandas",
+     "form": "pandas",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "pySpark",
+     "onet": "PySpark",
+     "form": "PySpark",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "TypeScript",
+     "onet": "TypeScript",
+     "form": "TypeScript",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "travelers-de",
+   "company": "Travelers",
+   "title": "Data Engineer I (AWS, Python, SQL)",
+   "family": "data engineer",
+   "url": "https://travelers.wd5.myworkdayjobs.com/External/job/CT---Hartford/Data-Engineer-I--AWS--Python--SQL-_R-52876",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "AWS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "STEM",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "pricing",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Cloud platforms",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "APIs",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "microservices",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "test automation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "AI-native solutions",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "model implementation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "CMP",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "communication",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "mentoring",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "insurance",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "data governance",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data security",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data quality",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data cleansing",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "transformations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data solutions",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "General Liability (GL)",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Terraform",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "CI/CD pipelines",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Infrastructure as Code",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "DevOps",
+     "kind": "tool",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Terraform",
+     "onet": "IBM Terraform",
+     "form": "Terraform",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "campfire-de",
+   "company": "Campfire Llc",
+   "title": "Data Engineer",
+   "family": "data engineer",
+   "url": "https://jobs.ashbyhq.com/campfire/2b30b7a1-3649-40e5-804a-ea07bfc94318",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "NextJS/React",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "full-stack engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "building frameworks and tooling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "live data integration",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "self-driven",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "autonomous",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "Ember",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "agent stack",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "platform capabilities",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "source systems",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "ERPs",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "ERP implementations",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "customer financial data",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "data warehouses",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "payment systems",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "AI agents",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "Snowflake",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "LLM-powered systems",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Snowflake",
+     "onet": "Snowflake",
+     "form": "Snowflake",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "responsibility",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "formlabs-de",
+   "company": "Formlabs",
+   "title": "Data Engineer",
+   "family": "data engineer",
+   "url": "https://careers.formlabs.com/job/8262437/apply/?gh_jid=8262437",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "BigQuery",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "telemetry",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Cloud Run",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Google Cloud",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Pub/Sub",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "CI/CD",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "IoT",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Cloud Storage",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "IAM",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Git/GitHub",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Redshift",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Snowflake",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Databricks",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Real Time Integrations (RTI)",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "production data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "event-driven",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "problem-solving",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "ingestion and transformation pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "query optimization",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "dbt",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Airflow",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Kafka",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Kubernetes",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Dagster",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Salesforce",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "AI coding tools",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Claude Code",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Dataflow",
+     "kind": "tool",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Airflow",
+     "onet": "Apache Airflow",
+     "form": "Airflow",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "BigQuery",
+     "onet": "BigQuery",
+     "form": "BigQuery",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Git",
+     "onet": "Git",
+     "form": "Git",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Google Cloud",
+     "onet": "Google Cloud software",
+     "form": "Google Cloud",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Kafka",
+     "onet": "Apache Kafka",
+     "form": "Kafka",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Kubernetes",
+     "onet": "Kubernetes",
+     "form": "Kubernetes",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Redshift",
+     "onet": "Amazon Redshift",
+     "form": "Redshift",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Salesforce",
+     "onet": "Salesforce software",
+     "form": "Salesforce",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Snowflake",
+     "onet": "Snowflake",
+     "form": "Snowflake",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "3D printing",
+     "onet": "3D Printing software",
+     "form": "3D Printing",
+     "where": "preferred",
+     "status": "missed",
+     "in_final_list": false
+    },
+    {
+     "word": "NetSuite",
+     "onet": "Oracle NetSuite",
+     "form": "NetSuite",
+     "where": "preferred",
+     "status": "missed",
+     "in_final_list": false
+    },
+    {
+     "word": "Shopify",
+     "onet": "Shopify software",
+     "form": "Shopify",
+     "where": "preferred",
+     "status": "missed",
+     "in_final_list": false
+    }
+   ]
+  },
+  {
+   "key": "pathrobotics-de",
+   "company": "Path Robotics Inc",
+   "title": "Data Engineer",
+   "family": "data engineer",
+   "url": "https://boards.greenhouse.io/pathrobotics/jobs/8868497002?gh_jid=8868497002",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "warehousing concepts",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "robotics",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AWS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Snowflake",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Dagster",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "dbt",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "modern data stack",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "pipeline orchestration",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "machine learning",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "communicate clearly",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "ownership",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "experimentation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data quality",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data products",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "alerting",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "governance",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "lineage",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data contracts",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "code reviews",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "documentation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "multi-modal data",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "application telemetry",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "sensor data",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "robotics logs",
+     "kind": "domain",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Snowflake",
+     "onet": "Snowflake",
+     "form": "Snowflake",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "reddit-ae",
+   "company": "Reddit",
+   "title": "Analytics Engineer",
+   "family": "data engineer",
+   "url": "https://job-boards.greenhouse.io/reddit/jobs/8282760",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Spark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Scala",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Airflow",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "MPP Databases",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "relational",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "ETL systems",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "ETL and ELT",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data governance",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "automation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "dashboard design",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data workflows",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Agentic AI-assisted development",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "structured and unstructured data",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "data foundations",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Data Science",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "computer science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "r",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data quality checks",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "monitoring",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "QA",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data integrations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data products",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Data Engineering",
+     "kind": "domain",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Airflow",
+     "onet": "Apache Airflow",
+     "form": "Airflow",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Scala",
+     "onet": "Scala",
+     "form": "Scala",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "elastic-ae",
+   "company": "Elastic",
+   "title": "Analytics Engineer, HR Analytics",
+   "family": "data analyst",
+   "url": "https://jobs.elastic.co/jobs?gh_jid=8244449&gh_jid=8244449",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Workday",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Greenhouse",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "employee lifecycle",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "recruiting",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Google Cloud Platform (GCP)",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "BigQuery",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "dbt",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Looker",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Tableau",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Streamlit",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Plotly",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data visualizations",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "AI-powered analytics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "HRIS",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "ATS",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "storytelling",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "presentation skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "Qualtrics",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "ServiceNow",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Elasticsearch",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "dbt modeling",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "self-service dashboards",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data governance",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "validation checks",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "automate recurring recruiting reports",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data model",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "observability",
+     "kind": "skill",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "ATS",
+     "onet": "Automate the Schools ATS",
+     "form": "ATS",
+     "where": "required",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "ServiceNow",
+     "onet": "ServiceNow",
+     "form": "ServiceNow",
+     "where": "responsibility",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "BigQuery",
+     "onet": "BigQuery",
+     "form": "BigQuery",
+     "where": "responsibility",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Elasticsearch",
+     "onet": "Elasticsearch",
+     "form": "Elasticsearch",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Google Cloud",
+     "onet": "Google Cloud software",
+     "form": "Google Cloud",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Tableau",
+     "onet": "Tableau",
+     "form": "Tableau",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "cincy-bi",
+   "company": "Cincinnati Children's",
+   "title": "Business Intelligence Analyst II",
+   "family": "data analyst",
+   "url": "https://cincinnatichildrens.wd5.myworkdayjobs.com/careersatcincinnatichildrens/job/Burnet-Campus/Business-Intelligence-Analyst-II_JR225752",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Business Intelligence",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "ad hoc analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Power BI",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Denodo",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Power Automate",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "RESTful APIs",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "JSON",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "dashboard development",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "complex reporting",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "API authentication",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "code review",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data transformation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data quality",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "automation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "project coordination",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "research administration",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Health Informatics",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "Statistics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Epic SlicerDicer",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Caboodle",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Clarity",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "SAP/Crystal",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Business Objects",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "change management",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "end-user training",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "troubleshooting",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Power Automate",
+     "onet": "Microsoft Power Automate",
+     "form": "Power Automate",
+     "where": "required",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "SAP",
+     "onet": "SAP software",
+     "form": "SAP",
+     "where": "other",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "Power BI",
+     "onet": "Microsoft Power BI",
+     "form": "Power BI",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "workday-ai",
+   "company": "Workday",
+   "title": "AI Engineer",
+   "family": "AI engineer",
+   "url": "https://workday.wd5.myworkdayjobs.com/Workday/job/USA-CA-Pleasanton/AI-Engineer_JR-0110881",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "AI orchestration",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "foundational models",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "LangChain",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "LlamaIndex",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Large Language Models (LLMs)",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "CI/CD",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "version control",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "testing frameworks",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "prompt engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "API integration",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "backend application development",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "vision APIs",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Retrieval-Augmented Generation (RAG) pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "orchestration frameworks",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "agentic workflows",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "enterprise software",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "vector databases",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "semantic search",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "prompt optimization",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "data exploration",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "generative AI",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "autonomous agents",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Agile",
+     "kind": "soft",
+     "from": "preferred"
+    },
+    {
+     "text": "Curiosity",
+     "kind": "soft",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "LangChain",
+     "onet": "LangChain",
+     "form": "LangChain",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Flex",
+     "onet": "Apache Flex",
+     "form": "Flex",
+     "where": "required",
+     "status": "missed",
+     "in_final_list": false
+    }
+   ]
+  },
+  {
+   "key": "quora-ml",
+   "company": "Quora Inc",
+   "title": "Machine Learning Engineer, New Grad - Quora (Remote)",
+   "family": "AI engineer",
+   "url": "https://jobs.ashbyhq.com/quora/40659fe7-545e-4b08-b6d7-2567b18b9ed3",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "PyTorch",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "TensorFlow",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Spark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Kubernetes",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "LLM applications",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "transformer models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "agentic workflows",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Machine Learning algorithms",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "content quality",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "passion for learning",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "ownership",
+     "kind": "soft",
+     "from": "responsibility"
+    },
+    {
+     "text": "LLM-powered agents",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "ML systems",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "offline evaluations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "online experiments",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "production monitoring",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "spam",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "harassment",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "experimentation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Claude Code",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Codex",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "natural language processing (NLP)",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "LLM agents",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "software engineering",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "content safety",
+     "kind": "domain",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Kubernetes",
+     "onet": "Kubernetes",
+     "form": "Kubernetes",
+     "where": "other",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "PyTorch",
+     "onet": "PyTorch",
+     "form": "PyTorch",
+     "where": "other",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "other",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "TensorFlow",
+     "onet": "TensorFlow",
+     "form": "TensorFlow",
+     "where": "other",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "writer-ai",
+   "company": "Writer",
+   "title": "AI engineer",
+   "family": "AI engineer",
+   "url": "https://jobs.ashbyhq.com/writer/40f9e2b4-3284-4a20-b45d-0f5e5dd9108d",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "PyTorch",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "TensorFlow",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "JAX",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AWS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "GCP",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Azure",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "MLOps tools",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "large language models",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "deep learning architectures",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "natural language processing",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "AI systems",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "production environment",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "scalable software systems",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "well-tested code",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "AI lifecycle",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "problem-solving",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "collaborating",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "AI applications",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "intelligent agents",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "AI-powered features",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "bias detection",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "explainability",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "safety alignment",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "responsible AI",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "enterprise generative AI",
+     "kind": "domain",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "PyTorch",
+     "onet": "PyTorch",
+     "form": "PyTorch",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "TensorFlow",
+     "onet": "TensorFlow",
+     "form": "TensorFlow",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "adi-ml",
+   "company": "Analog Devices",
+   "title": "Associate Machine Learning Engineer",
+   "family": "AI engineer",
+   "url": "https://analogdevices.wd1.myworkdayjobs.com/External/job/US-MA-Boston/Associate-Machine-Learning-Engineer_R266607-1",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "ML Frameworks",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "machine learning frameworks",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "model optimization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "preprocessing techniques",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "ML deployment",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "maintainable code",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "semiconductor",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "ML models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "feature engineering",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data preprocessing",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "model evaluation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "ML pipeline development",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "signal processing",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "sensor data analysis",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "edge computing",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "collaborating with cross-functional teams",
+     "kind": "soft",
+     "from": "responsibility"
+    },
+    {
+     "text": "work independently",
+     "kind": "soft",
+     "from": "responsibility"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "preferred"
+    },
+    {
+     "text": "Data Science",
+     "kind": "education",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "spglobal-ml",
+   "company": "S&P Global",
+   "title": "Machine Learning Operations Engineer I",
+   "family": "AI engineer",
+   "url": "https://spgi.wd5.myworkdayjobs.com/SPGI_Careers/job/Cambridge-MA/ML-Ops-Engineer-II_330647-1",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AWS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Machine Learning",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "evaluation of LLMs/Agents",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Kubernetes",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Amazon EKS",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Bedrock",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SageMaker",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Prometheus",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "ML Ops",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "ML infra",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "software engineering best practices",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "debug distributed systems",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "LLMs",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "natural language",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "APIs",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Terraform",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "LangGraph",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "PyTorch",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "LangFuse",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Bash",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Git",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "model fine-tuning",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "reinforcement learning",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "observability",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "ML platform",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Ray",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Airflow",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "workflow orchestration",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Airflow",
+     "onet": "Apache Airflow",
+     "form": "Airflow",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "AWS",
+     "onet": "Amazon Web Services AWS software",
+     "form": "AWS",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Bash",
+     "onet": "Bash",
+     "form": "Bash",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Git",
+     "onet": "Git",
+     "form": "Git",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Kubernetes",
+     "onet": "Kubernetes",
+     "form": "Kubernetes",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Prometheus",
+     "onet": "Prometheus",
+     "form": "Prometheus",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "PyTorch",
+     "onet": "PyTorch",
+     "form": "PyTorch",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Terraform",
+     "onet": "IBM Terraform",
+     "form": "Terraform",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "quantifind-ds",
+   "company": "Quantifind Inc",
+   "title": "Associate Data Scientist",
+   "family": "data scientist",
+   "url": "https://www.quantifind.com/open-positions/?gh_jid=8241359",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "statistics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "classification",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Spark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Scala",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Java",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "R",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "hypothesis testing",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "regression",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "clustering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "random forests",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "neural networks",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "dimensionality reduction",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data structures",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Statistics, Mathematics, or Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "communicate quantitative results",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "PySpark",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "Large Language Models (LLMs)",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "ETL pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "code reviews",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "agile",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Applied NLP",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "topic modeling",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "named entity extraction",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "word embeddings",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "Anti-Money Laundering (AML)",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Know Your Customer (KYC)",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Fraud Risk Management",
+     "kind": "domain",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "PySpark",
+     "onet": "PySpark",
+     "form": "PySpark",
+     "where": "responsibility",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Scala",
+     "onet": "Scala",
+     "form": "Scala",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "uchicago-ds",
+   "company": "University of Chicago",
+   "title": "Data Scientist",
+   "family": "data scientist",
+   "url": "https://uchicago.wd5.myworkdayjobs.com/External/job/Chicago-IL/Data-Scientist_JR35300",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data science",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "genomic",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "statistical models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "statistical inference",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data processing pipelines",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "reproducible genomic data analysis",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data dictionaries",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "multi-modal clinical data",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "grant proposals",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "supervise trainees",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "develop training material",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "breast cancer",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "pathology",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "radiographic imaging",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "torch",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "scikit-learn",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Linux/Ubuntu",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "SLURM",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "tmux",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "ssh",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "large language models",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "image data",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "unstructured text data",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "computer science",
+     "kind": "education",
+     "from": "preferred"
+    },
+    {
+     "text": "Analytical skills",
+     "kind": "soft",
+     "from": "preferred"
+    },
+    {
+     "text": "Problem-solving",
+     "kind": "soft",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Linux",
+     "onet": "Linux",
+     "form": "Linux",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "scikit-learn",
+     "onet": "Scikit-learn",
+     "form": "Scikit-learn",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "amgen-ds",
+   "company": "Amgen",
+   "title": "Data Scientist",
+   "family": "data scientist",
+   "url": "https://amgen.wd1.myworkdayjobs.com/Careers/job/United-States---Remote/Data-Scientist_R-257589",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "GenAI",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "retrieval-augmented generation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "prompt engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "semantic search",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "supply chain",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "agentic AI",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "embeddings",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "natural language processing",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "feature engineering",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "exploratory data analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "model evaluation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "MLOps",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "LLMOps",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "version control",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data pipelines",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data modeling",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "large language models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "multi-agent workflows",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "statistical modeling",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "time-series analysis",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data quality checks",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "experimentation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data governance",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "biotech",
+     "kind": "domain",
+     "from": "preferred"
+    },
+    {
+     "text": "Agile",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "AI governance",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "zillow-ds",
+   "company": "Zillow",
+   "title": "Data Scientist",
+   "family": "data scientist",
+   "url": "https://zillow.wd5.myworkdayjobs.com/Zillow_Group_External/job/Remote-USA/Data-Scientist_P751219-2",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "machine learning",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "monitoring",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "experimentation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "real estate",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "pandas",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "scikit-learn",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "PySpark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Snowflake",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Spark",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Airflow",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "dbt",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "statistics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "performance models",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "model deployment",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data products",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "agent",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "A/B testing",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "causal inference",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "customer segmentation models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "clustering",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "regression",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "tree-based models",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "feature development",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "dashboards",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "self-service analytics",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "KPIs",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "B2B",
+     "kind": "domain",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Airflow",
+     "onet": "Apache Airflow",
+     "form": "Airflow",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "pandas",
+     "onet": "pandas",
+     "form": "pandas",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "PySpark",
+     "onet": "PySpark",
+     "form": "PySpark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "scikit-learn",
+     "onet": "Scikit-learn",
+     "form": "Scikit-learn",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Snowflake",
+     "onet": "Snowflake",
+     "form": "Snowflake",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Spark",
+     "onet": "Apache Spark",
+     "form": "Spark",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "hp-da",
+   "company": "HP",
+   "title": "PS Data Analyst",
+   "family": "data analyst",
+   "url": "https://hp.wd5.myworkdayjobs.com/ExternalCareerSite/job/Spring-Texas-United-States-of-America/PS-Data-Analyst_3169457-1",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "AI",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Python",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Tableau",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "AI-enabled tools",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data analysis methodologies",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "statistical concepts",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data validation techniques",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Project Management",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data visualization",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "dashboards",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "structured and unstructured data",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "problem-solving",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "data-driven decision-making",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "SMEs",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Mathematics, Economics, Physics, Computer Science",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "communication skills",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "influence stakeholders",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "data collection and analysis procedures",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data insight visualizations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "experiments and validations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "patent applications",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "mentoring",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data science projects",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "data science engineering",
+     "kind": "domain",
+     "from": "responsibility"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Python",
+     "onet": "Python",
+     "form": "Python",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "Tableau",
+     "onet": "Tableau",
+     "form": "Tableau",
+     "where": "required",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "amfam-da",
+   "company": "American Family Insurance",
+   "title": "Product Analyst (Hybrid)",
+   "family": "data analyst",
+   "url": "https://amfam.wd1.myworkdayjobs.com/Careers/job/WI-Madison/Product-Analyst--Hybrid-_R39620",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "underwriting",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "competitive intelligence",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Microsoft Office",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "root cause analysis",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "validate results",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "project management",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "insurance product design",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "market research",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "problem-solving",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "work independently",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "performance monitoring",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "executive reporting",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "experience rating",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "automate recurring analysis and reporting",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "business recommendations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "pricing/actuarial",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "profit and loss ratio",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "rate reviews",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "product monitoring",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "BigQuery",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Excel",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "PowerPoint",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "dashboard or visualization tools",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "competitive-intelligence tools",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "AI-assisted analytical workflows",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "cost-benefit analysis",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "personal lines",
+     "kind": "domain",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "Microsoft Office",
+     "onet": "Microsoft Office software",
+     "form": "Microsoft Office",
+     "where": "required",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "PowerPoint",
+     "onet": "Microsoft PowerPoint",
+     "form": "PowerPoint",
+     "where": "preferred",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "BigQuery",
+     "onet": "BigQuery",
+     "form": "BigQuery",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "bmc-da",
+   "company": "Boston Medical Center",
+   "title": "Pediatrics Data Analyst",
+   "family": "data analyst",
+   "url": "https://bmc.wd1.myworkdayjobs.com/BMC/job/801-Albany-St/Pediatrics-Data-Analyst_50459",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "Excel",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Minitab",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Visio",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Access",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "PowerPoint",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Word",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "Outlook",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "statistical analysis",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "program evaluation",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "BACO metrics",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "healthcare",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "effective communication",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "attention to detail",
+     "kind": "soft",
+     "from": "required"
+    },
+    {
+     "text": "SAS programming",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "REDCAP",
+     "kind": "tool",
+     "from": "responsibility"
+    },
+    {
+     "text": "dataset cleaning",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "descriptive analyses",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "regression modeling",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "power calculations",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "SPC comparative reports",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "data management",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "surveys",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "literature searches",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "manuscript preparation",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Quality Assurance/Improvement",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "Emergency Department (ED) data analytics",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "SQL",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Oracle",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "Database Management",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "PowerPoint",
+     "onet": "Microsoft PowerPoint",
+     "form": "PowerPoint",
+     "where": "required",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "SPC",
+     "onet": "Statistical process control SPC software",
+     "form": "SPC",
+     "where": "responsibility",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "SAS",
+     "onet": "SAS",
+     "form": "SAS",
+     "where": "responsibility",
+     "status": "in the built-in list",
+     "in_final_list": true
+    },
+    {
+     "word": "SQL",
+     "onet": "Structured query language SQL",
+     "form": "SQL",
+     "where": "preferred",
+     "status": "in the built-in list",
+     "in_final_list": true
+    }
+   ]
+  },
+  {
+   "key": "cvs-da",
+   "company": "CVS Health",
+   "title": "Encounter Data Analyst- DSNP (Dual Eligible Special Needs Plan)",
+   "family": "data analyst",
+   "url": "https://cvshealth.wd1.myworkdayjobs.com/CVS_Health_Careers/job/PA---Work-from-home/Encounter-Data-Analyst--DSNP--Dual-Eligible-Special-Needs-Plan-_R1016439",
+   "saved_read": true,
+   "keywords": [
+    {
+     "text": "encounter data",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "837",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "claims",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "DSNP",
+     "kind": "domain",
+     "from": "responsibility"
+    },
+    {
+     "text": "FTP",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "data transfer software",
+     "kind": "tool",
+     "from": "required"
+    },
+    {
+     "text": "medical claims",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "Medicare/Medicaid",
+     "kind": "domain",
+     "from": "required"
+    },
+    {
+     "text": "data management",
+     "kind": "skill",
+     "from": "required"
+    },
+    {
+     "text": "Bachelors degree",
+     "kind": "education",
+     "from": "required"
+    },
+    {
+     "text": "837 file transmissions",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "state response files",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "error corrections",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "state requirements",
+     "kind": "skill",
+     "from": "responsibility"
+    },
+    {
+     "text": "Microsoft Access Databases",
+     "kind": "tool",
+     "from": "preferred"
+    },
+    {
+     "text": "837 claims files",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "data discrepancies",
+     "kind": "skill",
+     "from": "preferred"
+    },
+    {
+     "text": "analytical skills",
+     "kind": "skill",
+     "from": "preferred"
+    }
+   ],
+   "onet_mentions": [
+    {
+     "word": "FTP",
+     "onet": "File transfer protocol FTP software",
+     "form": "FTP",
+     "where": "required",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    },
+    {
+     "word": "Microsoft Access",
+     "onet": "Microsoft Access",
+     "form": "Microsoft Access",
+     "where": "preferred",
+     "status": "caught by the posting read",
+     "in_final_list": true
+    }
+   ]
+  }
+ ]
+}
