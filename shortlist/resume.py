@@ -368,12 +368,14 @@ def ok(entry: dict) -> bool:
 
 
 def pending_count(facts: dict) -> int:
-    """Your own lines still waiting for review (suggested versions are counted by pending_versions)."""
-    n = sum(not ok(facts[k]) for k in ("contact", "titles"))
-    n += sum(not ok(x) for k in ("summaries", "education", "skills") for x in facts[k])
+    """Your own lines still waiting for review (suggested versions are counted by pending_versions). A line you
+    removed isn't waiting for anything; the Resume lines tab counts the same way."""
+    waiting = lambda x: x.get("status") not in ("approved", "removed")
+    n = sum(waiting(facts[k]) for k in ("contact", "titles"))
+    n += sum(waiting(x) for k in ("summaries", "education", "skills") for x in facts[k])
     for group in ("roles", "projects"):
         for g in facts[group]:
-            n += (not ok(g)) + sum(not ok(b) for b in g["bullets"])
+            n += waiting(g) + sum(waiting(b) for b in g["bullets"])
     return n
 
 

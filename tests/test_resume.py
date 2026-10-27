@@ -1011,5 +1011,16 @@ class KeywordTest(unittest.TestCase):
                          ("on page", "on page", "declined", "ask"))
         self.assertEqual(resume.check(facts, sel, 1), [])
 
+
+class PendingCountTest(unittest.TestCase):
+    def test_lines_you_removed_are_not_waiting_for_review(self):
+        facts = copy.deepcopy(FACTS)
+        facts["roles"][0]["bullets"].append({"id": "r1d", "text": "Built ETL pipelines for 1M+ rows.", "status": "removed"})
+        facts["summaries"].append({"id": "s2", "variant": "data-analyst", "text": "Data analyst.", "status": "removed"})
+        self.assertEqual(resume.pending_count(facts), 1)  # only r1c, as the Resume lines tab counts it
+        facts["roles"][0]["bullets"][2]["status"] = "approved"
+        self.assertEqual(resume.pending_count(facts), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
