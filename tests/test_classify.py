@@ -49,6 +49,13 @@ class SeniorityTest(unittest.TestCase):
             with self.subTest(title=title):
                 self.assertEqual(seniority(title), expected)
 
+    def test_a_head_is_senior_wherever_the_word_stands(self):
+        for title, expected in (("Head of Data", "senior"), ("Applied AI Head", "senior"),
+                                ("WORKFORCE STRATEGY HEAD, ENTERPRISE DATA SCIENCE & ARTIFICIAL INTELLIGENCE (DSAI)", "senior"),
+                                ("Data Analyst, Head Start", "mid"), ("Headcount Planning Analyst", "mid")):
+            with self.subTest(title=title):
+                self.assertEqual(seniority(title), expected)
+
 
 if __name__ == "__main__":
     unittest.main()
