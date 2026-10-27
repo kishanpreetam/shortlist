@@ -171,7 +171,8 @@ def fresh_weight(age: int) -> float:
 
 def board_of(url: str) -> str:
     u = url.lower()
-    for name, marks in (("Workday", ("myworkdayjobs.com",)), ("Ashby", ("ashbyhq.com",)), ("Lever", ("lever.co",)),
+    # Workday hosts some tenants' job pages on myworkdaysite.com (wd5.myworkdaysite.com/recruiting/guidewire/...)
+    for name, marks in (("Workday", ("myworkdayjobs.com", "myworkdaysite.com")), ("Ashby", ("ashbyhq.com",)), ("Lever", ("lever.co",)),
                         ("Greenhouse", ("greenhouse.io", "gh_jid="))):
         if any(m in u for m in marks):
             return name

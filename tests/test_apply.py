@@ -57,6 +57,13 @@ class PickTest(unittest.TestCase):
             self.assertEqual([r["company"] for r in pick(rows, [], [], today=self.today)], ["Series B", "Seed", "Bigco", "Ent"])
             self.assertEqual([r["company"] for r in pick(rows, [], [], n=2, today=self.today)], ["Series B", "Seed"])
 
+    def test_workday_pages_on_myworkdaysite_count_as_workday(self):
+        url = "https://wd5.myworkdaysite.com/recruiting/guidewire/external/job/United-States/AI-Engineer_JR1"
+        self.assertEqual(apply.board_of(url), "Workday")
+        rows = [posting("Guidewire", "AI Engineer", 50, 1, url=url), posting("Seed", "Data Engineer", 20, 1)]
+        with mock.patch.object(apply, "_established", set()):
+            self.assertEqual([r["company"] for r in pick(rows, [], [], today=self.today)], ["Seed", "Guidewire"])
+
 
 class HelpersTest(unittest.TestCase):
     def test_business_days_skip_weekends(self):
