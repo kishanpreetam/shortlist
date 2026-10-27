@@ -88,6 +88,10 @@ REQ_SCHEMA = {
     "required": ["requirements", "keywords"],
 }
 KEYWORDS_MAX = 30
+# Every line of a posting is read: these only guard against a runaway answer or a pasted page that isn't a posting
+JOB_MAX = 60_000  # characters of a posting Claude reads, as many as Paste a job takes; postings run about 6,000
+REQ_MAX = 80      # requirements kept from one read; one per bullet or sentence, a long posting has 40 or more
+_OLD_REQ_MAX = 40  # reads cached before 2026-10-27 kept at most 40, so one that reached it may have lost the rest
 RULES = """You tailor resume points to one job posting, the way a careful recruiter-minded editor would. Keep every point true to the original. Every rule is mandatory.
 Requirements lists what this posting's hiring manager checks for, each with an id and a kind (required, responsibility or preferred). For each point, first decide which requirements its actual work demonstrates, judging only from the point, its supporting_facts and its role_tools, and list their ids in shows; a point that demonstrates none gets an empty list. Then write the point so that evidence is plain to the hiring manager, in the requirement's own words where they truthfully describe the work. A required requirement the point demonstrates must read unmistakably in it, by name; a preferred one should appear where it fits naturally. A point's job_words start with the posting's own keywords for work the point shows: use each of those exactly as the posting writes it (for example "ETL processes" or "data quality checks"), in a natural sentence, wherever it truthfully describes the point's work.
 Style, for every point: keep every tool, system and data name the point has, and never swap a name for a category (keep Airflow; add the posting's word for it, such as orchestration, at most once). Use plain verbs (built, wrote, ran, cut, automated, migrated, tested, measured, shipped) and the point's own nouns. Use at most three of the posting's keywords in one point, each once, and never copy more than four words in a row from the posting. Never end a point with a clause that claims a benefit the point doesn't state (resulting in, leading to, enabling, ensuring, improving). Points of one role start with different verbs and vary in length and shape. Never use spearheaded, leveraged, utilized, facilitated, robust, seamless, cutting-edge, innovative, comprehensive, pivotal, crucial, transformative, impactful, showcase, foster, bolster, harness or delve unless the point itself does.
@@ -208,7 +212,7 @@ def _cache_key(points: list[dict], job_title: str, job_text: str) -> str:
 
 
 def _job_block(job_title: str, job_text: str) -> str:
-    job = re.sub(r"<\s*/\s*job\s*>", "[end]", job_text, flags=re.I)[:24_000]  # the posting can't close its own tag
+    job = re.sub(r"<\s*/\s*job\s*>", "[end]", job_text, flags=re.I)[:JOB_MAX]  # the posting can't close its own tag
     return f"<job title={json.dumps(_clean_title(job_title))}>\n{job}\n</job>"
 
 
@@ -236,10 +240,14 @@ def keywords(job_title: str, job_text: str, claude: str, cache_dir: Path) -> lis
 
 
 def _reading(job_title: str, job_text: str, claude: str, cache_dir: Path) -> dict:
-    """The posting read once into its requirements and keywords, cached per job."""
+    """The posting read once into its requirements and keywords, cached per job. A read cached under the old guard
+    that reached it is read again whole, once."""
     title, (job, _) = _clean_title(job_title), clean_posting(job_text)
     key = _cache_key([], f"requirements|{title}", job + REQ_RULES)
-    return _group(key, cache_dir, lambda: _ask_requirements(title, job, claude))
+    got = _group(key, cache_dir, lambda: _ask_requirements(title, job, claude))
+    if not got.get("whole") and len(got.get("requirements") or []) >= _OLD_REQ_MAX:
+        got = _group(f"{key}-whole", cache_dir, lambda: _ask_requirements(title, job, claude))
+    return got
 
 
 # Conditions of the job that no resume line can show, read as logistics even when Claude files them as required
@@ -364,8 +372,8 @@ def _read_once(job_title: str, job_text: str, claude: str) -> dict:
             said.add(text.lower())
             words.append({"text": text, "kind": k.get("kind") if k.get("kind") in ("tool", "skill", "domain", "education", "soft") else "skill",
                           "from": k.get("from") if k.get("from") in ("required", "responsibility", "preferred") else "responsibility"})
-    # as many requirements as the posting states (40 only guards against a runaway answer), and its keywords
-    return {"requirements": out[:40], "keywords": words[:KEYWORDS_MAX]} if out else {}
+    # as many requirements as the posting states (REQ_MAX only guards against a runaway answer), and its keywords
+    return {"requirements": out[:REQ_MAX], "keywords": words[:KEYWORDS_MAX], "whole": True} if out else {}
 
 
 def chunks(points: list[dict], n: int = CHUNKS) -> list[list[dict]]:

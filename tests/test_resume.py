@@ -1022,5 +1022,16 @@ class PendingCountTest(unittest.TestCase):
         self.assertEqual(resume.pending_count(facts), 0)
 
 
+
+class CopilotTest(unittest.TestCase):
+    def test_only_github_copilot_reads_as_github_copilot(self):
+        for text in ("We use GitHub Copilot and Cursor every day.", "Experience with Cursor, Copilot or Claude Code."):
+            with self.subTest(text):
+                self.assertLessEqual({"copilot", "ai_coding"}, set(resume.terms(text)))
+        for text in ("Build agents in Microsoft Copilot Studio and Power Automate.", "You will build an AI copilot for analysts.",
+                     "Roll out Microsoft 365 Copilot to the sales team.", "Configure Einstein Copilot in Salesforce."):
+            with self.subTest(text):
+                self.assertFalse({"copilot", "ai_coding"} & set(resume.terms(text)))
+
 if __name__ == "__main__":
     unittest.main()
