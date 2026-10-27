@@ -7,8 +7,9 @@ import re
 
 # --- seniority -----------------------------------------------------------------
 
+# "head" wherever it stands ("Head of Data", "Workforce Strategy Head"), but not Head Start, the early-education program
 TOO_SENIOR = re.compile(
-    r"\b(senior|sr\.?|staff|principal|lead|manager|director|head of|vp|vice president|chief|"
+    r"\b(senior|sr\.?|staff|principal|lead|manager|director|head(?! start)|vp|vice president|chief|"
     r"distinguished|fellow|architect|iii|iv|v|level 3|level 4|l5|l6|managing partner|executive partner)\b"
 )
 NOT_FULL_TIME_GRAD = re.compile(r"\b(intern|internships?|co-?op|apprentice|summer 20\d\d|part[- ]time)\b")
