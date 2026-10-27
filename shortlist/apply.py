@@ -1288,10 +1288,14 @@ function copy(text){  /* the clipboard, then the older copy command, then the te
    document.body.append(t,close);t.focus();t.select();flash('Press Command+C to copy','ok');};
  (navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).then(()=>flash('Copied','ok'),()=>{if(old())flash('Copied','ok');else show();});}
 function ago(a,h){if(h!=null&&h<48)return h<1?'posted under an hour ago':'posted '+h+(h===1?' hour':' hours')+' ago';return a===0?'posted today':a===1?'posted 1 day ago':'posted '+a+' days ago';}
+/* A queue's ages are counted when it's picked (Q.made_at); a page kept open, or a queue picked on an earlier day, adds the time since */
+function ageNow(it){const t=new Date(Q.made_at||''),now=new Date();if(isNaN(t))return {days:it.age,hours:it.age_hours};
+ const hours=it.age_hours==null?null:Math.round(it.age_hours+Math.max(0,now-t)/36e5),day=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+ return {hours,days:hours!=null?Math.floor(hours/24):it.age+Math.max(0,Math.round((day(now)-day(t))/864e5))};}  /* Workday gives dates only: whole days */
 function card(it){
- const applied=S.applied[it.url],skipped=S.skipped.includes(it.url);
+ const applied=S.applied[it.url],skipped=S.skipped.includes(it.url),age=ageNow(it);
  const facts=el('div',{class:'facts'},
-  el('span',{class:'chip'+(it.age<=3?' new':''),text:ago(it.age,it.age_hours)}),
+  el('span',{class:'chip'+(age.days<=3?' new':''),text:ago(age.days,age.hours)}),
   el('span',{class:'chip',text:'score '+it.score.toFixed(0)}),
   el('span',{class:'chip',text:it.board}),
   it.sponsor?el('span',{class:'chip',text:'Sponsor: '+it.sponsor}):null,
@@ -1320,7 +1324,7 @@ function card(it){
   it.missing.length?el('div',{class:'row muted'},el('b',{text:'They also want: '}),document.createTextNode(it.missing.join(', ')+'. Mention only what you have really used.')):null,
   it.leverage?el('div',{class:'row'},el('b',{text:'Your angle: '}),document.createTextNode(it.leverage)):null,
   it.grad_check?el('div',{class:'row warn-row'},el('b',{text:'Graduate program: '}),document.createTextNode('check the graduation window before applying. Many 2027 programs want Dec 2026 to mid-2027 grads.')):null,
-  it.age>7?el('div',{class:'row warn-row'},el('b',{text:'Over a week old: '}),document.createTextNode('the first reviews may be done. A note to someone there matters more than usual.')):null,
+  age.days>7?el('div',{class:'row warn-row'},el('b',{text:'Over a week old: '}),document.createTextNode('the first reviews may be done. A note to someone there matters more than usual.')):null,
   el('div',{class:'row'},el('b',{text:it.message?'Message one person: ':'Optional, apply-only is fine (invite limit): '}),el('span',{class:'links'},...it.people.map(([t,u])=>el('a',{href:u,target:'_blank',rel:'noopener noreferrer',text:t})))),
   el('div',{class:'row'},name,' ',el('button',{onclick:()=>copy(note.value),text:'Copy message'}),' ',cnt),note,
   actions, el('div',{id:'pv-'+it.n}));
@@ -1460,10 +1464,10 @@ function reqBox(r,key){  /* what the job asks for, and which of your lines on th
  for(const q of reqs){const row=el('div',{class:'row small'});const kind=el('span',{class:'muted',text:' ('+q.kind+')'+(q.by.length&&(q.where||[]).length?', in '+q.where.join(', '):'')});
   const inLines=(q.where||[]).some(w=>w==='experience'||w==='projects');
   const btn=el('button',{class:'x',text:q.by.length?'Show it in a line':"I've done this",title:'Write one line about the work, once; it goes on every resume where it fits'});
-  if(q.by.length){const short=part(q)&&q.kind==='required';
-   row.append(el('span',{class:part(q)?'chip warn':'chip new',text:part(q)?'partly':'shown'}),' ',q.text,kind,q.kind==='required'&&(!inLines||short)?btn:null,q.kind==='required'&&(!inLines||short)?suggestButton(q,row,key):null,
+  if(q.by.length){const short=part(q)&&q.kind==='required';  /* append() prints a null as the word "null", so drop them first */
+   row.append(...[el('span',{class:part(q)?'chip warn':'chip new',text:part(q)?'partly':'shown'}),' ',q.text,kind,q.kind==='required'&&(!inLines||short)?btn:null,q.kind==='required'&&(!inLines||short)?suggestButton(q,row,key):null,
      part(q)?el('div',{class:'muted',style:'margin-left:58px',text:'short: '+(q.gaps||[]).join('; ')}):null,
-     el('div',{class:'muted',style:'margin-left:58px',text:'by: '+q.by.map(id=>{const t=lines[id]||'';return t.length>70?t.slice(0,70)+'...':t;}).join(' | ')}));}
+     el('div',{class:'muted',style:'margin-left:58px',text:'by: '+q.by.map(id=>{const t=lines[id]||'';return t.length>70?t.slice(0,70)+'...':t;}).join(' | ')})].filter(x=>x!=null));}
   else row.append(el('span',{class:'chip warn',text:'not shown'}),' ',q.text,kind,' ',btn,suggestButton(q,row,key));
   btn.addEventListener('click',()=>{const where=el('select',{},...(r.places||[]).map(pl=>el('option',{value:pl.id,text:pl.name})));
      const ta=el('textarea',{rows:'2',placeholder:'One line about what you did, in your own words, as it should read on your resume'});
