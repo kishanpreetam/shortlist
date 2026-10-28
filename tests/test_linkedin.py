@@ -101,10 +101,12 @@ class RefreshTest(unittest.TestCase):
         import shortlist.__main__ as cli
         tmp = Path(tempfile.mkdtemp())
         seen = {}
-        def scan(profile, ttl_s, progress):
+        def scan(profile, ttl_s, progress, say):
             seen["ttl"] = ttl_s
             progress(1, 2)
             progress(2, 2)
+            say("learning tools from the postings...")  # the scan's last stage shows on the page
+            seen["stage"] = apply.REFRESH["stage"]
         def make_queue(profile, n, max_age_hours):
             seen["queue"] = (n, max_age_hours)
             return {"items": [{"spare": False}, {"spare": False}, {"spare": True}]}
@@ -113,7 +115,8 @@ class RefreshTest(unittest.TestCase):
                 mock.patch.object(apply, "TODAY", tmp / "today.json"), mock.patch.object(apply, "kick_warmup", lambda: None):
             apply.REFRESH.update(running=False, done=0, total=0, error="", found=None)  # as start_refresh does
             apply._refresh({}, 36)
-        self.assertEqual(seen, {"ttl": apply.REFRESH_TTL_S, "queue": (25, 36)})  # the window you picked
+        self.assertEqual(seen, {"ttl": apply.REFRESH_TTL_S, "queue": (25, 36),  # the window you picked
+                                "stage": "Learning tools from the postings"})
         self.assertEqual((apply.REFRESH["running"], apply.REFRESH["done"], apply.REFRESH["total"], apply.REFRESH["found"], apply.REFRESH["error"]),
                          (False, 2, 2, 2, ""))
 
@@ -126,7 +129,7 @@ class RefreshTest(unittest.TestCase):
 
     def test_a_failed_refresh_keeps_the_queue_and_says_why(self):
         import shortlist.__main__ as cli
-        def scan(profile, ttl_s, progress):
+        def scan(profile, ttl_s, progress, say):
             raise OSError("offline")
         with mock.patch.object(cli, "scan", scan):
             apply._refresh({})

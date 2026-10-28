@@ -80,6 +80,9 @@ THEMES = {
 _THEME_RX = {k: re.compile(v, re.I) for k, v in THEMES.items()}
 SKILL_WEIGHT, THEME_WEIGHT, REPEAT_BOOST = 2.0, 1.0, 1.5
 
+# GitHub Copilot, not the other copilots postings name: "an AI copilot" they build, Microsoft (365) Copilot, Copilot
+# Studio, Einstein Copilot or Security Copilot
+_COPILOT = r"github copilot|(?<!microsoft )(?<!365 )(?<!ai )(?<!einstein )(?<!security )(?-i:\bCopilot\b)(?! studio)"
 # Tools that job descriptions name beyond the job search's own list; used only for tailoring.
 EXTRA_SKILLS: dict[str, tuple[str, str]] = {
     "redshift": (r"redshift", "Redshift"), "bigquery": (r"bigquery", "BigQuery"),
@@ -106,7 +109,7 @@ EXTRA_SKILLS: dict[str, tuple[str, str]] = {
     # the model makers' products, not their names: an Anthropic or OpenAI posting names the employer, not a skill
     "openai": (r"openai('s)? (api|sdk|models?)", "OpenAI API"),
     "anthropic": (r"\bclaude\b(?! code)|anthropic('s)? (api|sdk|models?)", "Anthropic Claude API"),
-    "ai_coding": (r"claude code|github copilot|\bcopilot\b|\bcodex\b|ai coding (tools?|assistants?)|ai-assisted (coding|development)", "AI Coding Tools"),
+    "ai_coding": (rf"claude code|{_COPILOT}|\bcodex\b|ai coding (tools?|assistants?)|ai-assisted (coding|development)", "AI Coding Tools"),
     "bedrock": (r"bedrock", "Amazon Bedrock"), "vertex_ai": (r"vertex ai", "Vertex AI"),
     "crewai": (r"crew ?ai\b", "CrewAI"), "autogen": (r"autogen", "AutoGen"), "prompt_engineering": (r"prompt engineering", "Prompt Engineering"),
     "pydantic": (r"pydantic", "Pydantic"), "streamlit": (r"streamlit", "Streamlit"), "jenkins": (r"jenkins", "Jenkins"),
@@ -125,7 +128,7 @@ EXTRA_SKILLS: dict[str, tuple[str, str]] = {
     "metadata": (r"\bmetadata\b", "Metadata Management"),
     # named AI coding tools: a posting that names one is asked about it by name (AI Coding Tools stays their parent)
     "claude_code": (r"claude code", "Claude Code"), "codex": (r"\bcodex\b", "Codex"),
-    "cursor": (r"(?-i:\bCursor\b)(?! (?:position|pagination|based))", "Cursor"), "copilot": (r"github copilot|\bcopilot\b", "GitHub Copilot"),
+    "cursor": (r"(?-i:\bCursor\b)(?! (?:position|pagination|based))", "Cursor"), "copilot": (_COPILOT, "GitHub Copilot"),
     # more of the tools data and AI postings name
     "aws_glue": (r"\bglue\b", "AWS Glue"), "s3": (r"\bs3\b", "Amazon S3"), "athena": (r"amazon athena|(?-i:\bAthena\b)", "Amazon Athena"),
     "step_functions": (r"step functions", "AWS Step Functions"), "oozie": (r"\boozie\b", "Oozie"), "azkaban": (r"\bazkaban\b", "Azkaban"),
@@ -175,6 +178,11 @@ ITEM_LABELS = {"ml": "Machine Learning", "deep_learning": "Deep Learning", "data
                "ab_testing": "A/B Testing", "evals": "LLM Evals", "vector_db": "Vector Databases", "agents": "AI Agents",
                "forecasting": "Forecasting", "go": "Go (Golang)", "pandas": "pandas"}
 LEARNING_LINE = "Currently learning"
+# The engine's own tools, kept apart from the ones it learns from postings (lexicon.py; use_lexicon adds them)
+_BUILTIN_TERMS, _BUILTIN_CATEGORY = dict(_TERM_RX), dict(CATEGORY)
+_KINDS = frozenset(_BUILTIN_CATEGORY.values())
+LEARNED: dict[str, dict] = {}
+_NEEDLES: dict[str, tuple] = {}  # each learned tool's names' first letters, for a cheap look before its pattern
 
 # Which approved title is closest to a job title, in order; the first rule whose pattern
 # matches and whose title you approved wins, else the resume version's own title.
@@ -387,13 +395,26 @@ def pending_versions(facts: dict) -> int:
 
 # ---------- terms ----------
 
+def _matches(text: str) -> dict[str, list[re.Match]]:
+    """Each tool's matches in a text. A learned tool's match inside a match of one of the engine's own tools isn't the
+    learned tool's: the "GitHub" in GitHub Actions, the "Sub" in Pub/Sub."""
+    out, spans, low = {}, [], (text or "").lower()
+    for key, rx in _TERM_RX.items():  # the engine's own tools come first in the table
+        if key in LEARNED:
+            if not any(n in low for n in _NEEDLES.get(key) or ("",)):
+                continue  # a cheap look first: most postings name few of the learned tools
+            ms = [m for m in rx.finditer(text or "") if not any(a <= m.start() and m.end() <= b for a, b in spans)]
+        else:
+            ms = list(rx.finditer(text or ""))
+            spans += [m.span() for m in ms]
+        if ms:
+            out[key] = ms
+    return out
+
+
 def terms(text: str) -> dict[str, float]:
     """{term: weight}: tools and skills weigh 2, themes 1, x1.5 when mentioned twice or more."""
-    out = {}
-    for key, rx in _TERM_RX.items():
-        n = len(list(rx.finditer(text or "")))
-        if n:
-            out[key] = SKILL_WEIGHT * (REPEAT_BOOST if n > 1 else 1)
+    out = {key: SKILL_WEIGHT * (REPEAT_BOOST if len(ms) > 1 else 1) for key, ms in _matches(text).items()}
     for key, rx in _THEME_RX.items():
         n = len(list(rx.finditer(text or "")))
         if n:
@@ -411,6 +432,8 @@ def label(term: str) -> str:
         return term[6:].replace("_", " ")
     if term in EXTRA_SKILLS:
         return EXTRA_SKILLS[term][1]
+    if term in LEARNED:
+        return LEARNED[term]["label"]
     return SKILL_LABELS.get(term, term.replace("_", " "))
 
 
@@ -419,15 +442,64 @@ def item_label(term: str) -> str:
     return ITEM_LABELS.get(term) or label(term)
 
 
+def keyword_terms(text: str, learned: bool = True) -> set[str]:
+    """The tools and skills one of a posting's keywords names: by their patterns, or by the keyword being exactly a
+    skill's name, as when a posting lists "R" or "Go" on its own (their patterns need context, "R programming").
+    `learned`: False leaves out the tools learned from postings."""
+    table = _TERM_RX if learned else _BUILTIN_TERMS
+    found = set(_matches(text)) if learned else {t for t, rx in table.items() if rx.search(text or "")}
+    if not found:
+        name = " ".join((text or "").lower().split())
+        found = {t for t in table if name in (label(t).lower(), item_label(t).lower())}
+    return found
+
+
+def use_lexicon(lex: dict | None) -> int:
+    """Teach the engine the tools learned from postings (lexicon.py), or forget them with None. A learned tool is then
+    recognized in postings and in your lines like the engine's own, with its label and skills row; a tool the engine
+    already knows keeps its own pattern. The tables are swapped whole, so a preview running meanwhile reads either
+    set, never half of one. Returns how many tools it learned."""
+    global _TERM_RX, CATEGORY, LEARNED, BOLD_ANY, _NEEDLES
+    table, kinds, learned, needles = dict(_BUILTIN_TERMS), dict(_BUILTIN_CATEGORY), {}, {}
+    for key, e in ((lex or {}).get("terms") or {}).items():
+        if key in table or not isinstance(e, dict) or e.get("status") == "removed" or not e.get("label") or not e.get("pattern"):
+            continue
+        try:
+            table[key] = re.compile(e["pattern"], re.I)
+        except re.error:
+            continue
+        kinds[key], learned[key] = e["category"] if e.get("category") in _KINDS else "data", e
+        # the start of each of its names, in lower case: a text without any of them can't name the tool
+        firsts = {re.split(r"[\s-]+", str(n).lower().strip())[0][:6] for n in [e["label"], *(e.get("spellings") or [])]}
+        needles[key] = tuple(sorted(f for f in firsts if f)) or ("",)
+    _NEEDLES, LEARNED, CATEGORY = needles, learned, kinds  # a term's label, row and look are in place before its pattern
+    _TERM_RX = table
+    BOLD_ANY = _bold_any()
+    _word_terms.cache_clear()
+    _term_set.cache_clear()
+    return len(learned)
+
+
 _SUFFIX = re.compile(r"[,.]?\s+(inc|llc|l\.l\.c|corp|corporation|co|company|ltd|plc|technologies|group|holdings)\.?$", re.I)
 
 
+def in_name(names, employer: str) -> bool:
+    """Whether an employer's own name holds one of a tool's names as a word: "Epic Games" holds Epic."""
+    firm = " ".join(re.sub(r"[^a-z0-9+#]+", " ", (employer or "").lower()).split())
+    return any(re.search(rf"(?<![a-z0-9]){re.escape(' '.join(n.lower().split()))}(?![a-z0-9])", firm) for n in names)
+
+
 def without_employer(text: str, employer: str) -> str:
-    """The job description minus the employer's own name, so "Snowflake" at Snowflake isn't read as a skill they ask for."""
+    """The job description minus the employer's own name, so "Snowflake" at Snowflake isn't read as a skill they ask
+    for, and minus a learned tool the employer is named for: "WHAT MAKES US EPIC?" at Epic Games isn't Epic."""
     name = _SUFFIX.sub("", (employer or "").strip())
     if len(name) < 3:
         return text or ""
-    return re.sub(rf"(?<![\w-]){re.escape(name)}(?:'s)?(?![\w-])", " ", text or "", flags=re.I)
+    out = re.sub(rf"(?<![\w-]){re.escape(name)}(?:'s)?(?![\w-])", " ", text or "", flags=re.I)
+    for e in LEARNED.values():
+        if in_name(e.get("spellings") or [e["label"]], name):
+            out = re.sub(e["pattern"], " ", out, flags=re.I)
+    return out
 
 
 def _score(text: str, job: dict[str, float]) -> tuple[float, list[str]]:
@@ -1637,7 +1709,7 @@ def job_keywords(job_title: str, job_text: str, given: list[dict] | tuple = (), 
         if not phrase or phrase.lower() in seen or NEVER.search(phrase) or (employer and employer.lower() in phrase.lower()):
             continue
         seen.add(phrase.lower())
-        found = {t for t in terms(phrase) if not t.startswith("theme:")}
+        found = keyword_terms(phrase)
         named |= found
         out.append({"text": phrase, "kind": k.get("kind") or "skill", "from": k.get("from") or "responsibility", "terms": sorted(found)})
     asked = {kind: " ".join(r["text"] for r in reqs if r.get("kind") == kind) for kind in ("required", "preferred")}
@@ -2226,9 +2298,9 @@ def tech_items(g: dict, job: dict[str, float] | None = None, fit: bool = True, e
              for x in [b["text"], *supporting_facts(b)] + [a["text"] for a in usable_versions(b)]]
     blob = "\n".join(texts)
     found = []
-    for t, rx in _TERM_RX.items():
-        m = rx.search(blob)
-        if not m or (t == "rest_api" and not re.search(r"\brest(ful)?\b", blob, re.I)) \
+    for t, ms in _matches(blob).items():
+        m = ms[0]
+        if (t == "rest_api" and not re.search(r"\brest(ful)?\b", blob, re.I)) \
                 or (t == "etl" and not re.search(r"\b(etl|elt)\b", blob, re.I)) or t in _NOT_TOOLS:
             continue  # "OpenAI API" isn't REST API work, "a data pipeline" isn't a tool, and forecasting is work, not a tool
         name = item_label(t)
@@ -2974,7 +3046,11 @@ def _fill(right) -> str:
 
 
 # with none of the job's skills in a bullet, its first named tool is set in bold instead
-BOLD_ANY = [t for t in _TERM_RX if t not in NO_BOLD and CATEGORY.get(t) in ("ai", "data", "cloud", "ml")]
+def _bold_any() -> list[str]:
+    return [t for t in _TERM_RX if t not in NO_BOLD and CATEGORY.get(t) in ("ai", "data", "cloud", "ml")]
+
+
+BOLD_ANY = _bold_any()
 
 
 def emphasize(text: str, emphasis: list[str], limit: int = 2) -> list[tuple[str, bool]]:

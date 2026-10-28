@@ -211,6 +211,31 @@ class RequirementsTest(FakeClaude):
         self.assertEqual((got.requirements, got["r1a"]), ([], "Built SQL ETL pipelines in Python for 1M+ rows."))
 
 
+class WholeReadTest(FakeClaude):
+    """Every line of a posting is read: no cap trims a long posting's requirements."""
+
+    def read(self, n):
+        out = json.dumps({"type": "result", "is_error": False, "structured_output": {"keywords": [], "requirements": [
+            {"id": f"R{i}", "text": f"Requirement {i} about data pipelines", "kind": "required"} for i in range(n)]}})
+        with mock.patch.dict(os.environ, {"FAKE_CLAUDE_LOG": str(self.log), "FAKE_REQ_OUT": out}):
+            return rewrite.requirements("Data Engineer", JOB, str(self.claude), self.cache)
+
+    def test_a_long_posting_keeps_every_requirement(self):
+        self.assertEqual(len(self.read(45)), 45)  # the old guard kept 40
+        self.read(45)
+        self.assertEqual(len(self.req_calls()), 1)  # read whole once, then from the cache
+
+    def test_a_read_the_old_guard_cut_is_read_again_whole_once(self):
+        title, (job, _) = rewrite._clean_title("Data Engineer"), rewrite.clean_posting(JOB)
+        key = rewrite._cache_key([], f"requirements|{title}", job + rewrite.REQ_RULES)
+        self.cache.mkdir(parents=True)
+        old = {"keywords": [], "requirements": [{"id": f"R{i}", "text": f"Old {i}", "kind": "required"} for i in range(40)]}
+        (self.cache / f"{key}.json").write_text(json.dumps(old))
+        self.assertEqual(len(self.read(44)), 44)
+        self.read(44)
+        self.assertEqual(len(self.req_calls()), 1)  # once, and the whole read is kept
+
+
 class SummaryRepairTest(FakeClaude):
     def test_a_summary_that_fails_the_check_gets_one_repair(self):
         out = {"type": "result", "is_error": False, "structured_output": {"summary": "Data Engineer, end to end.", "uses": ["a", "zzz"]}}

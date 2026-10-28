@@ -64,5 +64,6 @@ pitch: {}
 # rewrite_points: true          # false keeps your own wording
 # rewrite_warmup: 5             # how many of the next jobs to rewrite in the background (0 waits for a Tailor click)
 # claude_path: /path/to/claude  # if it isn't on your PATH
+# learn_keywords: true          # learn the tools postings name beyond the built-in list (data/lexicon.json); false turns it off
 # Words that never go on any resume it builds: headings drop them, and lines that use one stay off.
 # resume_never_words: [contract]

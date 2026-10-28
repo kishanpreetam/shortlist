@@ -5,6 +5,7 @@
   python -m shortlist run                      scan every employer, score, write results/report.html
   python -m shortlist run --roles data_engineer,ai_engineer
   python -m shortlist sponsors                 look up H-1B filings per employer (h1bdata.info, cached a week)
+  python -m shortlist lexicon                  learn the tools postings name beyond the built-in list, and list them
   python -m shortlist lca FILE.xlsx [FILE.xlsx]  import the DOL file instead (takes precedence)
   python -m shortlist log --company HubSpot --title "Data Engineer" --role data_engineer --channel referral --outcome screen
   python -m shortlist today                    pick today's apply queue and open it at http://127.0.0.1:8765
@@ -27,7 +28,7 @@ from pathlib import Path
 
 import yaml
 
-from . import apply, discover, h1bdata, lca, outcomes, phone, report, resume
+from . import apply, discover, h1bdata, lca, lexicon, outcomes, phone, report, resume
 from .boards import FETCHERS, Posting, host_for
 from .paths import DATA, ROOT
 from .roles import ROLE_BY_KEY
@@ -42,6 +43,7 @@ def load_profile(path: Path | None = None) -> dict:
     profile = yaml.safe_load(path.read_text())
     profile.setdefault("roles", list(ROLE_BY_KEY))
     resume.never_words(profile.get("resume_never_words"))
+    resume.use_lexicon(lexicon.load() if profile.get("learn_keywords", True) else None)
     return profile
 
 
@@ -160,6 +162,35 @@ def cmd_sponsors(args) -> int:
     return 0
 
 
+ROW_NAMES = {"code": "Programming", "data": "Data & Pipelines", "cloud": "Cloud & Deployment", "ml": "ML & Analytics",
+             "ai": "AI & Agentic Systems"}  # the skills rows a learned tool joins (the kinds in resume.CATEGORY)
+
+
+def cmd_lexicon(args) -> int:
+    """Learns the tools postings name beyond the built-in list (lexicon.py), saves them, and lists them."""
+    profile = load_profile(args.profile)
+    before = set((lexicon.load() or {}).get("terms") or {})
+    lex = lexicon.update(profile)
+    tools = {k: t for k, t in lex["terms"].items() if t.get("status") != "removed"}  # a removed tool stays off
+    new = {k for k in tools if k not in before}
+    print(f"{len(tools)} tools learned in all, {len(new)} new this time, "
+          f"from {lex['reads']} reads of postings and {lex['postings']:,} postings on the job boards")
+    if tools:
+        print(f"{'tool':<30} {'skills row':<20} {'postings':>8} {'employers':>9}")
+    for k, t in sorted(tools.items(), key=lambda kv: (-kv[1].get("postings", 0), kv[0])):
+        print(f"{(t.get('label') or k)[:30]:<30} {ROW_NAMES.get(t.get('category'), ROW_NAMES['data']):<20} "
+              f"{t.get('postings', 0):>8} {t.get('employers', 0):>9}" + ("  new" if k in new else ""))
+    skipped = list(lex["skipped"].items())
+    if skipped:
+        print(f"\nleft out ({len(skipped)} candidates):")
+        for name, why in skipped[:20]:
+            print(f"  {name[:28]:<28} {why}")
+        if len(skipped) > 20:
+            print(f"  ...and {len(skipped) - 20} more in {lexicon.PATH}")
+    print(f"saved to {lexicon.PATH}")
+    return 0
+
+
 SETUP_FILES = [
     ("https://flag.dol.gov/sites/default/files/wages/OFLC_Wages_2026-27.zip", "OFLC_Wages_2026-27.zip"),
     *[(f"https://raw.githubusercontent.com/Feashliaa/job-board-aggregator/main/data/{a}_companies.json", f"{a}_companies.json")
@@ -186,8 +217,9 @@ def cmd_setup(args) -> int:
 
 def scan(profile: dict, ttl_s: float = BOARD_TTL_S, progress=None, say=lambda msg: None) -> dict:
     """Read every employer's job board (a board read in the last `ttl_s` seconds isn't read again), score each
-    posting for you, and write results/postings.csv, the report and targets. The page's Refresh button runs this
-    too. `progress(done, total)` follows the boards; `say` gets the stage."""
+    posting for you, write results/postings.csv, the report and targets, and learn the tools the postings name beyond
+    the built-in list (lexicon.py; a failure there prints a warning, never fails the scan). The page's Refresh button
+    runs this too. `progress(done, total)` follows the boards; `say` gets the stage."""
     companies = load_companies(profile)
     say(f"looking up H-1B filings for {len(companies)} employers (cached after the first run)...")
     records, data_note = sponsor_records(companies)
@@ -208,6 +240,12 @@ def scan(profile: dict, ttl_s: float = BOARD_TTL_S, progress=None, say=lambda ms
     manual = [(c, records.get(c.name)) for c in companies if not c.boards]
     report.write(scored, roles, profile, mult, data_note, manual)
     report.write_targets(scored, records, profile, manual)
+    if profile.get("learn_keywords", True):
+        say("learning tools from the postings...")
+        try:
+            resume.use_lexicon(lexicon.update(profile))
+        except Exception as exc:  # learning is extra; it shouldn't fail a scan that has already written its results
+            print(f"  ! learning tools from the postings: {type(exc).__name__}: {exc}", file=sys.stderr)
     return {"postings": postings, "scored": scored, "roles": roles}
 
 
@@ -296,6 +334,8 @@ def main(argv=None) -> int:
     r.add_argument("--top", type=int, default=20)
     sp = sub.add_parser("sponsors", help="look up and show H-1B filing counts per employer")
     sp.add_argument("--profile", type=Path)
+    lx = sub.add_parser("lexicon", help="learn the tools postings name beyond the built-in list")
+    lx.add_argument("--profile", type=Path)
     dsc = sub.add_parser("discover", help="find more employers that sponsor your role families and have readable job boards")
     dsc.add_argument("--min", type=int, default=5, help="minimum 2025-26 filings for your role families")
     dsc.add_argument("--workable", action="store_true", help="also look for employers on Workable, keeping what's found already")
@@ -377,6 +417,8 @@ def main(argv=None) -> int:
         return cmd_run(args)
     if args.cmd == "sponsors":
         return cmd_sponsors(args)
+    if args.cmd == "lexicon":
+        return cmd_lexicon(args)
     if args.cmd == "discover":
         raw = yaml.safe_load((Path(__file__).parent / "companies.yaml").read_text())
         known = set(raw) | {v.get("h1b") or "" for v in raw.values()}

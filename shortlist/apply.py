@@ -462,7 +462,9 @@ def _refresh(profile: dict, hours: int = 24) -> None:
     from .__main__ import scan  # the same scan as `python -m shortlist run`
     try:
         scan(profile, ttl_s=REFRESH_TTL_S,
-             progress=lambda done, total: REFRESH.update(done=done, total=total, stage="Reading job boards"))
+             progress=lambda done, total: REFRESH.update(done=done, total=total, stage="Reading job boards"),
+             say=lambda msg: REFRESH.update(stage="Learning tools from the postings")
+             if msg.startswith("learning") else None)  # the scan's last stage, after the boards
         REFRESH["stage"] = "Picking today's jobs"
         old = json.loads(TODAY.read_text()) if TODAY.exists() else {}
         queue = make_queue(profile, n=int(old.get("target") or 30), max_age_hours=hours)
@@ -1369,7 +1371,7 @@ function idleText(){const t=$('fresh');t.className='small muted';
  t.textContent=Q.results_from?'Jobs from the last '+(Q.hours||24)+' hours, read '+when(Q.results_from)+'. Refresh reads every employer\\'s job board again and keeps the last '+(hours()||HOURS[0])+' hours.':'';}
 function showRefresh(r){const b=$('refresh'),t=$('fresh');
  if(r.running){b.disabled=hoursBox.disabled=true;b.textContent='Refreshing...';t.className='small muted';
-  t.textContent=(r.stage||'Starting')+(r.total?': '+r.done+' of '+r.total+' job boards':'')+', keeping the last '+(r.hours||24)+' hours. About 10 minutes; keep applying meanwhile.';return true;}
+  t.textContent=(r.stage||'Starting')+(r.total&&r.stage==='Reading job boards'?': '+r.done+' of '+r.total+' job boards':'')+', keeping the last '+(r.hours||24)+' hours. About 10 minutes; keep applying meanwhile.';return true;}
  b.disabled=hoursBox.disabled=false;b.textContent='Refresh';
  if(r.error){t.className='small err';t.textContent='The refresh stopped ('+r.error+'). Your queue is unchanged.';return false;}
  idleText();return false;}
