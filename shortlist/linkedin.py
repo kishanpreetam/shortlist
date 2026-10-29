@@ -13,7 +13,7 @@ import json
 import re
 from urllib.parse import quote
 
-from . import rewrite
+from . import claude as _claude
 
 # The searches in launch-kit/linkedin/search-links.md: full-time US roles at entry and associate level from the
 # last 24 hours, newest first, and posts from people saying they're hiring.
@@ -71,10 +71,10 @@ def clean_links(links) -> list[dict]:
 
 def read_page(text: str, links: list[dict], claude: str) -> list[dict]:
     """The jobs in a copied LinkedIn page, each as {title, company, location, posted, kind, poster, poster_title,
-    link}. RewriteError when Claude can't answer."""
+    link}. claude.ClaudeError when Claude can't answer."""
     page = re.sub(r"<\s*/\s*page\s*>", "[end]", text, flags=re.I)[:40_000]  # the copy can't close its own tag
     message = (f"Links:\n{json.dumps(links, ensure_ascii=False, indent=0)}\n\n" if links else "") + f"<page>\n{page}\n</page>"
-    data = rewrite._call(RULES, message, SCHEMA, claude)
+    data = _claude.call(RULES, message, SCHEMA, claude)
     rows = data.get("jobs") if isinstance(data, dict) else None
     allowed = {x["url"] for x in links}
     out, seen = [], set()

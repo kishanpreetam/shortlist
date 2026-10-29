@@ -53,7 +53,7 @@ from datetime import date
 from functools import lru_cache
 from pathlib import Path
 
-from . import classify
+from shortlist import classify
 
 # Each theme starts at the start of a word, so "Econometrics" never reads as metrics work
 THEMES = {
@@ -283,7 +283,7 @@ _FAMILY_GROUP = {"ai_engineer": "ai", "ml_engineer": "ai", "data_engineer": "dat
 
 def _kinds(title: str) -> set[str]:
     """The kind of job a title names, as a family group ({"data"} for "Data Engineer"), or nothing."""
-    from .roles import role_for_title
+    from shortlist.roles import role_for_title
     role = role_for_title(title or "")
     return {_FAMILY_GROUP[role.key]} if role and role.key in _FAMILY_GROUP else set()
 # Vertical rhythm in points (Charter; experience headers 9.5 pt, bullets and tools lines 8.6 pt, everything
@@ -427,7 +427,7 @@ def vocabulary() -> list[str]:
 
 
 def label(term: str) -> str:
-    from .apply import SKILL_LABELS
+    from shortlist.classify import SKILL_LABELS
     if term.startswith("theme:"):
         return term[6:].replace("_", " ")
     if term in EXTRA_SKILLS:

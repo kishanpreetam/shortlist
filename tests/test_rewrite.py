@@ -6,8 +6,9 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from shortlist import apply, rewrite
-from shortlist import resume as engine
+from shortlist import apply
+from tailor import rewrite
+from tailor import resume as engine
 
 FACTS = {
     "roles": [{"id": "r1", "title": "Data Engineer", "org": "Acme", "status": "approved", "tools": ["Python", "SQL"], "bullets": [

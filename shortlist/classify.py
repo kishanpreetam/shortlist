@@ -306,6 +306,20 @@ SKILLS: dict[str, str] = {
     "linux": r"\blinux\b", "forecasting": r"forecast",
 }
 _SKILL_RX = {k: re.compile(v, re.I) for k, v in SKILLS.items()}
+# How each skill key reads on a page: the queue's skill words and Tailor's skills lines
+SKILL_LABELS = {
+    "ab_testing": "A/B testing", "agents": "AI agents", "aws": "AWS", "ci_cd": "CI/CD", "cpp": "C++",
+    "data_modeling": "data modeling", "dbt": "dbt", "etl": "ETL", "evals": "LLM evals", "fastapi": "FastAPI",
+    "gcp": "GCP", "llm": "LLMs", "mcp": "MCP", "ml": "machine learning", "nextjs": "Next.js", "nlp": "NLP",
+    "nosql": "NoSQL", "postgres": "PostgreSQL", "power_bi": "Power BI", "pytorch": "PyTorch", "r_lang": "R",
+    "rag": "RAG", "rest_api": "REST APIs", "scikit_learn": "scikit-learn", "sql": "SQL", "vector_db": "vector databases",
+    "xgboost": "XGBoost", "javascript": "JavaScript", "typescript": "TypeScript", "tensorflow": "TensorFlow",
+    "python": "Python", "airflow": "Airflow", "spark": "Spark", "tableau": "Tableau", "docker": "Docker", "git": "Git",
+    "excel": "Excel", "react": "React", "kafka": "Kafka", "kubernetes": "Kubernetes", "django": "Django",
+    "snowflake": "Snowflake", "databricks": "Databricks", "looker": "Looker", "terraform": "Terraform", "java": "Java",
+    "scala": "Scala", "go": "Go", "linux": "Linux", "flask": "Flask", "langchain": "LangChain", "azure": "Azure",
+    "deep_learning": "deep learning",
+}
 
 
 def skills_in(text: str) -> set[str]:

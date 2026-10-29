@@ -6,7 +6,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from shortlist import apply, linkedin, rewrite
+from shortlist import apply, linkedin
+from tailor import rewrite
 from tests.test_rewrite import FAKE, LAUNCH
 
 PAGE = """Jobs you may be interested in

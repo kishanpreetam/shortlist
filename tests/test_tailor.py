@@ -5,8 +5,9 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from shortlist import apply, rewrite
-from shortlist import resume as engine
+from shortlist import apply
+from tailor import rewrite
+from tailor import resume as engine
 
 MINE = "Built ETL pipelines in Python and SQL with Airflow for 1M+ rows."
 FACTS = {

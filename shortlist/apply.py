@@ -40,9 +40,12 @@ from pathlib import Path
 
 import yaml
 
+from tailor import resume as engine  # TEMP: the Tailor parts move to tailor/app.py
+from tailor import rewrite  # TEMP
+
 from . import h1bdata, linkedin, outcomes
-from . import resume as engine
-from . import rewrite
+from .claude import ClaudeError, claude_path
+from .classify import SKILL_LABELS
 from .paths import DATA, RESULTS
 from .roles import role_for_title
 
@@ -87,19 +90,6 @@ MANAGER_WORDS = {
     "ai-engineer": '"engineering manager" OR "head of AI" OR "applied AI"',
     "data-scientist": '"data science manager" OR "head of data science" OR "machine learning manager"',
     "data-analyst": '"analytics manager" OR "head of analytics" OR "BI manager"',
-}
-SKILL_LABELS = {
-    "ab_testing": "A/B testing", "agents": "AI agents", "aws": "AWS", "ci_cd": "CI/CD", "cpp": "C++",
-    "data_modeling": "data modeling", "dbt": "dbt", "etl": "ETL", "evals": "LLM evals", "fastapi": "FastAPI",
-    "gcp": "GCP", "llm": "LLMs", "mcp": "MCP", "ml": "machine learning", "nextjs": "Next.js", "nlp": "NLP",
-    "nosql": "NoSQL", "postgres": "PostgreSQL", "power_bi": "Power BI", "pytorch": "PyTorch", "r_lang": "R",
-    "rag": "RAG", "rest_api": "REST APIs", "scikit_learn": "scikit-learn", "sql": "SQL", "vector_db": "vector databases",
-    "xgboost": "XGBoost", "javascript": "JavaScript", "typescript": "TypeScript", "tensorflow": "TensorFlow",
-    "python": "Python", "airflow": "Airflow", "spark": "Spark", "tableau": "Tableau", "docker": "Docker", "git": "Git",
-    "excel": "Excel", "react": "React", "kafka": "Kafka", "kubernetes": "Kubernetes", "django": "Django",
-    "snowflake": "Snowflake", "databricks": "Databricks", "looker": "Looker", "terraform": "Terraform", "java": "Java",
-    "scala": "Scala", "go": "Go", "linux": "Linux", "flask": "Flask", "langchain": "LangChain", "azure": "Azure",
-    "deep_learning": "deep learning",
 }
 # New-grad programs often require a graduation date in a set window (for "2027" programs,
 # usually Dec 2026 to mid-2027), so the card asks you to check it first.
@@ -495,12 +485,12 @@ def linkedin_check(d: dict, profile: dict) -> dict:
     text = str(d.get("text") or "")[:120_000]
     if len(text.strip()) < 40:
         raise ValueError("Paste the whole LinkedIn page: open a search, press Cmd+A, then Cmd+C, and paste here.")
-    claude = rewrite.claude_path(profile)
+    claude = claude_path(profile)
     if not claude:
         raise ValueError("Reading a LinkedIn page needs Claude Code installed and signed in (claude auth login).")
     try:
         jobs = linkedin.read_page(text, linkedin.clean_links(d.get("links")), claude)
-    except rewrite.RewriteError as exc:
+    except ClaudeError as exc:
         raise ValueError(str(exc)) from exc
     if not jobs:
         return {"jobs": [], "note": "No jobs found in that copy. Click inside the results list, press Cmd+A, then Cmd+C, and paste again."}

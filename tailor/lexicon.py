@@ -33,9 +33,10 @@ from datetime import date
 from functools import cache
 from pathlib import Path
 
+from shortlist.roles import role_for_title
+
 from . import resume
 from .paths import DATA, RESULTS
-from .roles import role_for_title
 
 PATH = DATA / "lexicon.json"
 READS = RESULTS / "requirements"  # rewrite._reading caches each posting's read here

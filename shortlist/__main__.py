@@ -28,7 +28,9 @@ from pathlib import Path
 
 import yaml
 
-from . import apply, discover, h1bdata, lca, lexicon, outcomes, phone, report, resume
+from tailor import lexicon, resume  # TEMP: Tailor's commands move to tailor/__main__.py
+
+from . import apply, discover, h1bdata, lca, outcomes, phone, report
 from .boards import FETCHERS, Posting, host_for
 from .paths import DATA, ROOT
 from .roles import ROLE_BY_KEY

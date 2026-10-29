@@ -11,7 +11,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from shortlist import lexicon, resume
+from tailor import lexicon, resume
 
 ROWS = {"code", "data", "cloud", "ml", "ai"}  # the skills rows a learned tool can join
 

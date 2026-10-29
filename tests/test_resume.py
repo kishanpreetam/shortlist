@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from shortlist import resume, rewrite
+from tailor import resume, rewrite
 
 FACTS = {
     "contact": {"name": "Sam Example", "lines": ["Boston, MA", "sam@example.com"], "links": [], "status": "approved"},
@@ -508,7 +508,7 @@ class RequirementsTest(unittest.TestCase):
     """Lines count for the posting's requirements they show, and the page reports what it covers."""
 
     def test_lines_that_show_requirements_win_and_the_page_reports_coverage(self):
-        from shortlist import rewrite
+        from tailor import rewrite
         got = rewrite.Rewrites()
         got.requirements = [{"id": "R1", "text": "Build ETL pipelines with Airflow", "kind": "required"},
                             {"id": "R2", "text": "Master's degree in a quantitative field", "kind": "required"},
@@ -529,7 +529,7 @@ class RequiredEverywhereTest(unittest.TestCase):
     """A required requirement your work shows goes all over the page: summary, experience and projects."""
 
     def test_a_required_one_shown_in_experience_still_pulls_a_project_line_that_shows_it(self):
-        from shortlist import rewrite
+        from tailor import rewrite
         facts = copy.deepcopy(FACTS)
         facts["projects"] = [{"id": "p1", "title": "Pipeline Kit", "status": "approved", "bullets": [
             {"id": "p1a", "text": "Built Python pipelines for open data.", "status": "approved"},
@@ -546,7 +546,7 @@ class RequiredEverywhereTest(unittest.TestCase):
         self.assertEqual(report["R2"]["where"], ["education"])
 
     def test_the_report_says_when_the_summary_shows_it(self):
-        from shortlist import rewrite
+        from tailor import rewrite
         facts = JobSummaryTest.facts()
         got = rewrite.Rewrites()
         got.requirements = [{"id": "R1", "text": "Build ETL pipelines in Python", "kind": "required"}]
@@ -588,7 +588,7 @@ class ResearchRulesTest(unittest.TestCase):
     """Recruiters read recent, relevant work and the first lines most: a tailored page orders and sizes for that."""
 
     def test_lines_lead_with_required_and_roles_are_sized_by_fit(self):
-        from shortlist import rewrite
+        from tailor import rewrite
         facts = copy.deepcopy(FACTS)
         facts["roles"][0]["bullets"] = [
             {"id": "r1x", "text": "Built Tableau dashboards for 500 users.", "status": "approved"},
@@ -691,7 +691,7 @@ class JobSummaryTest(unittest.TestCase):
         self.assertEqual(resume.summary_problems(kept, facts, opening, ["r1a", "r2a"]), [])
 
     def test_the_page_uses_it_only_when_it_passes_and_you_can_pick_yours(self):
-        from shortlist import rewrite
+        from tailor import rewrite
         facts = self.facts()
         got = rewrite.Rewrites()
         got.summary = {"text": self.opening(facts) + ", building ETL pipelines in Python and SQL with Airflow for 1M+ rows.", "uses": ["r1a"]}
@@ -744,7 +744,7 @@ class NeverWordsTest(unittest.TestCase):
         self.assertEqual(resume.print_problems("<p>Built contractor tools for a temperature team.</p>"), [])
 
     def test_the_rules_name_the_words_only_when_set(self):
-        from shortlist import rewrite
+        from tailor import rewrite
         self.assertIn("Never use the words contract or temp.", rewrite._rules(rewrite.RULES))
         resume.never_words([])
         self.assertNotIn("<<", rewrite._rules(rewrite.RULES) + rewrite._rules(rewrite.SUMMARY_RULES) + rewrite._rules(rewrite.SUGGEST_RULES))

@@ -2,7 +2,7 @@
 import copy
 import unittest
 
-from shortlist import resume
+from tailor import resume
 
 # (n, your line, the rewrite, whether it keeps the facts, approved supporting facts, tools confirmed for the role)
 CASES = [

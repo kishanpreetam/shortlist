@@ -19,15 +19,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
-import shutil
-import subprocess
-import tempfile
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+from shortlist import claude as _claude
 
 MODEL = "sonnet"
 EFFORT = "medium"  # about 10 seconds a group; low writes clumsier rewrites, high takes minutes
@@ -149,7 +147,7 @@ def _clean_title(title: str) -> str:
     return " ".join(re.sub(r"[<>]", " ", title or "").split())[:200]
 
 
-class RewriteError(Exception):
+class RewriteError(_claude.ClaudeError):
     """Claude couldn't be reached or didn't answer usably; the resume falls back to your own lines."""
 
 
@@ -178,8 +176,7 @@ def _lock(key: str) -> threading.Lock:
 
 
 def claude_path(profile: dict | None = None) -> str | None:
-    return (profile or {}).get("claude_path") or shutil.which("claude") or next(
-        (str(p) for p in Path.home().glob(".nvm/versions/node/*/bin/claude")), None)
+    return _claude.claude_path(profile)
 
 
 def points_for(facts: dict, job_title: str = "", job_text: str = "", employer: str = "", keywords=()) -> list[dict]:
@@ -545,39 +542,7 @@ def _rules(text: str) -> str:
 
 
 def _call(system: str, message: str, schema: dict, claude: str):
-    """One locked-down headless Claude Code call: `system` as the system prompt, `message` on stdin, the answer as
-    JSON in `schema`'s shape."""
-    system = _rules(system)
-    cmd = [claude, "-p", "--model", MODEL, "--effort", EFFORT, "--system-prompt", system,  # only the rules, not a coding agent's
-           "--tools", "", "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
-           "--disable-slash-commands", "--no-session-persistence", "--setting-sources", "",
-           "--output-format", "json", "--json-schema", json.dumps(schema)]
-    # your Claude Code settings may set a high effort for your own sessions (CLAUDE_CODE_EFFORT_LEVEL), which would
-    # beat --effort and keep each call thinking for minutes; these calls always run at EFFORT
-    env = {k: v for k, v in os.environ.items() if k not in ("CLAUDE_EFFORT", "MAX_THINKING_TOKENS")}
-    env["CLAUDE_CODE_EFFORT_LEVEL"] = EFFORT
-    with tempfile.TemporaryDirectory() as empty:  # an empty folder: no project files or instructions to pick up
-        try:
-            run = subprocess.run(cmd, input=message, capture_output=True, text=True, timeout=TIMEOUT_S, cwd=empty, env=env)
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            raise RewriteError(f"Claude didn't answer ({exc.__class__.__name__}).") from exc
-    try:
-        result = json.loads(run.stdout) if (run.stdout or "").strip() else {}
-    except ValueError:
-        result = {"is_error": True, "result": run.stdout}
-    if not isinstance(result, dict) or not result:
-        result = {"is_error": True, "result": (run.stderr or "").strip() or f"it stopped with code {run.returncode}"}
-    if result.get("is_error"):
-        msg = str(result.get("result") or "unknown error")
-        if "auth" in msg.lower() or "login" in msg.lower() or "oauth" in msg.lower():
-            raise RewriteError("Claude Code isn't signed in. Run `claude auth login` in Terminal once.")
-        raise RewriteError(f"Claude couldn't rewrite: {msg[:160]}")
-    data = result.get("structured_output")
-    if data is None:  # no structured output: read the JSON object in the text, even inside a code fence
-        text = str(result.get("result") or "")
-        found = re.search(r"\{.*\}", text, flags=re.S)
-        try:
-            data = json.loads(found.group(0) if found else text)
-        except ValueError as exc:
-            raise RewriteError("Claude's answer wasn't in the expected shape.") from exc
-    return data
+    """One locked-down headless Claude Code call (shortlist/claude.py) with the rules' never-words filled in:
+    `system` as the system prompt, `message` on stdin, the answer as JSON in `schema`'s shape."""
+    return _claude.call(_rules(system), message, schema, claude, model=MODEL, effort=EFFORT, timeout=TIMEOUT_S,
+                        error=RewriteError)
