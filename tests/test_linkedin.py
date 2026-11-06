@@ -7,7 +7,6 @@ from pathlib import Path
 from unittest import mock
 
 from shortlist import apply, linkedin
-from tailor import rewrite
 from tests.test_rewrite import FAKE, LAUNCH
 
 PAGE = """Jobs you may be interested in
@@ -102,22 +101,22 @@ class RefreshTest(unittest.TestCase):
         import shortlist.__main__ as cli
         tmp = Path(tempfile.mkdtemp())
         seen = {}
-        def scan(profile, ttl_s, progress, say):
+        def scan(profile, ttl_s, progress, say=None):
             seen["ttl"] = ttl_s
             progress(1, 2)
+            seen["reading"] = apply.REFRESH["stage"]
             progress(2, 2)
-            say("learning tools from the postings...")  # the scan's last stage shows on the page
-            seen["stage"] = apply.REFRESH["stage"]
         def make_queue(profile, n, max_age_hours):
             seen["queue"] = (n, max_age_hours)
+            seen["picking"] = apply.REFRESH["stage"]  # straight after the boards: the scan no longer learns tools
             return {"items": [{"spare": False}, {"spare": False}, {"spare": True}]}
         (tmp / "today.json").write_text(json.dumps({"target": 25, "items": []}))
         with mock.patch.object(cli, "scan", scan), mock.patch.object(apply, "make_queue", make_queue), \
-                mock.patch.object(apply, "TODAY", tmp / "today.json"), mock.patch.object(apply, "kick_warmup", lambda: None):
+                mock.patch.object(apply, "TODAY", tmp / "today.json"):
             apply.REFRESH.update(running=False, done=0, total=0, error="", found=None)  # as start_refresh does
             apply._refresh({}, 36)
         self.assertEqual(seen, {"ttl": apply.REFRESH_TTL_S, "queue": (25, 36),  # the window you picked
-                                "stage": "Learning tools from the postings"})
+                                "reading": "Reading job boards", "picking": "Picking today's jobs"})
         self.assertEqual((apply.REFRESH["running"], apply.REFRESH["done"], apply.REFRESH["total"], apply.REFRESH["found"], apply.REFRESH["error"]),
                          (False, 2, 2, 2, ""))
 
@@ -130,7 +129,7 @@ class RefreshTest(unittest.TestCase):
 
     def test_a_failed_refresh_keeps_the_queue_and_says_why(self):
         import shortlist.__main__ as cli
-        def scan(profile, ttl_s, progress, say):
+        def scan(profile, ttl_s, progress, say=None):
             raise OSError("offline")
         with mock.patch.object(cli, "scan", scan):
             apply._refresh({})

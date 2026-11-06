@@ -25,7 +25,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-from . import classify, wages
+from . import classify, government, wages
 from .boards import Posting
 from .roles import ROLE_BY_KEY, SOFTWARE_TITLE, Role, discipline_role, off_field, role_for_title
 
@@ -130,8 +130,11 @@ def score_posting(p: Posting, company: Company, profile: dict, sponsor_record: d
     signal = classify.sponsorship_signal(p.text)
     s.years_required = classify.years_required(p.text, advanced_degree=classify.has_advanced_degree(profile.get("degree")))
     have = float(profile["years_experience"])
+    gov = government.is_government(company.name) if profile.get("skip_government") else ""
     if off_field(p.title, profile["roles"]):
         s.excluded = off_field(p.title, profile["roles"])
+    elif gov:
+        s.excluded = f"government employer ({gov}); you skip these"
     elif seniority == "senior":
         s.excluded = "senior title"
     elif seniority == "internship":

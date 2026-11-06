@@ -21,7 +21,7 @@ The engine then treats it like its own tools (resume.use_lexicon): Tailor can as
 reaches a resume only through your own lines or your answer. What was learned stays learned, so an answer you gave
 about a tool always keeps its tool; set "status": "removed" on a term in data/lexicon.json to turn it off.
 
-    python -m shortlist lexicon      learn now and list the tools; every scan and Refresh learns too
+    python -m tailor lexicon      learn now and list the tools; Tailor also learns when it starts and after each new scan
 """
 
 from __future__ import annotations
@@ -323,7 +323,7 @@ def _label(rx: re.Pattern, hits: list[int], read: Counter, fallback: str, own) -
 PRACTICES = frozenset("etl nosql data_modeling data_warehouse data_lake streaming web_scraping relational_db metadata "
                       "data_governance ci_cd rest_api distributed_systems automated_testing sdlc agile observability ml "
                       "deep_learning statistics forecasting ab_testing nlp mlops computer_vision time_series "
-                      "causal_inference fine_tuning llm rag agents evals prompt_engineering ai_coding".split())
+                      "causal_inference fine_tuning llm rag agents evals guardrails prompt_engineering ai_coding".split())
 VENDOR_SHARE = 0.5  # a one-word name that opens a longer one this often is a vendor's or a family's ("Google Cloud")
 
 # A list lives in one line or sentence; "e.g. Snowflake" and "i.e. BigQuery" don't end one

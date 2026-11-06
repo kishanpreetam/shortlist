@@ -290,7 +290,7 @@ SKILLS: dict[str, str] = {
     "databricks": r"databricks", "dbt": r"\bdbt\b", "kafka": r"\bkafka\b", "docker": r"\bdocker\b",
     "kubernetes": r"kubernetes|\bk8s\b", "terraform": r"terraform", "tableau": r"tableau",
     "power_bi": r"power ?bi", "looker": r"looker(?! studio)", "excel": r"\bexcel\b", "pandas": r"\bpandas\b",
-    "scikit_learn": r"scikit|sklearn", "xgboost": r"xgboost", "pytorch": r"pytorch",
+    "scikit_learn": r"scikit[- ]?learn|sklearn", "xgboost": r"xgboost", "pytorch": r"pytorch",  # scikit-learn, never scikit-image
     "tensorflow": r"tensorflow", "llm": r"\bllms?\b|large language model|generative ai|gen ?ai",
     "rag": r"\brag\b|retrieval[- ]augmented", "agents": r"\bagents?\b|agentic|tool calling|function calling",
     "langchain": r"langchain|langgraph|llamaindex", "mcp": r"\bmcp\b|model context protocol",
@@ -339,7 +339,12 @@ NO = re.compile(
     r"\b(not|unable to|cannot|can't|won't|will not|does not|doesn't|do not|don't)\b[^.]{0,40}\b(sponsor|provide (visa )?sponsorship)|"
     r"sponsorship (is )?not (available|offered|provided)|not eligible for (visa )?sponsorship|"
     r"without (the need for )?(current or future |future |now or in the future )?(visa |employer |employment )?sponsorship|"
-    r"now or in the future[^.]{0,60}sponsor|independently authori[sz]ed",
+    r"now or in the future[^.]{0,60}sponsor|independently authori[sz]ed|"
+    # "We will not consider candidates who require current or future sponsorship" (American Family, Oct 2026)
+    r"\b(will not|won't|do not|don't|cannot|can't|unable to)\s+(consider|accept|hire|support)\b[^.]{0,80}\bsponsor|"
+    r"sponsorship (will|would) not be (considered|offered|provided|available)|"
+    # "able to live and work ... without visa support or sponsorship" (Cisco, Oct 2026)
+    r"without (visa |employer )?(support|assistance) or sponsorship",
     re.I,
 )
 YES = re.compile(

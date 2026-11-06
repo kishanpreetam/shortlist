@@ -5,15 +5,17 @@
   python -m shortlist run                      scan every employer, score, write results/report.html
   python -m shortlist run --roles data_engineer,ai_engineer
   python -m shortlist sponsors                 look up H-1B filings per employer (h1bdata.info, cached a week)
-  python -m shortlist lexicon                  learn the tools postings name beyond the built-in list, and list them
   python -m shortlist lca FILE.xlsx [FILE.xlsx]  import the DOL file instead (takes precedence)
   python -m shortlist log --company HubSpot --title "Data Engineer" --role data_engineer --channel referral --outcome screen
   python -m shortlist today                    pick today's apply queue and open it at http://127.0.0.1:8765
+  python -m shortlist list                     save every posting from the last 24 hours that fits (results/lists/<date>/)
   python -m shortlist applied URL|N            log an application (URL, or its number in today's queue)
   python -m shortlist update URL --outcome screen
   python -m shortlist followups                follow-ups due today, with the message to send
   python -m shortlist phone-export --out q.json  today's queue and tracker state for a phone page
   python -m shortlist phone-import DIR           record the marks a phone page saved
+
+Resumes: python -m tailor (a separate tool; see README)
 """
 
 from __future__ import annotations
@@ -28,9 +30,7 @@ from pathlib import Path
 
 import yaml
 
-from tailor import lexicon, resume  # TEMP: Tailor's commands move to tailor/__main__.py
-
-from . import apply, discover, h1bdata, lca, outcomes, phone, report
+from . import apply, discover, h1bdata, lca, lists, outcomes, phone, report, startups
 from .boards import FETCHERS, Posting, host_for
 from .paths import DATA, ROOT
 from .roles import ROLE_BY_KEY
@@ -44,8 +44,7 @@ def load_profile(path: Path | None = None) -> dict:
         path = ROOT / "profile.example.yaml"
     profile = yaml.safe_load(path.read_text())
     profile.setdefault("roles", list(ROLE_BY_KEY))
-    resume.never_words(profile.get("resume_never_words"))
-    resume.use_lexicon(lexicon.load() if profile.get("learn_keywords", True) else None)
+    startups.configure(profile)  # startup_max_years and startup_max_employees, when set
     return profile
 
 
@@ -164,35 +163,6 @@ def cmd_sponsors(args) -> int:
     return 0
 
 
-ROW_NAMES = {"code": "Programming", "data": "Data & Pipelines", "cloud": "Cloud & Deployment", "ml": "ML & Analytics",
-             "ai": "AI & Agentic Systems"}  # the skills rows a learned tool joins (the kinds in resume.CATEGORY)
-
-
-def cmd_lexicon(args) -> int:
-    """Learns the tools postings name beyond the built-in list (lexicon.py), saves them, and lists them."""
-    profile = load_profile(args.profile)
-    before = set((lexicon.load() or {}).get("terms") or {})
-    lex = lexicon.update(profile)
-    tools = {k: t for k, t in lex["terms"].items() if t.get("status") != "removed"}  # a removed tool stays off
-    new = {k for k in tools if k not in before}
-    print(f"{len(tools)} tools learned in all, {len(new)} new this time, "
-          f"from {lex['reads']} reads of postings and {lex['postings']:,} postings on the job boards")
-    if tools:
-        print(f"{'tool':<30} {'skills row':<20} {'postings':>8} {'employers':>9}")
-    for k, t in sorted(tools.items(), key=lambda kv: (-kv[1].get("postings", 0), kv[0])):
-        print(f"{(t.get('label') or k)[:30]:<30} {ROW_NAMES.get(t.get('category'), ROW_NAMES['data']):<20} "
-              f"{t.get('postings', 0):>8} {t.get('employers', 0):>9}" + ("  new" if k in new else ""))
-    skipped = list(lex["skipped"].items())
-    if skipped:
-        print(f"\nleft out ({len(skipped)} candidates):")
-        for name, why in skipped[:20]:
-            print(f"  {name[:28]:<28} {why}")
-        if len(skipped) > 20:
-            print(f"  ...and {len(skipped) - 20} more in {lexicon.PATH}")
-    print(f"saved to {lexicon.PATH}")
-    return 0
-
-
 SETUP_FILES = [
     ("https://flag.dol.gov/sites/default/files/wages/OFLC_Wages_2026-27.zip", "OFLC_Wages_2026-27.zip"),
     *[(f"https://raw.githubusercontent.com/Feashliaa/job-board-aggregator/main/data/{a}_companies.json", f"{a}_companies.json")
@@ -219,9 +189,8 @@ def cmd_setup(args) -> int:
 
 def scan(profile: dict, ttl_s: float = BOARD_TTL_S, progress=None, say=lambda msg: None) -> dict:
     """Read every employer's job board (a board read in the last `ttl_s` seconds isn't read again), score each
-    posting for you, write results/postings.csv, the report and targets, and learn the tools the postings name beyond
-    the built-in list (lexicon.py; a failure there prints a warning, never fails the scan). The page's Refresh button
-    runs this too. `progress(done, total)` follows the boards; `say` gets the stage."""
+    posting for you, and write results/postings.csv, the report and targets. The page's Refresh button runs this
+    too. `progress(done, total)` follows the boards; `say` gets the stage."""
     companies = load_companies(profile)
     say(f"looking up H-1B filings for {len(companies)} employers (cached after the first run)...")
     records, data_note = sponsor_records(companies)
@@ -242,12 +211,6 @@ def scan(profile: dict, ttl_s: float = BOARD_TTL_S, progress=None, say=lambda ms
     manual = [(c, records.get(c.name)) for c in companies if not c.boards]
     report.write(scored, roles, profile, mult, data_note, manual)
     report.write_targets(scored, records, profile, manual)
-    if profile.get("learn_keywords", True):
-        say("learning tools from the postings...")
-        try:
-            resume.use_lexicon(lexicon.update(profile))
-        except Exception as exc:  # learning is extra; it shouldn't fail a scan that has already written its results
-            print(f"  ! learning tools from the postings: {type(exc).__name__}: {exc}", file=sys.stderr)
     return {"postings": postings, "scored": scored, "roles": roles}
 
 
@@ -296,6 +259,31 @@ def cmd_today(args) -> int:
     return 0
 
 
+def cmd_list(args) -> int:
+    """Every posting from the last `hours` that fits your field and visa status, saved to keep (lists.py)."""
+    import time
+    stale = not apply.POSTINGS.exists() or time.time() - apply.POSTINGS.stat().st_mtime > 6 * 3600
+    if stale and not args.no_scan:
+        print("results are over 6 hours old; scanning first...", file=sys.stderr)
+        cmd_run(argparse.Namespace(profile=args.profile, roles=None, top=0))
+    profile = load_profile(args.profile)
+    doc, new = lists.make(profile, hours=args.hours, cap=args.cap)
+    items = doc["items"]
+    out = lists.folder(doc["date"])
+    print(f"\n{len(items)} jobs on the {doc['date']} list ({new} new), posted in the last {doc['hours']:g} hours:")
+    for label, group in lists.groups(doc):
+        print(f"\n{label}")
+        for it in sorted(group, key=lambda x: x["n"]):
+            print(f"  {it['n']:>3}. {it['company'][:24]:<24} {it['title'][:56]:<56} {it['location'][:24]}")
+    unknown = startups.missing({it["company"] for it in items if it.get("board") != "Workday"})
+    if unknown:
+        print(f"\nno founding year or headcount yet, so grouped as established: {', '.join(unknown)}"
+              f"\n(add them to {startups.FACTS_FILE.name} to sort them correctly)")
+    print(f"\nsaved: {out / 'jobs.html'}\n       {out / 'jobs.csv'}\n"
+          f"tailor one later: python -m tailor job N (descriptions are saved in {out / 'jobs.json'})")
+    return 0
+
+
 def cmd_applied(args) -> int:
     rows = {r["url"]: r for r in apply._read(apply.POSTINGS)}
     target = args.target
@@ -336,8 +324,6 @@ def main(argv=None) -> int:
     r.add_argument("--top", type=int, default=20)
     sp = sub.add_parser("sponsors", help="look up and show H-1B filing counts per employer")
     sp.add_argument("--profile", type=Path)
-    lx = sub.add_parser("lexicon", help="learn the tools postings name beyond the built-in list")
-    lx.add_argument("--profile", type=Path)
     dsc = sub.add_parser("discover", help="find more employers that sponsor your role families and have readable job boards")
     dsc.add_argument("--min", type=int, default=5, help="minimum 2025-26 filings for your role families")
     dsc.add_argument("--workable", action="store_true", help="also look for employers on Workable, keeping what's found already")
@@ -361,6 +347,11 @@ def main(argv=None) -> int:
     td.add_argument("--no-scan", action="store_true", help="use the latest results even if they're old")
     td.add_argument("--no-serve", action="store_true", help="print the queue without starting the page")
     td.add_argument("--no-browser", action="store_true", help="start the page without opening a browser")
+    ls = sub.add_parser("list", help="save every posting from the last 24 hours that fits your field and visa status")
+    ls.add_argument("--profile", type=Path)
+    ls.add_argument("--hours", type=float, default=24, help=f"how recent (default 24, at most {lists.MAX_HOURS})")
+    ls.add_argument("--cap", type=int, default=2, help="most jobs per employer on the list (default 2)")
+    ls.add_argument("--no-scan", action="store_true", help="use the latest results even if they're old")
     ad = sub.add_parser("applied", help="log an application")
     ad.add_argument("target", help="job URL, or its number in today's queue")
     ad.add_argument("--channel", default="cold", choices=outcomes.CHANNELS)
@@ -373,9 +364,6 @@ def main(argv=None) -> int:
     up.add_argument("--outcome", required=True, choices=apply.STATUSES)
     fu = sub.add_parser("followups", help="follow-ups due today")
     fu.add_argument("--profile", type=Path)
-    ta = sub.add_parser("tailor-all", help="build a tailored resume for every job in today's queue")
-    ta.add_argument("--profile", type=Path)
-    ta.add_argument("--spares", action="store_true", help="include the spares too")
     pe = sub.add_parser("phone-export", help="write today's queue and tracker state as one JSON document for a phone page")
     pe.add_argument("--profile", type=Path)
     pe.add_argument("--out", type=Path, required=True)
@@ -384,13 +372,6 @@ def main(argv=None) -> int:
     pi = sub.add_parser("phone-import", help="record the marks a phone page saved (a folder of JSON files)")
     pi.add_argument("folder", type=Path)
     args = ap.parse_args(argv)
-    if args.cmd == "tailor-all":
-        profile = load_profile(args.profile)
-        items = json.loads(apply.TODAY.read_text())["items"] if apply.TODAY.exists() else []
-        items = [i for i in items if args.spares or not i.get("spare")]
-        made = apply.tailor_all(profile, items)
-        print(f"built {len(made)} tailored resumes in {apply.tailored_folder(profile)}")
-        return 0
     if args.cmd == "phone-export":
         doc = phone.export(load_profile(args.profile), args.out)
         if args.html:
@@ -405,6 +386,8 @@ def main(argv=None) -> int:
         return 0
     if args.cmd == "today":
         return cmd_today(args)
+    if args.cmd == "list":
+        return cmd_list(args)
     if args.cmd == "applied":
         return cmd_applied(args)
     if args.cmd == "update":
@@ -419,8 +402,6 @@ def main(argv=None) -> int:
         return cmd_run(args)
     if args.cmd == "sponsors":
         return cmd_sponsors(args)
-    if args.cmd == "lexicon":
-        return cmd_lexicon(args)
     if args.cmd == "discover":
         raw = yaml.safe_load((Path(__file__).parent / "companies.yaml").read_text())
         known = set(raw) | {v.get("h1b") or "" for v in raw.values()}

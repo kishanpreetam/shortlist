@@ -1,6 +1,6 @@
-"""Would a big public skills list help Shortlist pick a posting's keywords?
+"""Would a big public skills list help Tailor pick a posting's keywords?
 
-Finds every software name from O*NET 31.0 Software Skills in each posting, then checks each one against Shortlist's
+Finds every software name from O*NET 31.0 Software Skills in each posting, then checks each one against Tailor's
 keyword list for that posting (resume.job_keywords). A match is in the built-in list when the engine's own tool list
 recognizes it, caught by the posting read when only the cached read of the posting (rewrite.keywords) listed it, and
 missed otherwise. Nothing is sent anywhere and Claude is never called: a posting without a saved read uses the
@@ -25,7 +25,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from shortlist import resume as engine, rewrite  # noqa: E402
+from tailor import resume as engine, rewrite  # noqa: E402
 
 # vendors whose name a posting often drops ("Apache Spark" is written "Spark")
 VENDORS = ["The MathWorks", "Microsoft", "Oracle", "IBM", "Autodesk", "Adobe", "SAP", "Apache", "Google", "Apple",

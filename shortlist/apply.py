@@ -18,6 +18,9 @@ a week, so the default is 20 a day.
 
 Applications live in results/applications.csv, which is gitignored like the rest of
 results/. The page listens on 127.0.0.1 only, and every write needs a per-run token.
+
+Resumes are tailored separately, by Tailor (`python -m tailor`, its own page on port 8766, or `tailor_port` in
+profile.yaml). Once `resume_facts` is set, each card links to it with that job, and nothing here imports it.
 """
 
 from __future__ import annotations
@@ -38,12 +41,8 @@ from urllib.parse import quote
 
 from pathlib import Path
 
-import yaml
 
-from tailor import resume as engine  # TEMP: the Tailor parts move to tailor/app.py
-from tailor import rewrite  # TEMP
-
-from . import h1bdata, linkedin, outcomes
+from . import h1bdata, linkedin, outcomes, startups
 from .claude import ClaudeError, claude_path
 from .classify import SKILL_LABELS
 from .paths import DATA, RESULTS
@@ -169,8 +168,6 @@ def board_of(url: str) -> str:
     return "Other"
 
 
-CHROME_DEFAULT = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-PREVIEWS: dict[str, dict] = {}
 _POSTING_INDEX: dict[str, str] | None = None
 
 
@@ -193,239 +190,6 @@ def posting_text(url: str) -> str:
         return next((j.get("text") or "" for j in json.loads(Path(f).read_text()) if j.get("url") == url), "")
     except (OSError, ValueError):
         return ""
-
-
-def _facts_path(profile: dict) -> Path:
-    path = profile.get("resume_facts")
-    if not path:
-        raise ValueError("Set resume_facts in profile.yaml to your facts file to tailor resumes.")
-    return Path(str(path)).expanduser()
-
-
-def variant_for_title(title: str) -> str:
-    t = engine.choose_title(title, [t for _, t in engine.TITLE_RULES], "ai-engineer")
-    return {"Analytics Engineer": "data-engineer", "Data Engineer": "data-engineer", "Machine Learning Engineer": "data-scientist",
-            "Data Scientist": "data-scientist", "Business Analyst": "data-analyst", "Data Analyst": "data-analyst"}.get(t, "ai-engineer")
-
-
-def _job_of(d: dict) -> tuple[str, str, int, str, str]:
-    """The job a preview is for, from the queue or pasted: (company, title, n, resume version, description)."""
-    if d.get("paste"):
-        pst = d["paste"]
-        company, title = str(pst.get("company", "")).strip()[:120], str(pst.get("title", "")).strip()[:200]
-        jd = str(pst.get("jd", ""))[:60_000]
-        if not company or not title or len(jd) < 200:
-            raise ValueError("Add the company, the job title and the whole job description.")
-        n, variant = 0, variant_for_title(title)
-    else:
-        queue = json.loads(TODAY.read_text()) if TODAY.exists() else {"items": []}
-        item = next((i for i in queue["items"] if i["n"] == d.get("n")), None)
-        if not item:
-            raise ValueError("That job isn't in today's queue anymore. Reload the page.")
-        company, title, n, variant = item["company"], item["title"], item["n"], item["resume"]
-        jd = posting_text(item["url"])
-        if len(jd) < 200:
-            raise ValueError("The job description for this posting isn't saved. Paste it under Paste a job.")
-    return company, title, n, variant, jd
-
-
-def _summary_ctx(facts: dict, job_title: str, variant: str, phrases=()) -> dict:
-    """What the summary written for a job starts from: its opening, your evidence, the tools you can name and the
-    posting's keywords (`phrases`), which it uses in the posting's words where your evidence shows the work."""
-    title = engine.choose_title(job_title, facts["titles"]["items"] if engine.ok(facts["titles"]) else [], variant)
-    opening = engine.summary_opening(facts, title, variant)
-    return {"opening": opening, "evidence": engine.summary_evidence(facts),
-            "tools": sorted({engine.item_label(t) for t in engine.placed(facts) | engine.evidence(facts)}
-                            | {it for x in facts.get("skills") or [] if engine.ok(x) for it in x["items"]}),
-            "keywords": list(phrases)[:engine.KEYWORDS_MAX],
-            "check": lambda text, uses: engine.summary_problems(text, facts, opening, uses, phrases)}
-
-
-def _job_reading(facts: dict, title: str, jd: str, company: str, variant: str, claude: str | None) -> tuple[list, dict, list]:
-    """Your points for one job, each with the posting's keywords for what it shows; the summary's context; and the
-    posting's ranked keywords. The posting is read first (once, cached), so its keywords reach every rewrite."""
-    given, reqs = [], []
-    if claude and jd.strip():
-        try:
-            reqs = rewrite.requirements(title, jd, claude, RESULTS / "requirements")
-            given = rewrite.keywords(title, jd, claude, RESULTS / "requirements")
-        except rewrite.RewriteError:
-            pass
-    kws = engine.job_keywords(title, jd, given, company, reqs)
-    return (rewrite.points_for(facts, title, jd, company, kws), _summary_ctx(facts, title, variant, [k["text"] for k in kws]), kws)
-
-
-def _point_check(facts: dict, kws: list, profile: dict):
-    """The fact check each rewrite of your points must pass, with the posting's keywords as the resume engine reads
-    them, so the ones that fail go back to Claude once (`rewrite_repair`, on unless false); None when that's off."""
-    return rewrite.point_check(facts, [k["text"] for k in kws]) if profile.get("rewrite_repair", True) else None
-
-
-def resume_suggest(d: dict, profile: dict) -> dict:
-    """Suggested lines for one requirement of a job: two or three, each for one of your roles or projects, labeled
-    by what it adds beyond that place's facts, with one recommended (one that only rewords your lines when any does)."""
-    facts = engine.load_facts(_facts_path(profile))
-    company, title, n, variant, jd = _job_of(d)
-    claude = rewrite.claude_path(profile)
-    if not claude:
-        raise ValueError("Suggestions need Claude Code installed and signed in (claude auth login).")
-    requirement = " ".join(str(d.get("requirement") or "").split())[:200]
-    if len(requirement) < 5:
-        raise ValueError("Pick a requirement to suggest lines for.")
-    places = engine.place_evidence(facts)
-    own = {b["id"]: b["text"] for grp in ("roles", "projects") for g in facts[grp] for b in g["bullets"]}
-    page = [own[i] for i in d.get("on_page") or [] if isinstance(i, str) and i in own]  # the lines this preview shows
-    try:
-        got = rewrite.suggest_lines(requirement, title, jd, places, claude, RESULTS / "suggestions", page)
-    except rewrite.RewriteError as exc:
-        raise ValueError(str(exc)) from exc
-    names = {x["id"]: x["name"] for x in places}
-    roles = {g["id"] for g in facts["roles"]}
-    out = []
-    for x in got:
-        check = engine.suggestion_check(x["text"], facts, x["place"])
-        if not check["hard"]:
-            rank = engine.rank_draft(x["text"], requirement, page, x["place"] in roles)
-            out.append({**x, "name": names.get(x["place"], ""), "adds": check["adds"], "grounded": not check["adds"], "rank": rank,
-                        "in_experience": x["place"] in roles})
-    # a draft the page already shows adds nothing; the recommendation then goes, in order, to one that addresses the
-    # requirement at all, is true to your lines, names the skill the requirement names, and covers the most of it,
-    # adds what the page lacks and lands in your experience (rank_draft's score)
-    out = [o for o in out if o["rank"]["dup"] < 0.8]
-    for o in out:  # how much you'd be confirming: nothing, a few words, or facts only you know (blanks or numbers)
-        o["truth"] = 0 if o["grounded"] else 2 if any(a.startswith(("blanks", "numbers")) for a in o["adds"]) else 1
-    strongest = min(out, key=lambda o: (o["rank"]["share"] == 0, -o["rank"]["named"], -o["rank"]["score"]), default=None)
-    out.sort(key=lambda o: (o["rank"]["share"] == 0, o["truth"], -o["rank"]["named"], -o["rank"]["score"]))
-    for i, o in enumerate(out):
-        o["recommended"] = i == 0  # the strongest line you can truthfully use now
-        o["strongest"] = o is strongest  # covers the most of the requirement: always one, often the recommended one
-        o["why"] = _draft_why(o)
-    return {"requirement": requirement, "suggestions": out}
-
-
-def _draft_why(o: dict) -> str:
-    """Why a draft ranks where it does, in plain words."""
-    r = o["rank"]
-    parts = [["only rewords your lines", "adds a few words for you to confirm", "has facts only you can fill in"][o["truth"]]]
-    if r["covers"]:
-        parts.append(f"covers {len(r['covers'])} key words of the requirement ({', '.join(r['covers'])})")
-    parts.append("new to this page" if r["dup"] < 0.5 else "close to a line already on the page")
-    parts.append("in your experience" if o["in_experience"] else "in a project")
-    return ", ".join(parts)
-
-
-def resume_preview(d: dict, profile: dict) -> dict:
-    """Pick approved lines for one job (from the queue, or pasted), print and check the page; nothing is saved yet."""
-    facts = engine.load_facts(_facts_path(profile))
-    company, title, n, variant, jd = _job_of(d)
-    pid = engine.new_preview_id()
-    ids = lambda key: set(map(str, d.get(key) or []))
-    # your points reworded for this job by Claude; the engine keeps only rewrites that keep your facts
-    claude = rewrite.claude_path(profile) if d.get("rewrite", True) and profile.get("rewrite_points", True) else None
-    points, ctx, kws = _job_reading(facts, title, jd, company, variant, claude)
-    rewrites, note, failed = {}, "", False
-    if d.get("rewrite", True) and profile.get("rewrite_points", True):
-        if not claude:
-            note = "Claude Code isn't installed, so your own wording is used."
-        else:
-            try:
-                rewrites = rewrite.rewrite(points, title, jd, claude, RESULTS / "rewrites", summary_ctx=ctx,
-                                           check=_point_check(facts, kws, profile))
-                note = getattr(rewrites, "note", "")
-            except rewrite.RewriteError as exc:
-                note, failed = f"{exc} Your own wording is used for now.", True
-    fit = RESULTS / "fit.json"  # the page size that fit last time, kept across restarts so a page prints once or twice
-    try:
-        engine._FIT.update(json.loads(fit.read_text()))
-    except (OSError, ValueError):
-        pass
-    out = engine.build(facts, jd, title, variant, RESULTS / "tailor-preview" / pid, None,
-                       profile.get("chrome_path") or CHROME_DEFAULT,
-                       exclude=ids("exclude"), include=ids("include"), summary_id=d.get("summary_id") or None,
-                       title_skip=ids("title_skip"), original=ids("original"), skill_skip=ids("skill_skip"),
-                       employer=company, rewrites=rewrites)
-    try:
-        fit.write_text(json.dumps(engine._FIT))
-    except OSError:
-        pass
-    sel = out["selection"]
-    mine, kept = {x["id"]: x["text"] for x in points}, engine.faithful_rewrites(facts, rewrites, sel.get("phrases") or ())
-    # the preview shows each line as the page prints it; actions use ids, never this text
-    for b in [b for g in sel["experience"] + sel["projects"] for b in g["bullets"]] + list(sel["available"]):
-        b["text"] = engine.sentence(b["text"])
-        if b.get("original"):
-            b["original"] = engine.sentence(b["original"])
-    if sel["summary"]:
-        sel["summary"] = dict(sel["summary"], text=engine.printed_summary(sel["summary"]["text"]))
-    PREVIEWS[pid] = {"pdf": out["pdf"] if not out["failures"] else None, "n": n, "company": company, "title": title}
-    while len(PREVIEWS) > 60:
-        PREVIEWS.pop(next(iter(PREVIEWS)))
-    return {"id": pid, "ok": bool(PREVIEWS[pid]["pdf"]), "failures": out["failures"], "pages": out["pages"],
-            "trimmed": out["trimmed"], "title_line": sel["title_line"], "summary": sel["summary"],
-            "summaries": [{"id": x["id"], "variant": x.get("variant", "")} for x in facts["summaries"] if engine.ok(x)],
-            "experience": sel["experience"], "projects": sel["projects"], "skills": sel["skills"],
-            "covered": sel["covered"], "learning": sel["learning"], "not_on_page": sel["not_on_page"], "missing": sel["missing"],
-            "skills_detail": sel["skills_detail"], "coverage": sel["coverage"], "available": sel["available"],
-            "pending": engine.pending_count(facts), "pending_versions": engine.pending_versions(facts),
-            "requirements": sel.get("requirements") or [], "advice": sel.get("advice") or [], "logistics": sel.get("logistics") or [],
-            "keywords": sel.get("keywords") or [],
-            "places": [{"id": g["id"], "name": g.get("org") or g.get("title", "")} for grp in ("roles", "projects")
-                       for g in facts[grp] if engine.ok(g)],
-            "rewrite_note": note, "rewrite_failed": failed, "rewritten": len(sel.get("rewrites") or {}),
-            "rejected": len([k for k, v in rewrites.items() if k in mine and v != mine[k] and k not in kept]),
-            "repaired": len([k for k in getattr(rewrites, "repaired", ()) if k in kept]),
-            "originals": {k: engine.sentence(mine[k]) for k in sel.get("rewrites") or {} if k in mine}}
-
-
-WARM = {"note": ""}
-_WARM_KICK = threading.Event()
-
-
-def kick_warmup() -> None:
-    """Have the warm-up look ahead again (when the page starts, and after each Mark applied, Skip or Undo)."""
-    _WARM_KICK.set()
-
-
-def warm_ahead(profile: dict) -> int:
-    """How many of the next jobs to rewrite ahead of time: `rewrite_warmup` (5 by default, 0 or false for none)."""
-    v = profile.get("rewrite_warmup", 5)
-    return (5 if v else 0) if isinstance(v, bool) else max(0, int(v or 0))
-
-
-def warm_rewrites(profile: dict, rounds: int | None = None) -> None:
-    """Have Claude rewrite your points ahead of time for the next few jobs in today's queue, one call at a time, so
-    Tailor opens in seconds. Each round stops at the first error (signed out, offline); Tailor then says why."""
-    ahead, claude = warm_ahead(profile), rewrite.claude_path(profile)
-    if not claude or not ahead or not profile.get("rewrite_points", True):
-        return
-    while rounds is None or rounds > 0:
-        _WARM_KICK.wait()
-        _WARM_KICK.clear()
-        try:
-            _warm_round(profile, claude, ahead)
-        except Exception as exc:  # never let the warm-up die: Tailor still works without it
-            WARM["note"] = f"The warm-up stopped: {exc}"
-        if rounds is not None:
-            rounds -= 1
-
-
-def _warm_round(profile: dict, claude: str, ahead: int) -> None:
-    queue = json.loads(TODAY.read_text()) if TODAY.exists() else {"items": []}
-    st = _state(profile)
-    gone = set(st["applied"]) | set(st["skipped"])
-    WARM["note"] = ""
-    for item in [i for i in queue.get("items", []) if i.get("url") not in gone][:ahead]:
-        jd = posting_text(item["url"])
-        if len(jd) < 200:
-            continue
-        facts = engine.load_facts(_facts_path(profile))  # fresh for each job, so lines you just approved count
-        try:  # the rewrites for this job, ready before you click Tailor
-            points, ctx, kws = _job_reading(facts, item["title"], jd, item["company"], item.get("resume") or variant_for_title(item["title"]), claude)
-            rewrite.rewrite(points, item["title"], jd, claude, RESULTS / "rewrites", parallel=False, summary_ctx=ctx,
-                            check=_point_check(facts, kws, profile))
-        except rewrite.RewriteError as exc:
-            WARM["note"] = str(exc)
-            return
 
 
 REFRESH_TTL_S = 15 * 60  # Refresh skips a board read in the last 15 minutes
@@ -461,15 +225,12 @@ def _refresh(profile: dict, hours: int = 24) -> None:
     from .__main__ import scan  # the same scan as `python -m shortlist run`
     try:
         scan(profile, ttl_s=REFRESH_TTL_S,
-             progress=lambda done, total: REFRESH.update(done=done, total=total, stage="Reading job boards"),
-             say=lambda msg: REFRESH.update(stage="Learning tools from the postings")
-             if msg.startswith("learning") else None)  # the scan's last stage, after the boards
+             progress=lambda done, total: REFRESH.update(done=done, total=total, stage="Reading job boards"))
         REFRESH["stage"] = "Picking today's jobs"
         old = json.loads(TODAY.read_text()) if TODAY.exists() else {}
         queue = make_queue(profile, n=int(old.get("target") or 30), max_age_hours=hours)
         _POSTING_INDEX = None  # the new postings' descriptions are in the boards just read
         REFRESH["found"] = len([i for i in queue["items"] if not i["spare"]])
-        kick_warmup()
     except Exception as exc:  # the page says what went wrong, and the queue you have stays
         REFRESH["error"] = f"{type(exc).__name__}: {exc}"[:300]
     finally:
@@ -536,240 +297,6 @@ def linkedin_check(d: dict, profile: dict) -> dict:
         j["find"] = f"https://www.google.com/search?q={quote(j['company'] + ' ' + j['title'] + ' careers')}"
     jobs.sort(key=lambda j: (-(j["sponsor"] or {}).get("yours", 0), -(j["sponsor"] or {}).get("filings", 0)))
     return {"jobs": jobs, "note": ""}
-
-
-def resume_save(d: dict, profile: dict) -> dict:
-    """Keep a checked preview: Documents (tailored_dir) and a phone copy (tailored_copy_dir)."""
-    prev = PREVIEWS.get(str(d.get("id", "")))
-    if not prev or not prev["pdf"]:
-        raise ValueError("Preview it again; only a preview that passed every check can be saved.")
-    folder = tailored_folder(profile) / date.today().isoformat() / job_folder_name(prev)
-    root = profile.get("tailored_copy_dir")
-    copy_folder = Path(str(root)).expanduser() / date.today().isoformat() / folder.name if root else None
-    path, note = engine.keep(prev["pdf"], folder, copy_folder)
-    return {"path": path, "note": note}
-
-
-_DEMAND: dict = {"mtime": None, "counts": {}}
-
-
-def skill_demand(facts: dict) -> list[dict]:
-    """How many of today's jobs name each skill, and where it stands on your resume."""
-    if not TODAY.exists():
-        return []
-    mtime = TODAY.stat().st_mtime
-    if _DEMAND["mtime"] != mtime:
-        counts: dict[str, int] = {}
-        for it in json.loads(TODAY.read_text()).get("items", []):
-            for t in engine.terms(engine.without_employer(f"{it.get('title', '')}\n{posting_text(it.get('url', ''))}", it.get("company", ""))):
-                if not t.startswith("theme:"):
-                    counts[t] = counts.get(t, 0) + 1
-        _DEMAND.update(mtime=mtime, counts=counts)
-    on_lines = engine._item_terms([it for s in facts["skills"] if engine.ok(s) for it in s["items"]])
-    backed = engine.evidence(facts)
-    added = {a["term"]: a.get("level") for a in facts.get("added_skills") or [] if engine.ok(a)}
-    def state(t):
-        return ("on your skills lines" if t in on_lines else "backed by your lines" if t in backed else
-                {"used": "added by you", "learning": "on your learning line"}.get(added.get(t), "not added"))
-    return [{"term": t, "label": engine.item_label(t), "n": c, "state": state(t)}
-            for t, c in sorted(_DEMAND["counts"].items(), key=lambda kv: (-kv[1], kv[0]))]
-
-
-def facts_view(profile: dict) -> dict:
-    """Your facts file for the Resume lines tab, with each suggested version's checks and today's skill demand."""
-    facts = engine.load_facts(_facts_path(profile))
-    for grp in ("roles", "projects"):
-        for g in facts[grp]:
-            for b in g["bullets"]:
-                for a in b.get("alts") or []:
-                    a["problems"] = engine.faithful(b["text"], a)
-                    a["adds_text"] = engine.adds_text(a)
-    facts["demand"] = skill_demand(facts)
-    facts["pending_versions"] = engine.pending_versions(facts)
-    return facts
-
-
-def facts_update(d: dict, profile: dict) -> dict:
-    """Approve, remove, restore or reword one of your lines; approve or remove a suggested version; add a skill.
-    Rewording is yours alone: a suggested version is used only after you approve it, and only while it keeps your facts."""
-    path = _facts_path(profile)
-    facts = engine.load_facts(path)
-    section, ident, status, text = d.get("section"), d.get("id"), d.get("status"), d.get("text")
-    if status not in (None, "approved", "pending", "removed"):
-        raise ValueError("Unknown status.")
-    stamp = date.today().isoformat()
-    if section in ("alt", "alts"):
-        if status is None or text is not None:
-            raise ValueError("A suggested version can be approved or removed, not edited. Edit your own line instead.")
-        found = 0
-        for grp in ("roles", "projects"):
-            for g in facts[grp]:
-                for b in g["bullets"]:
-                    for a in b.get("alts") or []:
-                        if (section == "alt" and a["id"] == ident) or (section == "alts" and a.get("status") == "pending"):
-                            problems = engine.faithful(b["text"], a)
-                            if status == "approved" and problems:
-                                if section == "alt":
-                                    raise ValueError("This version changes a fact, so it can't be approved: " + "; ".join(problems))
-                                continue
-                            a["status"] = status
-                            a["source"] = f"{a.get('source', '')}; {status} by you {stamp}".strip("; ")
-                            found += 1
-        if section == "alt" and not found:
-            raise ValueError("That version isn't in your facts file.")
-        engine.save_facts(path, facts)
-        return facts_view(profile)
-    if section == "new_line":  # a line you write, for work a job asks for that your lines don't show yet
-        g = next((g for grp in ("roles", "projects") for g in facts[grp] if g["id"] == str(d.get("group") or "") and engine.ok(g)), None)
-        if g is None:
-            raise ValueError("Pick one of your roles or projects.")
-        clean = " ".join(str(text or "").split())
-        if not 20 <= len(clean) <= 450:
-            raise ValueError("Write the line in 20 to 450 characters.")
-        if any(x in clean for x in engine.BANNED):
-            raise ValueError("Use a comma or a period instead of a dash.")
-        if engine.NEVER.search(clean):
-            raise ValueError(f'"{engine.NEVER.search(clean).group(0)}" never goes on your resume.')
-        if "[" in clean or "]" in clean:
-            raise ValueError("Fill in the [blanks] with your own facts first.")
-        # a line you already have, word for word or nearly, isn't added twice: that one is used instead
-        roots = engine._ask_roots(clean)
-        twin = next((b for b in g["bullets"] if engine.ok(b) and (b["text"] == clean or (roots and len(roots & engine._ask_roots(b["text"]))
-                     / len(roots | engine._ask_roots(b["text"])) >= 0.8))), None)
-        if twin is None:
-            n = 1 + sum(b["id"].startswith(f"{g['id']}_you") for b in g["bullets"])
-            why = str(d.get("requirement") or "")[:160]
-            twin = {"id": f"{g['id']}_you{n}", "text": clean, "status": "approved",
-                    "source": f"written by you {stamp}" + (f", for: {why}" if why else "")}
-            g["bullets"].append(twin)
-            engine.save_facts(path, facts)
-        return {**facts_view(profile), "added": twin["id"]}  # the page pins it to the resume you're tailoring
-    if section == "detail":  # a supporting fact for one of your lines: rewrites may use it for any job
-        b = next((b for grp in ("roles", "projects") for g in facts[grp] for b in g["bullets"] if b["id"] == ident), None)
-        if b is None or not engine.ok(b):
-            raise ValueError("That isn't one of your approved lines.")
-        details = b.setdefault("supporting_facts", [])
-        if status == "removed":
-            i = d.get("index")
-            if not isinstance(i, int) or not 0 <= i < len(details):
-                raise ValueError("That detail isn't on this line.")
-            details[i]["status"] = "removed"
-        else:
-            clean = " ".join(str(text or "").split())
-            if not 10 <= len(clean) <= 300:
-                raise ValueError("Keep a detail between 10 and 300 characters.")
-            if any(x in clean for x in engine.BANNED):
-                raise ValueError("Use a comma or a period instead of a dash.")
-            if engine.NEVER.search(clean):
-                raise ValueError(f'"{engine.NEVER.search(clean).group(0)}" never goes on your resume.')
-            if any(x.get("text") == clean and engine.ok(x) for x in details):
-                raise ValueError("This line already has that detail.")
-            details.append({"text": clean, "status": "approved", "source": f"added by you {stamp}"})
-        engine.save_facts(path, facts)
-        return facts_view(profile)
-    if section == "impact":
-        entry = next((i for i in facts.get("impacts") or [] if i["id"] == ident), None)
-        if entry is None or status is None or text is not None:
-            raise ValueError("An impact sentence can be approved or removed here.")
-        entry["status"] = status
-        engine.save_facts(path, facts)
-        return facts_view(profile)
-    if section == "added_skill":
-        term, level = str(d.get("term", "")), d.get("level")
-        if term not in engine.vocabulary():
-            raise ValueError("That skill isn't one the tailoring knows.")
-        if level not in ("used", "learning", "no", "removed"):
-            raise ValueError("Answer yes, learning or no.")
-        added = facts.setdefault("added_skills", [])
-        entry = next((a for a in added if a["term"] == term), None)
-        if entry is None:
-            entry = {"id": "as_" + term, "term": term, "label": engine.item_label(term)}
-            added.append(entry)
-        if level == "removed":
-            entry["status"] = "removed"
-        else:
-            entry.update(level=level, status="approved", source=f"{'you said no' if level == 'no' else 'added by you'} {stamp}")
-            # where you used it: the rewrite may then name it in those roles' and projects' lines, for every job
-            places = {g["id"] for grp in ("roles", "projects") for g in facts[grp]}
-            where = [w for w in d.get("where") or [] if isinstance(w, str) and w in places]
-            if level == "used" and where:
-                entry["where"] = sorted(set(entry.get("where") or []) | set(where))
-            elif level != "used":
-                entry.pop("where", None)
-        engine.save_facts(path, facts)
-        return facts_view(profile)
-    if section in ("contact", "titles"):
-        entry = facts[section]
-    elif section in ("summaries", "skills"):
-        entry = next((x for x in facts[section] if x["id"] == ident), None)
-    elif section == "education":
-        entry = facts["education"][int(ident)] if str(ident).isdigit() and int(ident) < len(facts["education"]) else None
-    elif section in ("roles", "projects"):
-        entry = next((g for g in facts[section] if g["id"] == ident), None)
-    elif section == "bullet":
-        entry = next((b for grp in ("roles", "projects") for g in facts[grp] for b in g["bullets"] if b["id"] == ident), None)
-    else:
-        entry = None
-    if entry is None:
-        raise ValueError("That line isn't in your facts file.")
-    if text is not None:
-        if section not in ("bullet", "summaries"):
-            raise ValueError("Only bullets and summaries can be reworded here.")
-        clean = " ".join(str(text).split())
-        if any(x in clean for x in engine.BANNED):
-            raise ValueError("Use a comma or a period instead of a dash.")
-        if not 10 <= len(clean) <= 450:
-            raise ValueError("Keep a line between 10 and 450 characters.")
-        entry["text"] = clean
-        entry["status"] = "approved"
-        entry["source"] = f"{entry.get('source', '')}; reworded by you {date.today().isoformat()}".strip("; ")
-    if status:
-        entry["status"] = status
-    engine.save_facts(path, facts)
-    return facts_view(profile)
-
-
-def tailor(item: dict, profile: dict) -> str:
-    """Tailor and keep one job's resume as the engine picks it, with no changes from you (tailor-all)."""
-    facts = engine.load_facts(_facts_path(profile))
-    out = engine.build(facts, posting_text(item["url"]), item["title"], item["resume"],
-                       RESULTS / "tailor-preview" / engine.new_preview_id(), None, profile.get("chrome_path") or CHROME_DEFAULT,
-                       employer=item["company"])
-    if out["failures"] or not out["pdf"]:
-        raise ValueError("; ".join(out["failures"]) or "not built")
-    folder = tailored_folder(profile) / date.today().isoformat() / job_folder_name(item)
-    root = profile.get("tailored_copy_dir")
-    copy_folder = Path(str(root)).expanduser() / date.today().isoformat() / folder.name if root else None
-    path, note = engine.keep(out["pdf"], folder, copy_folder)
-    if note:
-        print(f"  ! #{item['n']} {item['company']}: {note}")
-    return path
-
-
-def tailored_folder(profile: dict):
-    """Where tailored resumes go: profile `tailored_dir` (for example a folder in Documents), else results/tailored."""
-    from pathlib import Path
-    return Path(str(profile.get("tailored_dir") or RESULTS / "tailored")).expanduser()
-
-
-def job_folder_name(item: dict) -> str:
-    """'03 Snowflake - Business Intelligence Analyst': safe as a folder name; the PDF inside keeps a clean name."""
-    raw = f"{int(item['n']):02d} {item['company']} - {item['title']}"
-    return " ".join(re.sub(r"[/\\:*?\"<>|\x00-\x1f]+", " ", raw).split())[:120].rstrip(" .")
-
-
-def tailor_all(profile: dict, items: list[dict]) -> list[str]:
-    """Build a tailored resume for each item (on request only; the page's Tailor button does one at a time)."""
-    from pathlib import Path
-    made = []
-    for it in items:
-        try:
-            pdf = Path(tailor(it, profile))
-        except (ValueError, subprocess.TimeoutExpired, subprocess.CalledProcessError, OSError) as exc:
-            print(f"  ! #{it['n']} {it['company']}: {exc}")
-            continue
-        made.append(str(pdf))
-    return made
 
 
 def resume_variant(role: str, profile: dict) -> str:
@@ -909,18 +436,13 @@ FIELDS = [
     ("finance", "Finance and fintech",
      "Lead with accuracy at scale: ETL over 1M+ rows, data validation, and inventory and sales reporting."),
 ]
-ESTABLISHED_FILE = Path(__file__).parent / "established.yaml"
-_established: set[str] | None = None
-
-
 def is_startup(company: str, board: str) -> bool:
-    """Every employer counts as a startup unless it hires through Workday (enterprises do) or established.yaml
-    lists it: public companies and their subsidiaries, decades-old private companies, consultancies, universities,
-    hospitals and nonprofits."""
-    global _established
-    if _established is None:
-        _established = set(yaml.safe_load(ESTABLISHED_FILE.read_text()) or []) if ESTABLISHED_FILE.exists() else set()
-    return board != "Workday" and company not in _established
+    """A startup is young and small: founded in the last 10 years with at most 500 people, going by
+    company_facts.yaml (startups.py; both limits can be set in profile.yaml). An employer that hires through Workday,
+    one established.yaml lists, and one whose founding year or headcount isn't known yet never counts as one."""
+    return startups.is_startup(company, board)
+
+
 _HEALTH_NAME = re.compile(r"health|medical|hospital|clinic|pharma|\bbio|therapeut|life science|children's|medicine|\bcare\b|iqvia|amgen|"
                           r"elevance|humana|cigna|aetna|kaiser|\bcvs\b|optum|pfizer|merck|moderna|biogen|hcsc|blue cross|anthem", re.I)
 _HEALTH_JD = re.compile(r"\b(patients?|clinical|clinicians?|healthcare|health care|hipaa|pharma\w*|biotech\w*|life sciences|medical|"
@@ -993,7 +515,7 @@ def make_queue(profile: dict, n=30, spares=10, cap=2, max_age=60, min_score=3.0,
     RESULTS.mkdir(parents=True, exist_ok=True)
     tmp = TODAY.with_suffix(".tmp")
     tmp.write_text(json.dumps(queue, indent=1))
-    tmp.replace(TODAY)  # the page and the warm-up never read half a queue
+    tmp.replace(TODAY)  # the page and Tailor never read half a queue
     return queue
 
 
@@ -1087,7 +609,10 @@ def _state(profile: dict) -> dict:
 
 def serve(profile: dict, port: int = 8765, open_browser: bool = True) -> None:
     token = secrets.token_urlsafe(24)
+    tailor = tailor_url(profile) or ""
     for candidate in range(port, port + 10):  # a page from an earlier run may still hold the port
+        if candidate != port and tailor.endswith(f":{candidate}/"):
+            continue  # never Tailor's port: the cards' links point there
         try:
             httpd = ThreadingHTTPServer(("127.0.0.1", candidate), BaseHTTPRequestHandler)
         except OSError:
@@ -1124,7 +649,7 @@ def serve(profile: dict, port: int = 8765, open_browser: bool = True) -> None:
                 return self._send(403, b'{"error":"forbidden"}')
             if self.path == "/":
                 queue = json.loads(TODAY.read_text()) if TODAY.exists() else {"items": [], "target": 0}
-                return self._send(200, page(queue, _state(profile), token, bool(profile.get("resume_facts"))).encode(),
+                return self._send(200, page(queue, _state(profile), token, tailor_url(profile)).encode(),
                                   "text/html; charset=utf-8")
             if self.path == "/api/state":
                 return self._send(200, json.dumps(_state(profile)).encode())
@@ -1143,33 +668,20 @@ def serve(profile: dict, port: int = 8765, open_browser: bool = True) -> None:
                 if self.path == "/api/applied":
                     record(str(d.get("company", ""))[:200], str(d.get("title", ""))[:300], url,
                            str(d.get("role", ""))[:40], str(d.get("channel") or "cold"), str(d.get("contact", ""))[:200])
-                    kick_warmup()
                 elif self.path == "/api/skip":
                     skip(str(d.get("company", ""))[:200], str(d.get("title", ""))[:300], url, str(d.get("reason", "")))
-                    kick_warmup()
                 elif self.path == "/api/undo":
                     undo(url)
-                    kick_warmup()
                 elif self.path == "/api/followed":
                     followed_up(url, 2 if d.get("which") == 2 else 1)
                 elif self.path == "/api/status":
                     update(url, str(d.get("status", "")))
-                elif self.path == "/api/resume/preview":
-                    return self._send(200, json.dumps(resume_preview(d, profile)).encode())
                 elif self.path == "/api/refresh":
                     return self._send(200, json.dumps(start_refresh(profile, d.get("hours", 24))).encode())
                 elif self.path == "/api/refresh/status":
                     return self._send(200, json.dumps(dict(REFRESH)).encode())
-                elif self.path == "/api/resume/suggest":
-                    return self._send(200, json.dumps(resume_suggest(d, profile)).encode())
                 elif self.path == "/api/linkedin/check":
                     return self._send(200, json.dumps(linkedin_check(d, profile)).encode())
-                elif self.path == "/api/resume/save":
-                    return self._send(200, json.dumps(resume_save(d, profile)).encode())
-                elif self.path == "/api/facts/get":
-                    return self._send(200, json.dumps(facts_view(profile)).encode())
-                elif self.path == "/api/facts/update":
-                    return self._send(200, json.dumps(facts_update(d, profile)).encode())
                 else:
                     return self._send(404, b'{"error":"not found"}')
             except (ValueError, KeyError, subprocess.TimeoutExpired, subprocess.CalledProcessError, OSError) as exc:
@@ -1177,9 +689,6 @@ def serve(profile: dict, port: int = 8765, open_browser: bool = True) -> None:
             return self._send(200, json.dumps(_state(profile)).encode())
 
     httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    if profile.get("resume_facts"):  # rewrite the next few jobs in the background so Tailor is quick
-        threading.Thread(target=warm_rewrites, args=(profile,), name="warm-rewrites", daemon=True).start()
-        kick_warmup()
     url = f"http://127.0.0.1:{port}/"
     print(f"\ntoday's queue: {url}  (Ctrl+C to stop; everything is saved as you go)", flush=True)
     if open_browser:
@@ -1192,9 +701,22 @@ def serve(profile: dict, port: int = 8765, open_browser: bool = True) -> None:
         httpd.server_close()
 
 
-def page(queue: dict, state: dict, token: str, tailor_ok: bool = False) -> str:
+def tailor_url(profile: dict) -> str | None:
+    """Where Tailor's own page is (python -m tailor), for the links on the cards: `tailor_port` in profile.yaml,
+    else 8766. None until `resume_facts` is set, since Tailor has nothing to tailor from before that."""
+    if not profile.get("resume_facts"):
+        return None
+    try:
+        port = int(profile.get("tailor_port") or 8766)
+    except (TypeError, ValueError):  # a bad port in profile.yaml shouldn't take the queue page down
+        port = 8766
+    return f"http://127.0.0.1:{port}/"
+
+
+def page(queue: dict, state: dict, token: str, tailor: str | None = None) -> str:
+    """The queue page. `tailor` is Tailor's address (see tailor_url), or None to leave its links off."""
     data = json.dumps({"queue": queue, "state": state, "token": token, "reasons": SKIP_REASONS,
-                       "statuses": STATUSES, "tailor": tailor_ok, "fields": FIELDS,
+                       "statuses": STATUSES, "tailor": tailor, "fields": FIELDS,
                        "searches": [[role, [x for x in links if x[0] != "LinkedIn"]] for role, links in search_links()],
                        "linkedin": linkedin.search_links(), "refresh": dict(REFRESH)}).replace("<", "\\u003c")
     return PAGE.replace("/*DATA*/null", data)
@@ -1230,30 +752,17 @@ select{border:1px solid var(--line);border-radius:99px;padding:6px 10px;font:inh
 .links a{margin-right:12px;color:var(--blue);text-decoration:none;font-size:14px}
 details summary{cursor:pointer;color:var(--sub);margin:8px 0}
 .small{font-size:12.5px}.ok{color:var(--green)}.err{color:#c00}.warn-row{color:var(--amber)}
-.tabs{display:flex;gap:6px;padding:0 0 10px;flex-wrap:wrap}.tab.on{background:var(--ink);color:#fff}
-button.x{padding:1px 8px;font-size:12px;margin-left:4px}
-.pv{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px}
-.pv mark{background:#fff1b8;color:inherit;border-radius:3px;padding:0 1px}
-.pv h3{font-size:14px;margin:12px 0 4px}.pv ul{margin:4px 0 8px 18px;padding:0}.pv li{margin:3px 0}
-.quote{background:var(--bg);border-radius:10px;padding:8px 10px;margin:6px 0}
-.line.approved{border-color:#bfe5cc}.line.removed{opacity:.5}.line.bullet{margin-left:22px}
-.linetext{margin:6px 0}
 .field h3{font-size:16px;margin:22px 0 2px}.field p{margin:0 0 10px}
-.chip.learn{background:#e8f0fe;color:#1a56c4}
-.wait{background:#fff8ec;border:1px solid #f3dfbf;border-radius:10px;padding:8px 10px;margin:6px 0}
-.line.alt{margin-left:44px}
 .li-roles{display:flex;flex-wrap:wrap;gap:6px 18px;margin:8px 0;font-size:14px}.li-roles a{margin-left:7px;color:var(--blue);text-decoration:none}
 </style></head><body>
 <header><div class="wrap bar"><h1>Today</h1><div class="meter"><i id="meter"></i></div>
 <div><span class="count" id="count">0</span> <span class="muted">applied today</span></div>
 <label class="small muted">Group by <select id="group"><option value="field">field</option><option value="rank">rank only</option><option value="board">job board</option></select></label>
 <button id="refresh">Refresh</button><label class="small muted">last <input type="number" id="hours" min="24" max="48" step="1" value="24" aria-label="Hours to keep, 24 to 48" style="width:60px;border:1px solid var(--line);border-radius:8px;padding:5px 6px;font:inherit;font-size:14px"> hours</label>
-<button class="primary" id="next">Open next job</button></div>
-<div class="wrap tabs"><button class="tab on" data-view="queue">Queue</button><button class="tab" data-view="paste">Paste a job</button><button class="tab" data-view="lines" id="tab-lines">Resume lines</button></div></header>
+<button class="primary" id="next">Open next job</button><span class="links" id="tailor-nav" hidden></span></div></header>
 <main class="wrap">
 <div id="status" class="small muted"></div>
 <div id="fresh" class="small muted" style="margin:10px 0 0"></div>
-<div id="view-queue">
 <section id="fu"></section>
 <div class="card" id="li"><div class="row"><b>LinkedIn, last 24 hours</b> <span class="small muted">Full-time, entry and associate level, newest first. These open in your browser; Shortlist never opens LinkedIn.</span></div>
 <div id="li-links"></div>
@@ -1265,21 +774,12 @@ button.x{padding:1px 8px;font-size:12px;margin-left:4px}
 <h2>Queue</h2><div id="queue"></div>
 <details><summary>Spares, if you skip some</summary><div id="spares"></div></details>
 <h2>Applied in the last 3 weeks</h2><div id="recent"></div>
-</div>
-<div id="view-paste" hidden>
-<h2>Paste a job</h2>
-<div class="card"><div class="row"><input type="text" id="p-company" placeholder="Company"> <input type="text" id="p-title" placeholder="Job title" size="40"></div>
-<textarea id="p-jd" placeholder="Paste the whole job description here" style="min-height:220px"></textarea>
-<div class="actions"><button class="primary" id="p-go">Preview my resume</button><span class="small muted">Only your approved lines and versions are used.</span></div></div>
-<div id="p-preview"></div>
-</div>
-<div id="view-lines" hidden><h2>Your resume lines</h2><div id="lines"></div></div>
 </main>
 <script>
 const D=/*DATA*/null;let S=D.state;const Q=D.queue;
 const $=(id)=>document.getElementById(id);
 const STALE='This page is from before the page server restarted. Reload it (Command+R), then try again.';
-function el(tag,attrs,...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs||{})){if(k==='text')e.textContent=v;else if(k==='href'){if(/^https:\\/\\//.test(v))e.href=v;}else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}for(const k of kids){if(k!=null)e.append(k);}return e;}
+function el(tag,attrs,...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs||{})){if(k==='text')e.textContent=v;else if(k==='href'){if(/^https:\\/\\//.test(v)||(D.tailor&&String(v).startsWith(D.tailor)))e.href=v;}else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}for(const k of kids){if(k!=null)e.append(k);}return e;}
 async function post(path,body){try{const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-Token':D.token},body:JSON.stringify(body)});if(!r.ok)throw new Error(r.status===403?STALE:((await r.json()).error||r.status));S=await r.json();render();flash('Saved','ok');}catch(e){flash(e.message===STALE?STALE:'Not saved: '+e.message+'. Is `python -m shortlist today` still running?','err');}}
 function flash(t,c){const s=$('status');s.className='small '+c;s.textContent=t;clearTimeout(flash.t);flash.t=setTimeout(()=>{s.textContent='';},c==='err'?9000:2500);}
 function copy(text){  /* the clipboard, then the older copy command, then the text selected for you to copy */
@@ -1321,7 +821,7 @@ function card(it){
   el('div',{class:'top'},el('span',{class:'n',text:'#'+it.n}),el('span',{class:'co',text:it.company}),el('span',{class:'ti'},el('a',{href:it.url,target:'_blank',rel:'noopener noreferrer',text:it.title})),el('span',{class:'muted small',text:it.location})),
   facts,
   el('div',{class:'row'},el('b',{text:'Resume: '}),document.createTextNode(it.resume+' version  '),it.resume_path?el('button',{onclick:()=>copy(it.resume_path),text:'Copy file path'}):el('span',{class:'muted small',text:'(set resumes in profile.yaml)'}),
-   D.tailor?' ':null,D.tailor?el('button',{onclick:()=>openPreview(it),text:'Tailor to this job'}):null),
+   D.tailor?' ':null,D.tailor?el('a',{class:'btn',href:D.tailor+'?job='+encodeURIComponent(it.url),target:'tailor',text:'Tailor this job'}):null),
   it.mirror.length?el('div',{class:'row'},el('b',{text:'Use their words: '}),document.createTextNode(it.mirror.join(', '))):null,
   it.missing.length?el('div',{class:'row muted'},el('b',{text:'They also want: '}),document.createTextNode(it.missing.join(', ')+'. Mention only what you have really used.')):null,
   it.leverage?el('div',{class:'row'},el('b',{text:'Your angle: '}),document.createTextNode(it.leverage)):null,
@@ -1329,7 +829,7 @@ function card(it){
   age.days>7?el('div',{class:'row warn-row'},el('b',{text:'Over a week old: '}),document.createTextNode('the first reviews may be done. A note to someone there matters more than usual.')):null,
   el('div',{class:'row'},el('b',{text:it.message?'Message one person: ':'Optional, apply-only is fine (invite limit): '}),el('span',{class:'links'},...it.people.map(([t,u])=>el('a',{href:u,target:'_blank',rel:'noopener noreferrer',text:t})))),
   el('div',{class:'row'},name,' ',el('button',{onclick:()=>copy(note.value),text:'Copy message'}),' ',cnt),note,
-  actions, el('div',{id:'pv-'+it.n}));
+  actions);
 }
 function fuCard(a){
  const note=el('textarea',{});note.value=a.note;
@@ -1357,7 +857,6 @@ function render(){
  $('searches').replaceChildren(...(D.searches||[]).map(([role,links])=>el('div',{class:'row'},el('b',{text:role+': '}),el('span',{class:'links'},...links.map(([site,u])=>el('a',{href:u,target:'_blank',rel:'noopener noreferrer',text:site}))))));
  $('count').textContent=S.applied_today+' of '+Q.target;
  $('meter').style.width=Math.min(100,100*S.applied_today/Math.max(1,Q.target))+'%';
- for(const k of Object.keys(PV)) if(k!=='paste') drawPreview(k);
 }
 $('next').addEventListener('click',()=>{const it=Q.items.find(i=>!S.applied[i.url]&&!S.skipped.includes(i.url));if(it){$('c'+it.n).scrollIntoView({behavior:'smooth',block:'start'});if(/^https:\\/\\//.test(it.url))window.open(it.url,'_blank','noopener');}});
 $('group').addEventListener('change',render);
@@ -1421,195 +920,7 @@ function liCard(j){const s=j.sponsor,o=j.own;
    o?el('a',{class:'btn primary',href:o.url,target:'_blank',rel:'noopener noreferrer',text:'Their own posting'}):el('a',{class:'btn',href:j.find,target:'_blank',rel:'noopener noreferrer',text:'Find it on their site'}),
    j.applied?null:mark));}
 async function api(path,body){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-Token':D.token},body:JSON.stringify(body)});const j=await r.json().catch(()=>({error:'No answer from the page. Is it still running?'}));if(!r.ok)throw new Error(r.status===403?STALE:(j.error||r.status));return j;}
-const PV={};
-const LENS={'data-engineer':'data engineering','data-analyst':'analytics','data-scientist':'data science','ai-engineer':'AI engineering'};
-function newState(extra){return Object.assign({exclude:[],include:[],title_skip:[],summary_id:null,original:[],skill_skip:[]},extra);}
-function openPreview(it){const key='q'+it.n;if(PV[key]){delete PV[key];const b=$('pv-'+it.n);if(b)b.replaceChildren();return;}PV[key]={st:newState({n:it.n}),r:null,box:()=>$('pv-'+it.n),label:it.company+', '+it.title};runPreview(key);}
-function openPaste(){PV.paste={st:newState({paste:{company:$('p-company').value.trim(),title:$('p-title').value.trim(),jd:$('p-jd').value}}),r:null,box:()=>$('p-preview'),
-  label:$('p-company').value.trim()+', '+$('p-title').value.trim()};runPreview('paste');}
-async function runPreview(key){const p=PV[key];const box=p&&p.box();if(!box)return;
- const wait=el('p',{class:'muted small',text:p.r?'Updating the page...':'Fitting your points to this job. If Claude hasn\\'t rewritten them for this job yet, this takes up to 40 seconds.'});
- box.replaceChildren(el('div',{class:'pv'},wait));
- try{p.r=await api('/api/resume/preview',p.st);if(p.r.rewrite_failed)p.st.rewrite=false;}catch(e){p.r={error:e.message};}
- drawPreview(key);}
-const norm=w=>w.toLowerCase().replace(/^[^a-z0-9$]+|[^a-z0-9%+]+$/g,'');
-function marked(text,orig){const have=new Set((orig||'').split(/\\s+/).map(norm));return text.split(/(\\s+)/).map(w=>!norm(w)||have.has(norm(w))?w:el('mark',{title:'Added for this job',text:w}));}
-async function factsDo(body,then){try{const f=await api('/api/facts/update',body);setTabCount(f);then(f);}catch(e){flash(e.message,'err');}}
-function waitBox(w,redo){return el('div',{class:'wait small'},el('div',{},el('b',{text:'Suggested '+(LENS[w.lens]||'')+' version, waiting for your OK: '})),el('div',{text:w.text}),
- w.adds_text?el('div',{class:'muted',text:'Adds: '+w.adds_text+(w.why?'. Why: '+w.why:'')}):null,
- el('div',{class:'actions'},el('button',{class:'apply',text:'Approve this version',onclick:()=>factsDo({section:'alt',id:w.id,status:'approved'},redo)}),el('button',{text:'Not this one',onclick:()=>factsDo({section:'alt',id:w.id,status:'removed'},redo)})));}
-function pinLine(key,f){const st=PV[key]&&PV[key].st;if(st&&f.added){if(!st.include.includes(f.added))st.include.push(f.added);st.exclude=st.exclude.filter(x=>x!==f.added);}
- flash('Added to this resume, and saved for every job it fits','ok');runPreview(key);}
-function suggestRows(x,key){  /* drafts for one requirement: one recommended, each labeled by what it adds to your facts */
- if(!x.suggestions.length)return [el('span',{class:'muted',text:'No draft fits your lines for this one. Use "I\\'ve done this" to write it yourself.'})];
- return x.suggestions.map(sg=>{const ta=el('textarea',{rows:'2'});ta.value=sg.text;
-  const label=sg.grounded?el('span',{class:'chip new',text:'From your lines'}):el('span',{class:'chip warn',text:'Needs you to confirm: adds '+sg.adds.join('; ')});
-  const use=el('button',{class:'apply',text:'Use this line',onclick:()=>{if(/[\\[\\]]/.test(ta.value)){flash('Fill in the [blanks] with your own facts first','err');return;}
-    factsDo({section:'new_line',group:sg.place,text:ta.value,requirement:x.requirement},f=>pinLine(key,f));}});
-  return el('div',{style:'margin:8px 0'},el('div',{},sg.recommended?el('span',{class:'chip new',text:'Recommended'}):null,sg.strongest?el('span',{class:'chip learn',text:'Strongest'}):null,' ',label,el('span',{class:'muted',text:'  for '+sg.name})),ta,
-   sg.why?el('div',{class:'muted',text:(sg.recommended&&sg.strongest?'Why this one, the strongest you can use as is: ':sg.recommended?'Why this one: ':sg.strongest?'The strongest, if it is true for you: ':'Ranked lower: ')+sg.why}):null,
-   !sg.grounded?el('div',{class:'muted',text:'Use it only if it is true; saving it is your confirmation.'}):null,el('div',{class:'actions'},use));});}
-function suggestButton(q,row,key){const b=el('button',{class:'x',text:'Suggest lines',title:'Two or three drafts built from your own lines, with one recommended'});
- b.addEventListener('click',async()=>{b.disabled=true;const out=el('div',{class:'small',style:'margin:4px 0 8px 58px'},el('span',{class:'muted',text:'Drafting from your lines, about 15 seconds...'}));row.after(out);
-  const pr=PV[key].r||{},onPage=(pr.experience||[]).concat(pr.projects||[]).flatMap(g=>g.bullets.map(b=>b.id));
-  try{const x=await api('/api/resume/suggest',Object.assign({},PV[key].st,{requirement:q.text,on_page:onPage}));out.replaceChildren(...suggestRows(x,key));}
-  catch(e){out.replaceChildren(el('span',{class:'err',text:e.message}));}b.disabled=false;});
- return b;}
-function reqBox(r,key){  /* what the job asks for, and which of your lines on this page show it */
- const reqs=r.requirements||[];if(!reqs.length)return null;
- const lines={education:'Education',skills:'Skills',dates:'Your role dates'};for(const g of (r.experience||[]).concat(r.projects||[]))for(const b of g.bullets)lines[b.id]=b.text;
- const full=q=>q.status?q.status==='full':q.by.length>0,part=q=>q.status==='partial';
- const shown=reqs.filter(full).length,reqd=reqs.filter(q=>q.kind==='required'),reqdShown=reqd.filter(full).length,reqdPart=reqd.filter(part).length;
- const box=el('details',{class:'wait',open:'open'},el('summary',{},el('b',{text:'What this job asks for: '+reqdShown+' of '+reqd.length+' required fully on this page'+(reqdPart?' ('+reqdPart+' more partly)':'')+', and '+shown+' of '+reqs.length+' in all'})));
- for(const a of (r.advice||[]))box.append(el('div',{class:'row small'+(a.level==='change'?' warn-row':a.level==='ok'?' ok':' muted')},el('b',{text:a.level==='change'?'Change: ':a.level==='ok'?'Good: ':'Note: '}),a.text));
- box.append(el('p',{class:'small muted',text:"Each line on the page is written toward the requirements it really shows. For one it doesn't show that you have done, write it once with \\"I've done this\\"; it goes on every resume where it fits."}));
- for(const q of reqs){const row=el('div',{class:'row small'});const kind=el('span',{class:'muted',text:' ('+q.kind+')'+(q.by.length&&(q.where||[]).length?', in '+q.where.join(', '):'')});
-  const inLines=(q.where||[]).some(w=>w==='experience'||w==='projects');
-  const btn=el('button',{class:'x',text:q.by.length?'Show it in a line':"I've done this",title:'Write one line about the work, once; it goes on every resume where it fits'});
-  if(q.by.length){const short=part(q)&&q.kind==='required';  /* append() prints a null as the word "null", so drop them first */
-   row.append(...[el('span',{class:part(q)?'chip warn':'chip new',text:part(q)?'partly':'shown'}),' ',q.text,kind,q.kind==='required'&&(!inLines||short)?btn:null,q.kind==='required'&&(!inLines||short)?suggestButton(q,row,key):null,
-     part(q)?el('div',{class:'muted',style:'margin-left:58px',text:'short: '+(q.gaps||[]).join('; ')}):null,
-     el('div',{class:'muted',style:'margin-left:58px',text:'by: '+q.by.map(id=>{const t=lines[id]||'';return t.length>70?t.slice(0,70)+'...':t;}).join(' | ')})].filter(x=>x!=null));}
-  else row.append(el('span',{class:'chip warn',text:'not shown'}),' ',q.text,kind,' ',btn,suggestButton(q,row,key));
-  btn.addEventListener('click',()=>{const where=el('select',{},...(r.places||[]).map(pl=>el('option',{value:pl.id,text:pl.name})));
-     const ta=el('textarea',{rows:'2',placeholder:'One line about what you did, in your own words, as it should read on your resume'});
-     const form=el('div',{class:'small',style:'margin:4px 0 8px 58px'},el('div',{},'Where: ',where),ta,
-       el('div',{class:'actions'},el('button',{class:'apply',text:'Add this line',onclick:()=>factsDo({section:'new_line',group:where.value,text:ta.value,requirement:q.text},f=>pinLine(key,f))}),
-         el('button',{text:'Cancel',onclick:()=>form.remove()})));
-     row.after(form);ta.focus();});
-  box.append(row);}
- if((r.logistics||[]).length)box.append(el('div',{class:'row small muted'},el('b',{text:'Check these yourself, no resume line shows them: '}),r.logistics.map(x=>x.text).join('; ')));
- return box;}
-function kwBox(r){  /* the posting's keywords, and where each one stands on this page */
- const ks=r.keywords||[];if(!ks.length)return null;
- const on=ks.filter(k=>k.status==='on page').length;
- const box=el('details',{class:'wait',open:'open'},el('summary',{},el('b',{text:'Keywords from this posting: '+on+' of '+ks.length+' on this page'})));
- const groups=[['on page','On the page','chip new'],['missing','Yours, not on the page yet','chip warn'],
-  ['ask','Answer the skills question for these','chip'],['learning','On your Currently learning line','chip'],
-  ['declined','You said you have not used these','chip'],['only you','None of your lines shows these; add a line only if you did the work','chip']];
- for(const [st,label,cls] of groups){const xs=ks.filter(k=>k.status===st);if(!xs.length)continue;
-  const row=el('div',{class:'row small'},el('b',{text:label+': '}));
-  for(const k of xs)row.append(el('span',{class:cls,text:k.text+(k.match==='close'?' (close form)':'')}),' ');
-  box.append(row);}
- return box;}
-function skillsAsk(r,p,key){  /* every skill this job wants that your resume doesn't show: asked once, remembered for every job */
- const ask=(r.skills_detail||[]).filter(x=>x.state==='missing');if(!ask.length)return null;
- const places=r.places||[];let left=ask.length;
- const update=el('button',{class:'primary',text:'Update this resume with my answers',hidden:'hidden',onclick:()=>runPreview(key)});
- const box=el('div',{class:'wait'},el('b',{text:"This job asks for "+ask.length+(ask.length===1?" skill":" skills")+" your resume doesn't show. Have you used "+(ask.length===1?"it?":"them?")}),
-  el('p',{class:'small muted',text:"Yes puts it on your resume for this job and every later job that asks for it, and the rewrite can name it in the places you tick. Learning puts it on a Currently learning line. Every answer is saved, so each skill is asked once."}));
- for(const x of ask){const row=el('div',{class:'row'});
-  const save=async(level,where)=>{try{const f=await api('/api/facts/update',{section:'added_skill',term:x.term,level,where:where||[]});setTabCount(f);
-     const at=(where||[]).map(w=>(places.find(q=>q.id===w)||{}).name||w);
-     row.replaceChildren(el('b',{text:x.label+': '}),el('span',{class:'small',text:level==='used'?'yes'+(at.length?', at '+at.join(', '):', on your skills line'):level==='learning'?'learning':'no, not asked again'}));
-     left--;update.hidden=false;if(left<=0)runPreview(key);}
-   catch(e){flash(e.message,'err');}};
-  const yes=el('button',{class:'apply',text:'Yes',onclick:()=>{const picks=places.map(q=>{const c=el('input',{type:'checkbox',value:q.id});return [c,el('label',{class:'small',style:'margin-right:10px;white-space:nowrap'},c,' '+q.name)];});
-     row.replaceChildren(el('b',{text:x.label+': where did you use it? '}),...picks.map(q=>q[1]),
-       el('button',{class:'apply',text:'Save',onclick:()=>save('used',picks.filter(q=>q[0].checked).map(q=>q[0].value))}),
-       el('span',{class:'small muted',text:' Tick none if it was somewhere else: it goes on your skills line only.'}));}});
-  row.append(el('b',{text:x.label+' '}),yes,' ',el('button',{text:'Learning',onclick:()=>save('learning')}),' ',el('button',{text:'No',onclick:()=>save('no')}));
-  box.append(row);}
- box.append(el('div',{class:'actions'},update));
- return box;}
-function skillChip(x,st,redo){
- if(x.state==='covered')return el('span',{class:'chip new',text:x.label});
- if(x.state==='learning')return el('span',{class:'chip learn',text:x.label+' (learning)'});
- if(x.state==='skipped')return el('span',{class:'chip'},x.label+' (left off) ',el('button',{class:'x',text:'put back',onclick:()=>{st.skill_skip=st.skill_skip.filter(s=>s!==x.item);redo();}}));
- if(x.state==='not_on_page')return el('span',{class:'chip warn',text:x.label+': in your lines, not on this page'});
- if(x.state==='declined')return el('span',{class:'chip'},x.label+' (you said no) ',el('button',{class:'x',title:'Ask me about it again',text:'I have it',onclick:()=>factsDo({section:'added_skill',term:x.term,level:'removed'},redo)}));
- return el('span',{class:'chip'},x.label+' ',el('button',{class:'x',title:'Add it to your skills for every job that asks for it',text:"I've used it",onclick:()=>factsDo({section:'added_skill',term:x.term,level:'used'},redo)}),el('button',{class:'x',title:'Add it to a Currently learning line for jobs that ask for it',text:'learning',onclick:()=>factsDo({section:'added_skill',term:x.term,level:'learning'},redo)}));}
-function drawPreview(key){const p=PV[key];const box=p&&p.box();if(!box||!p.r)return;const r=p.r,st=p.st,k=[];
- if(r.error){box.replaceChildren(el('div',{class:'pv'},el('p',{class:'err',text:r.error})));return;}
- const redo=()=>runPreview(key);
- k.push(el('div',{class:'row'},el('b',{text:r.ok?'Ready: one page, every check passed. ':'Not ready yet. '}),r.pending?el('span',{class:'chip warn',text:r.pending+' of your lines still need approval (Resume lines tab)'}):null,' ',r.pending_versions?el('span',{class:'chip warn',text:r.pending_versions+' suggested versions waiting for you'}):null));
- if(r.failures&&r.failures.length)k.push(el('ul',{class:'err'},...r.failures.map(f=>el('li',{text:f}))));
- if(r.rewrite_note)k.push(el('p',{class:'small warn-row',text:r.rewrite_note}));
- const ask=skillsAsk(r,p,key);if(ask)k.push(ask);
- const rq=reqBox(r,key);if(rq)k.push(rq);
- const kb=kwBox(r);if(kb)k.push(kb);
- if(r.rewritten)k.push(el('p',{class:'small muted',text:r.rewritten+' of your points were rewritten for this job, with the added words marked and your wording under each. Read them before you save, and tap "my wording" on any you want back'+(r.repaired?'. '+r.repaired+(r.repaired===1?' rewrite that failed the fact check was':' rewrites that failed the fact check were')+' fixed on a second try':'')+(r.rejected?'. '+r.rejected+(r.rejected===1?' rewrite that changed a fact was':' rewrites that changed a fact were')+' dropped':'')+'.'}));
- const parts=(r.title_line||'').split(' · ');
- k.push(el('div',{class:'row'},el('b',{text:'Title (names the file): '}),el('span',{class:'chip',text:parts[0]||'(none yet)'})));
- if(r.summary){const job=r.summary.version==='job';const sel=el('select',{},el('option',{value:'',text:job?'written for this job':'best match for this job'}),...r.summaries.map(x=>el('option',{value:x.id,text:'your '+(x.variant||x.id)+' summary'})));sel.value=st.summary_id||'';sel.addEventListener('change',()=>{st.summary_id=sel.value||null;redo();});k.push(el('div',{class:'row'},el('b',{text:'Summary: '}),sel),el('p',{class:'quote',text:r.summary.text}),job?el('p',{class:'small muted',text:'Written for this job from these lines of yours, and fact-checked: '+(r.summary.uses||[]).join(', ')}):null);}
- k.push(el('h3',{text:'Skills on this resume'}));
- for(const s of r.skills||[])k.push(el('div',{class:'row small'},el('b',{text:s.label+': '}),...s.items.map(it=>(s.added||[]).includes(it)?el('span',{class:'chip '+(s.id==='learning'?'learn':'new'),title:s.id==='learning'?'You added it as learning':'Named by this job; your lines back it, or you added it'},it,el('button',{class:'x',title:'Leave it off this resume',onclick:()=>{st.skill_skip.push(it);redo();},text:'✕'})):el('span',{class:'chip',text:it}))));
- for(const [name,groups] of [['Experience',r.experience],['Projects',r.projects]]){if(!groups||!groups.length)continue;k.push(el('h3',{text:name}));
-  for(const g of groups){k.push(el('div',{class:'small muted',text:g.heading+(g.dates?' · '+g.dates:'')}));
-   k.push(el('ul',{},...g.bullets.map(b=>el('li',{},b.version==='job'?el('span',{},...marked(b.text,(r.originals||{})[b.id])):b.text,b.version==='job'?el('details',{class:'small muted'},el('summary',{text:'rewritten for this job'}),el('div',{text:'Yours: '+((r.originals||{})[b.id]||'')})):b.version!=='original'?el('span',{class:'small muted',text:' ('+(LENS[b.lens]||'job')+' version you approved)'}):null,b.matched.length?el('span',{class:'small muted',text:' (matches: '+b.matched.join(', ')+')'}):null,
-    b.version!=='original'?el('button',{class:'x',title:'Use your own wording of this line here',onclick:()=>{st.original.push(b.id);redo();},text:'my wording'}):
-     st.original.includes(b.id)?el('button',{class:'x',title:'Go back to the version for this job',onclick:()=>{st.original=st.original.filter(x=>x!==b.id);redo();},text:'job version'}):null,
-    detailButton(b.id,redo),
-    el('button',{class:'x',title:'Take this line off',onclick:()=>{st.exclude.push(b.id);st.include=st.include.filter(x=>x!==b.id);redo();},text:'✕'}),
-    b.waiting?waitBox(b.waiting,redo):null))));}}
- if(r.available&&r.available.length)k.push(el('details',{},el('summary',{text:'Add one of your other approved lines ('+r.available.length+')'}),el('ul',{},...r.available.map(b=>el('li',{},b.version==='job'?el('span',{},...marked(b.text,b.original)):b.text,b.version==='job'?el('details',{class:'small muted'},el('summary',{text:'rewritten for this job'}),el('div',{text:'Yours: '+(b.original||'')})):null,b.matched.length?el('span',{class:'small muted',text:' (matches: '+b.matched.join(', ')+')'}):null,el('button',{class:'x',title:'Put this line on',onclick:()=>{st.include.push(b.id);st.exclude=st.exclude.filter(x=>x!==b.id);redo();},text:'+'}))))));
- k.push(el('div',{class:'row'},el('b',{text:'Their skills: '}),document.createTextNode(r.coverage!=null?r.coverage+'% are on this page'+((r.learning||[]).length?', plus '+r.learning.length+' on your learning line':''):'none detected')));
- k.push(el('div',{class:'facts'},...(r.skills_detail||[]).map(x=>skillChip(x,st,redo))));
- if((r.missing||[]).length)k.push(el('p',{class:'small muted',text:`For a skill the job wants that isn't on your resume: "I've used it" adds it to your skills, and "learning" puts it on a Currently learning line. Either way it stays on your list for every job that asks for it, until you remove it in Resume lines.`}));
- if(r.trimmed&&r.trimmed.length)k.push(el('p',{class:'small muted',text:'Left off to fit one page: '+r.trimmed.join(' | ')}));
- const save=el('button',{class:'apply',text:'Save PDF',onclick:async()=>{save.disabled=true;try{const s2=await api('/api/resume/save',{id:r.id});await navigator.clipboard.writeText(s2.path).catch(()=>{});save.textContent='Saved';flash('Saved, and the path is copied: '+s2.path,'ok');if(s2.note)save.parentNode.after(el('p',{class:'small warn-row',text:s2.note}));}catch(e){flash(e.message,'err');save.disabled=false;}}});
- if(!r.ok)save.disabled=true;
- k.push(el('div',{class:'actions'},save,el('button',{text:'Close',onclick:()=>{delete PV[key];box.replaceChildren();}})));
- box.replaceChildren(el('div',{class:'pv'},...k));}
-function countPending(f){let n=0;const c=x=>{if(x.status!=='approved'&&x.status!=='removed')n++;};c(f.contact);c(f.titles);f.summaries.forEach(c);f.education.forEach(c);f.skills.forEach(c);for(const g of f.roles.concat(f.projects)){c(g);g.bullets.forEach(c);}return n;}
-function setTabCount(f){const n=countPending(f)+(f.pending_versions||0);$('tab-lines').textContent='Resume lines'+(n?' ('+n+' to review)':'');}
-function lineRow(section,id,text,status,source,editable){const row=el('div',{class:'card line '+status+(section==='bullet'?' bullet':'')});
- const upd=async(body)=>{try{drawLines(await api('/api/facts/update',Object.assign({section,id},body)));}catch(e){flash(e.message,'err');}};
- const btns=el('div',{class:'actions'});
- if(status!=='approved')btns.append(el('button',{class:'apply',text:'Approve',onclick:()=>upd({status:'approved'})}));
- if(editable)btns.append(el('button',{text:'Edit',onclick:()=>{const ta=el('textarea',{});ta.value=text;row.replaceChildren(ta,el('div',{class:'actions'},el('button',{class:'apply',text:'Save and approve',onclick:()=>upd({text:ta.value})}),el('button',{text:'Cancel',onclick:loadLines})));}}));
- btns.append(status==='removed'?el('button',{text:'Restore',onclick:()=>upd({status:'pending'})}):el('button',{text:'Remove',onclick:()=>upd({status:'removed'})}));
- row.append(el('div',{class:'row'},el('span',{class:'chip '+(status==='approved'?'new':status==='removed'?'':'warn'),text:status}),el('span',{class:'small muted',text:'  '+(source||'')})),el('div',{class:'linetext',text:text}),btns);return row;}
-function altRow(a){const upd=async(s)=>{try{drawLines(await api('/api/facts/update',{section:'alt',id:a.id,status:s}));}catch(e){flash(e.message,'err');}};
- const bad=(a.problems||[]).length,btns=el('div',{class:'actions'});
- if(a.status!=='approved'&&!bad)btns.append(el('button',{class:'apply',text:'Approve',onclick:()=>upd('approved')}));
- btns.append(a.status==='removed'?el('button',{text:'Restore',onclick:()=>upd('pending')}):el('button',{text:a.status==='approved'?'Stop using it':'Remove',onclick:()=>upd('removed')}));
- return el('div',{class:'card line alt '+a.status},el('div',{class:'row'},el('span',{class:'chip '+(a.status==='approved'?'new':a.status==='removed'?'':'warn'),text:a.status==='pending'?'suggested':a.status}),el('span',{class:'small muted',text:'  version for '+(LENS[a.lens]||a.lens)+' jobs'})),
-  el('div',{class:'linetext',text:a.text}),a.adds_text?el('div',{class:'small'},el('b',{text:'Adds: '}),document.createTextNode(a.adds_text+(a.why?'. Why: '+a.why:''))):null,
-  bad?el('div',{class:'small err',text:"Can't be used: "+a.problems.join('; ')}):null,btns);}
-/* details: facts about one of your lines, in your words, that rewrites may use for every job */
-const DETAIL_TIP='A fact about this line that rewrites may use for every job: what a metric measured and on what data, the baseline, a framework you used, a test you wrote';
-function detailEditor(id,done,cancel){const ta=el('textarea',{rows:'2',placeholder:'A fact about this line, in your own words'});
- const box=el('div',{class:'small'},ta,el('div',{class:'actions'},el('button',{class:'apply',text:'Save detail',onclick:()=>factsDo({section:'detail',id,text:ta.value},done)}),el('button',{text:'Cancel',onclick:()=>cancel(box)})));
- setTimeout(()=>ta.focus(),0);return box;}
-function detailButton(id,redo){const b=el('button',{class:'x',title:DETAIL_TIP,text:'+ detail'});
- b.addEventListener('click',()=>b.replaceWith(detailEditor(id,redo,box=>box.replaceWith(b))));return b;}
-function detailBox(b){const box=el('div',{class:'small',style:'margin:-6px 0 12px 40px'});
- (b.supporting_facts||[]).forEach((x,i)=>{if(x.status!=='approved')return;
-  box.append(el('div',{class:'row'},el('b',{text:'Detail: '}),x.text+' ',el('button',{class:'x',text:'remove',onclick:()=>factsDo({section:'detail',id:b.id,index:i,status:'removed'},drawLines)})));});
- const add=el('button',{class:'x',title:DETAIL_TIP,text:'+ add a detail'});
- add.addEventListener('click',()=>add.replaceWith(detailEditor(b.id,drawLines,ed=>ed.replaceWith(add))));
- box.append(add);return box;}
-function skillDo(term,level){factsDo({section:'added_skill',term,level},drawLines);}
-function drawLines(f){const k=[],n=countPending(f),nv=f.pending_versions||0;setTabCount(f);
- k.push(el('p',{class:'muted',text:n?n+' lines need your review. Only approved lines ever appear on a tailored resume. Read each one, then Approve it, Edit it or Remove it.':'Every one of your lines is reviewed. Tailored resumes use only the approved ones.'}));
- if(nv)k.push(el('div',{class:'card'},el('p',{text:nv+' suggested versions of your bullets are waiting. Each one says the same work, with the same numbers, in the language of one job type, and anything it adds is listed under it. A version is used only for jobs it fits better than your own wording, and only after you approve it.'}),
-  el('div',{class:'actions'},el('button',{class:'apply',text:'Approve all '+nv,onclick:async()=>{if(!confirm('Approve all '+nv+' suggested versions? Each will appear on resumes exactly as written, so read them first.'))return;try{drawLines(await api('/api/facts/update',{section:'alts',status:'approved'}));}catch(e){flash(e.message,'err');}}}),el('span',{class:'small muted',text:'or approve them one by one below'}))));
- k.push(el('h3',{text:'Contact'}),lineRow('contact',null,[f.contact.name].concat(f.contact.lines,f.contact.links.map(l=>l.text)).join(' | '),f.contact.status,f.contact.source,false));
- k.push(el('h3',{text:'Titles allowed on your title line'}),lineRow('titles',null,f.titles.items.join(' · '),f.titles.status,f.titles.source,false));
- k.push(el('h3',{text:'Summaries'}));f.summaries.forEach(x=>k.push(x.opener?lineRow('summaries',x.id,x.opener.replace('{title}','[your title for the job]')+' [the impact sentence that fits the job] '+(x.closer||''),x.status,(x.variant||'')+' · '+x.source,false):lineRow('summaries',x.id,x.text,x.status,(x.variant||'')+' · '+x.source,true)));
- if((f.impacts||[]).length){k.push(el('h3',{text:'Impact sentences (each summary uses the one that fits the job)'}));f.impacts.forEach(x=>k.push(lineRow('impact',x.id,x.text,x.status,'from your line '+x.backs+' · '+(x.lens||[]).join(', '),false)));}
- k.push(el('h3',{text:'Education'}));f.education.forEach((x,i)=>k.push(lineRow('education',String(i),x.school+' | '+x.degree+' | '+x.date,x.status,x.source,false)));
- k.push(el('h3',{text:'Skills'}));f.skills.forEach(x=>k.push(lineRow('skills',x.id,x.label+': '+x.items.join(' · '),x.status,x.source,false)));
- k.push(el('p',{class:'small muted',text:'A tailored resume also lists any skill a job names that your approved lines show you used, such as a tool named in one of your bullets.'}));
- const added=(f.added_skills||[]).filter(a=>a.status==='approved'&&a.level!=='no'),saidNo=(f.added_skills||[]).filter(a=>a.status==='approved'&&a.level==='no');
- const placeName=id=>{const g=(f.roles||[]).concat(f.projects||[]).find(g=>g.id===id);return g?(g.org||g.title||id):id;};
- k.push(el('h3',{text:'Skills you added'}));
- if(!added.length)k.push(el('p',{class:'small muted',text:'None yet. Add them from a job preview, or from the list below.'}));
- for(const a of added)k.push(el('div',{class:'row'},el('span',{class:'chip '+(a.level==='learning'?'learn':'new'),text:a.label+(a.level==='learning'?' (learning)':'')+(a.where&&a.where.length?' at '+a.where.map(placeName).join(', '):'')}),' ',
-  el('button',{class:'x',text:a.level==='learning'?"I've used it now":'move to learning',onclick:()=>skillDo(a.term,a.level==='learning'?'used':'learning')}),el('button',{class:'x',text:'remove',onclick:()=>skillDo(a.term,'removed')})));
- if(saidNo.length)k.push(el('p',{class:'small muted'},'You said no to: ',...saidNo.map(a=>el('span',{class:'chip'},a.label+' ',el('button',{class:'x',text:'ask again',onclick:()=>skillDo(a.term,'removed')})))));
- const dm=(f.demand||[]).filter(x=>x.n>=2).slice(0,45);
- if(dm.length){k.push(el('h3',{text:"What today's jobs ask for"}),el('p',{class:'small muted',text:"How many of today's jobs name each skill. Green is on your resume already; add the others you can talk about in an interview."}));
-  k.push(el('div',{class:'facts'},...dm.map(x=>x.state==='not added'?el('span',{class:'chip'},x.label+' · '+x.n+' ',el('button',{class:'x',text:"I've used it",onclick:()=>skillDo(x.term,'used')}),el('button',{class:'x',text:'learning',onclick:()=>skillDo(x.term,'learning')})):el('span',{class:'chip '+(x.state==='on your learning line'?'learn':'new'),title:x.state,text:x.label+' · '+x.n}))));}
- for(const [grp,name] of [['roles','Experience'],['projects','Projects']]){k.push(el('h3',{text:name}));
-  for(const g of f[grp]){k.push(lineRow(grp,g.id,grp==='roles'?g.title+' | '+g.org+(g.place?' · '+g.place:'')+' | '+g.dates:g.title+' | '+g.subtitle,g.status,g.source,false));
-   g.bullets.forEach(b=>{k.push(lineRow('bullet',b.id,b.text,b.status,b.source,true));if(b.status==='approved')k.push(detailBox(b));(b.alts||[]).forEach(a=>k.push(altRow(a)));});}}
- $('lines').replaceChildren(...k);}
-async function loadLines(){$('lines').replaceChildren(el('p',{class:'muted',text:'Loading your lines...'}));try{drawLines(await api('/api/facts/get',{}));}catch(e){$('lines').replaceChildren(el('p',{class:'err',text:e.message}));}}
-for(const b of document.querySelectorAll('.tab'))b.addEventListener('click',()=>{for(const t of document.querySelectorAll('.tab'))t.classList.toggle('on',t===b);for(const v of ['queue','paste','lines'])$('view-'+v).hidden=(v!==b.dataset.view);if(b.dataset.view==='lines')loadLines();});
-$('p-go').addEventListener('click',openPaste);
-if(D.tailor)api('/api/facts/get',{}).then(setTabCount).catch(()=>{});
+if(D.tailor){const n=$('tailor-nav');n.hidden=false;n.append(el('a',{href:D.tailor,target:'tailor',text:'Open Tailor'}));}
 render();
 </script></body></html>
 """

@@ -77,3 +77,18 @@ class ContractTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SponsorshipPhrasings(unittest.TestCase):
+    """Ways postings say no sponsorship that the first patterns missed (October 2026 lists)."""
+
+    def test_they_read_as_no(self):
+        for text in ("We will not consider candidates who require current or future sponsorship for this position.",
+                     "Sponsorship will not be considered for this position unless specified in the posting.",
+                     "Able to legally live and work in the country for which you are applying, without visa support or sponsorship."):
+            with self.subTest(text=text[:40]):
+                self.assertEqual(sponsorship_signal(text), "no")
+
+    def test_e_verify_alone_isnt_a_no(self):
+        self.assertNotEqual(sponsorship_signal("U.S. Bank participates in the Department of Homeland Security E-Verify program."), "no")
+

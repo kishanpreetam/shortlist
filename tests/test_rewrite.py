@@ -6,8 +6,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from shortlist import apply
-from tailor import rewrite
+from tailor import app, rewrite
 from tailor import resume as engine
 
 FACTS = {
@@ -331,8 +330,8 @@ class PointRepairTest(FakeClaude):
         self.assertEqual(len(self.all_calls()), n)  # the next click reads every answer from the cache
 
     def test_repair_off_makes_no_extra_call(self):
-        self.assertIsNone(apply._point_check(FACTS, [], {"rewrite_repair": False}))  # the profile switch
-        self.assertIsNotNone(apply._point_check(FACTS, [], {}))  # on unless you turn it off
+        self.assertIsNone(app._point_check(FACTS, [], {"rewrite_repair": False}))  # the profile switch
+        self.assertIsNotNone(app._point_check(FACTS, [], {}))  # on unless you turn it off
         first = self.answer({"r1a": self.BAD["r1a"], "p1a": self.GOOD["p1a"]})
         got = self.run_fake(first, repair=self.answer({"r1a": self.GOOD["r1a"]}), check=None)
         self.assertEqual((got["r1a"], got.repaired, len(self.calls()), self.repair_calls()), (self.BAD["r1a"], [], 2, []))

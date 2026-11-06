@@ -143,6 +143,8 @@ EXTRA_SKILLS: dict[str, tuple[str, str]] = {
     "automated_testing": (r"unit test|automated tests?|test automation|integration tests?", "Automated Testing"),
     "sdlc": (r"software development life ?cycle|\bsdlc\b", "SDLC"), "agile": (r"\bagile\b|\bscrum\b", "Agile"),
     "observability": (r"observability", "Observability"),
+    "guardrails": (r"\bguardrails?\b|schema enforcement|human[- ]in[- ]the[- ]loop|human approval (?:checkpoint|step)|safety self-test",
+                   "Guardrails"),  # checks that keep an AI system's actions in bounds, a human approval among them
     "nodejs": (r"\bnode(?:\.?js)?\b", "Node.js"),
 }
 _TERM_RX = dict(classify._SKILL_RX)
@@ -154,6 +156,7 @@ _TERM_RX["mcp"] = re.compile(r"\bmcp\b(?!\s+night)|model context protocol", re.I
 _TERM_RX["sas"] = re.compile(r"(?-i:\bSAS\b)", re.I)  # the software in capitals; "SAs" are solutions architects
 _TERM_RX["go"] = re.compile(r"\bgolang\b|(?-i:\bGo\b)(?= programming| language|,|/|\))", re.I)  # never "Pokemon GO"
 _TERM_RX["power_bi"] = re.compile(r"power ?bi\b|\bpbi\b", re.I)
+_TERM_RX["evals"] = re.compile(classify._SKILL_RX["evals"].pattern + r"|evaluation (?:suites?|harness(?:es)?)", re.I)
 
 # The kind of skills line each skill joins when a job names it (a line's `kind` in your facts file).
 CATEGORY = {t: kind for kind, names in {
@@ -170,7 +173,7 @@ CATEGORY = {t: kind for kind, names in {
     "ml": "ml deep_learning pytorch tensorflow scikit_learn xgboost statistics forecasting ab_testing tableau power_bi looker excel nlp "
           "mlflow mlops computer_vision time_series causal_inference sas stata matlab spss alteryx google_analytics amplitude mixpanel "
           "qlik sheets vba huggingface fine_tuning superset metabase dax ssrs looker_studio",
-    "ai": "llm rag agents langchain mcp evals vector_db openai anthropic crewai autogen prompt_engineering ai_coding claude_code "
+    "ai": "llm rag agents langchain mcp evals guardrails vector_db openai anthropic crewai autogen prompt_engineering ai_coding claude_code "
           "codex cursor copilot",
 }.items() for t in names.split()}
 # How a skill reads on a skills line, when its short label doesn't (each still matches its own pattern)
@@ -218,7 +221,7 @@ _RESULT = re.compile(r"\d\s*%|\bfrom\s+(?:about\s+)?[\d$]|\$\s?\d|\b\d+(?:\.\d+)
                      r"\d[\d,.+]*\s*[a-z]*\s+(?:versus|vs\.?|instead of|compared with)\s+(?:about\s+)?\d", re.I)
 
 
-def asked_tools_only(facts: dict, rewrites: dict[str, str], job: dict[str, float], phrases=()) -> dict[str, str]:
+def asked_tools_only(facts: dict, rewrites: dict[str, str], job: dict[str, float], phrases=(), posting: str = "") -> dict[str, str]:
     """The job rewrites, with any tool a rewrite added that this posting doesn't ask for taken back out (your rule:
     add a confirmed tool "that the job asks for"): Snowflake added to an Amazon line for a posting that never names
     Snowflake comes out, or the line keeps your wording. A part of what it asks for (S3 for AWS) may stay."""
@@ -237,7 +240,7 @@ def asked_tools_only(facts: dict, rewrites: dict[str, str], job: dict[str, float
             out[bid] = text
             continue
         cut = strip_tools(text, unasked)
-        if cut and cut != b["text"] and not rewrite_problems(b["text"], cut, mapped_tools(facts, g["id"]), supporting_facts(b), phrases):
+        if cut and cut != b["text"] and not rewrite_problems(b["text"], cut, mapped_tools(facts, g["id"]), supporting_facts(b), phrases, posting):
             out[bid] = cut
     return out
 
@@ -271,7 +274,10 @@ def _result_bonus(text: str) -> float:
     proof a reader can check (a live or production system, real users) counts like a scale."""
     return 2.0 if _RESULT.search(text) else 1.0 if _nums(text) or _PROOF.search(text) else 0.0
 ADDED_TOOL_MAX = 2  # a tool a rewrite adds to your wording goes in at most this many lines and tools lines of a page
+ADDED_PHRASE_MAX = 1  # one of the posting's own phrases a rewrite adds ("tool calling") goes in one line: twice reads as padding
 EXPERIENCE_PRIOR = 0.8    # with equal fit, a work bullet beats a project bullet
+GENERATED_BONUS = 2.0     # a point the point engine wrote for this job into a role: experience is the page's main section
+LOW_FIT_SHARE = 0.3       # proven mode: a line of yours under this share of the page's best fit reads as other work
 SAME_KIND_PRIOR = 1.0     # a role whose title is the job's kind (an analyst role for an analyst job) leads
 _KIND = re.compile(r"\b(analyst|engineer|scientist|developer|consultant|manager|researcher|assistant)s?\b", re.I)
 # Role families that count as the same kind of job: an AI Engineer role for an ML engineer job, a Data Analyst role
@@ -597,12 +603,25 @@ def derived_numbers(text: str) -> set[str]:
     return out | {n for word, n in _SCHEDULE.items() if re.search(rf"\b{word}\b", text, re.I)}
 
 
-def faithful(original: str, alt: dict, supporting: tuple[str, ...] = (), claims: bool = True) -> list[str]:
+# A number in a posting: "3+ years", "$60M", "40%", "1,000". Exact mode reads a posting without them (posting_words).
+_NUMBER_TOKEN = re.compile(r"[$\u20ac\u00a3]?\d[\d,.]*(?:\s*(?:%|percent\b|[kKmMbB]\b))?\+?")
+
+
+def posting_words(text: str) -> str:
+    """A posting's words with its numbers taken out. In exact mode (tailor_exact in profile.yaml: you said that asking
+    for a job's resume means you have every skill and kind of experience it asks for) a line, a rewrite or a summary may
+    use these words, tools, practices and scope words as yours; never a number from the posting."""
+    return _NUMBER_TOKEN.sub(" ", text or "")
+
+
+def faithful(original: str, alt: dict, supporting: tuple[str, ...] = (), claims: bool = True, posting: str = "") -> list[str]:
     """Check original facts, permitting additions only from explicitly approved supporting text. With `claims`, also
     the claim rules (claim_problems: ownership, limits, status and tense, domain, cause and result, scope words), where
-    the version's own `adds`, which you saw when you approved it, count as your line's."""
+    the version's own `adds`, which you saw when you approved it, count as your line's. `posting` (exact mode,
+    posting_words): its tools, words and scope count as yours too; numbers still come only from your line."""
     text = str(alt.get("text", ""))
     source = " ".join((original, *supporting))
+    vocab = f"{source} {posting}" if posting else source  # what may be named and claimed; numbers use source alone
     why = []
     original_nums, text_nums, source_nums = (Counter(_nums(s)) for s in (original, text, source))
     source_nums += Counter({n: 1 for n in derived_numbers(original)})  # counted or annualized from the line itself
@@ -627,10 +646,10 @@ def faithful(original: str, alt: dict, supporting: tuple[str, ...] = (), claims:
     moved = sorted(n for n, ws in counts.items() if ws and n in theirs and not ws & theirs[n])
     if moved:
         why.append("it puts a number on other words than your line: " + ", ".join(moved))
-    new = _claims(text) - _claims(source) - set(alt.get("adds") or [])
+    new = _claims(text) - _claims(vocab) - set(alt.get("adds") or [])
     if new:
         why.append("it names something your line doesn't: " + ", ".join(label(t) for t in sorted(new)))
-    mine, verbs = _scope(source), _verbs(source)
+    mine, verbs = _scope(vocab), _verbs(vocab)
     words, actions = {k for _, k, _ in mine}, {k for _, k, act in mine if act}
     scope = {w for w, k, act in _scope(text) if k not in (actions if act else words) and _stem(k) not in verbs}
     if scope:
@@ -643,7 +662,7 @@ def faithful(original: str, alt: dict, supporting: tuple[str, ...] = (), claims:
     if not (10 <= len(text) <= 450 and 0.6 * len(original) <= len(text) <= 1.35 * len(source) + tools_added):
         why.append("its length is too far from your line's")
     if claims:
-        why += claim_problems(original, text, supporting, alt.get("adds") or ())
+        why += claim_problems(original, text, supporting, alt.get("adds") or (), posting=posting)
     return why
 
 
@@ -1027,6 +1046,7 @@ DOMAINS = {
     "real estate": r"\breal estate\b", "manufacturing": r"\bmanufactur\w*", "automotive": r"\bautomotive\b",
     "travel": r"\btravel\b|\bhospitality\b|\bairlines?\b", "gaming": r"\bgaming\b|\bvideo games?\b",
     "crypto": r"\bcrypto\w*|\bblockchain\b", "customers": r"\bcustomers?\b", "employees": r"\bemployees?\b|\bpayroll\b|\bhuman resources\b",
+    "robotics": r"\brobot\w*|\bhumanoids?\b",
 }
 _DOMAIN_RX = {k: re.compile(v, re.I) for k, v in DOMAINS.items()}
 # R7: verbs that state a result. A rewrite ties no more results to causes, and claims no more results as its own
@@ -1112,15 +1132,19 @@ SUMMARY_CLAIM_RULES = ("R3", "R4 status", "R5", "R6", "R7", "R8")
 _STATUS_LIMITS = ("early", "prerelease", "unfinished", "plan")
 
 
-def _claim_checks(original: str, text: str, supporting: tuple[str, ...] = (), granted=(), rules=CLAIM_RULES) -> list[tuple[str, str]]:
+def _claim_checks(original: str, text: str, supporting: tuple[str, ...] = (), granted=(), rules=CLAIM_RULES,
+                  posting: str = "") -> list[tuple[str, str]]:
     """(rule, why) for each claim rule `text` breaks against your line and its supporting facts. `granted`: terms a
-    version declares it adds (its `adds`, which you approved), which count as your line's for R5, R6 and R8."""
+    version declares it adds (its `adds`, which you approved), which count as your line's for R5, R6 and R8.
+    `posting` (exact mode): the posting's words back ownership (R3) and scope and quality words (R8); the limits,
+    status, tense, domain and results rules (R4 to R7) still read your line alone, so a simulation stays one, nothing
+    is newly said to be live, no field or kind of data moves into your line, and no result is newly yours."""
     pieces = tuple(x for x in (original, *supporting) if x)
     source = " ".join(pieces + tuple(label(t) for t in granted or ()))
     out = []
     if "R3" in rules:  # ownership: no bigger part in the work
         level = lambda w: _LEVEL.get(_vstem(w), 2)
-        top = max((level(w) for p in pieces for w in _actions(p)), default=2)
+        top = max((level(w) for p in pieces + ((posting,) if posting else ()) for w in _actions(p)), default=2)
         big = list(dict.fromkeys(w.lower() for w in _actions(text) if level(w) > top))
         if big:
             out.append(("R3", "it claims a bigger part in the work than your line: " + ", ".join(big)))
@@ -1159,17 +1183,19 @@ def _claim_checks(original: str, text: str, supporting: tuple[str, ...] = (), gr
             if sum(theirs.values()) > sum(mine.values()):
                 out.append(("R7", why + ", ".join(sorted(set((theirs - mine).elements())) or sorted(theirs))))
     if "R8" in rules:  # scope and quality words only where E says them, or as the setting of something E names
-        mine = {_root(p) for c in _compounds(source) for p in [c, *c.split("-")]}
-        wide = [name for name, (said, backed) in _SCOPE_RX.items() if not backed.search(source)
+        scope_source = f"{source} {posting}" if posting else source
+        mine = {_root(p) for c in _compounds(scope_source) for p in [c, *c.split("-")]}
+        wide = [name for name, (said, backed) in _SCOPE_RX.items() if not backed.search(scope_source)
                 and any(not (name in SETTING_NOUNS and _names_setting(text, m, mine)) for m in said.finditer(text))]
         if wide:
             out.append(("R8", "it claims more scope or quality than your line: " + ", ".join(wide)))
     return out
 
 
-def claim_problems(original: str, text: str, supporting: tuple[str, ...] = (), granted=(), rules=CLAIM_RULES) -> list[str]:
+def claim_problems(original: str, text: str, supporting: tuple[str, ...] = (), granted=(), rules=CLAIM_RULES,
+                   posting: str = "") -> list[str]:
     """Why `text` claims more than your line and its supporting facts (R3 to R8); empty means it claims no more."""
-    return [why for _, why in _claim_checks(original, text, supporting, granted, rules)]
+    return [why for _, why in _claim_checks(original, text, supporting, granted, rules, posting)]
 
 
 # S3: verbs that make a "which" or "that" clause a result ("which reduced", "that shaped")
@@ -1233,15 +1259,17 @@ def rewrite_flags(original: str, text: str, extra: set[str] | frozenset = frozen
 
 
 def rewrite_problems(original: str, text: str, extra: set[str] | frozenset = frozenset(),
-                     supporting: tuple[str, ...] = (), phrases=()) -> list[str]:
+                     supporting: tuple[str, ...] = (), phrases=(), posting: str = "") -> list[str]:
     """Why a rewrite of your line for one job can't stand for it; empty means it keeps your facts. On top of
     faithful(): it claims no more than your line (claim_problems, R3 to R8, where your line's terms and tools back no
     claim: "backend" never says deployed), every word is your line's, a plain word or one of your line's terms, with no
     arrow or long dash, and no colon, semicolon or unusual character your line doesn't have."""
     source = " ".join((original, *supporting))
-    why = faithful(original, {"text": text, "adds": sorted(rewrite_terms(source, extra))}, supporting, claims=False)
-    why += claim_problems(original, text, supporting)
-    new = _new_words(source, text, extra, phrases)
+    if posting:  # exact mode: the posting's tools are yours to name (posting_words)
+        extra = set(extra) | {t for t in terms(posting) if not t.startswith("theme:")}
+    why = faithful(original, {"text": text, "adds": sorted(rewrite_terms(source, extra))}, supporting, claims=False, posting=posting)
+    why += claim_problems(original, text, supporting, posting=posting)
+    new = _new_words(f"{source} {posting}" if posting else source, text, extra, phrases)
     if new:
         why.append("it uses words your line doesn't: " + ", ".join(new))
     lost = sorted(_strong(original) - _strong(text))
@@ -1265,10 +1293,148 @@ def rewrite_problems(original: str, text: str, extra: set[str] | frozenset = fro
     odd = sorted({c for c in text if not _PLAIN.fullmatch(c) and c not in original})  # emoji, invisible or right-to-left marks
     if odd:
         why.append("it has a character your line doesn't: " + ", ".join(f"U+{ord(c):04X}" for c in odd))
+    return why + wording_problems(original, text, phrases)
+
+
+_JOINERS = frozenset("with using in on for of to into from by via through".split())  # a rewrite never drops one of these
+_GLUE = _JOINERS | frozenset("and or the a an as at its their so that which while across over per".split())
+
+
+def wording_problems(original: str, text: str, phrases=()) -> list[str]:
+    """Where a rewrite breaks its sentence: a connecting word dropped between two words it keeps ("platform with
+    Django" read as "platform Django"); the posting's words tacked on instead of worked in, as an aside between
+    commas or at a sentence's end, or as a new name for your work ("checks as verification loops"), made only of
+    words your line doesn't have; a word of yours swapped for one of the posting's phrases (`phrases`, its keywords:
+    "differences" become "state drift"); or a new noun that repeats the line's verb ("Orchestrated ... orchestration")."""
+    import difflib
+    tok = lambda s: re.findall(r"\$?\d+(?:[,.]\d+)*[+%]?|[a-z][\w+#'/&-]*(?:\.[a-z0-9][\w+#'/&-]*)*|[,.]", s.lower())
+    a, b = tok(original), tok(text)
+    keys = [k.lower() for k in phrases or () if len(str(k).split()) >= 2]
+    why = []
+    for op, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+        if op == "delete" and 0 < j1 < len(b) and all(w in _JOINERS for w in a[i1:i2]):
+            why.append(f'it drops "{" ".join(a[i1:i2])}" between "{b[j1 - 1]}" and "{b[j1]}"')
+        run = b[j1:j2] if op in ("insert", "replace") else []
+        gone = {w for w in a[i1:i2] if w not in ",." and w not in _GLUE} - set(b) if op == "replace" else set()
+        swap = next((k for k in keys if k in " ".join(run) and not set(k.split()) & set(a)), "") if gone else ""
+        if swap:
+            why.append(f'it swaps your "{" ".join(w for w in a[i1:i2] if w in gone)}" for the posting\'s "{swap}"')
+            continue
+        words = {_vstem(w) for w in run if w not in ",." and w not in _GLUE}
+        if not words or words & {_vstem(w) for w in a}:  # "leading the work" for your "Led" moves your word
+            continue
+        aside = run[0] == "," and (run[-1] in ",." or j2 == len(b) or b[j2] == ".")
+        if aside or run[0] == "as":
+            shown = " ".join(run).replace(" ,", ",").strip(",. ")
+            why.append(f'it tacks the posting\'s words on ("{shown}"); work them into the sentence or leave them out')
+    for w in ("for", "with"):  # "for a $10M alliance for forecasting models": a second phrase hung on the first
+        at = [i for i, x in enumerate(b) if x == w]
+        if b.count(w) > a.count(w) and any(q - p <= 6 for p, q in zip(at, at[1:])):
+            why.append(f'it chains two "{w}" phrases, so the sentence no longer reads cleanly')
+    words = lambda t: [_root(w) for w in re.findall(r"[a-z][a-z-]{3,}", t.lower()) if w not in _GLUE and w != "data"]
+    mine, theirs = Counter(words(original)), Counter(words(text))
+    again = sorted(r for r, n in theirs.items() if mine.get(r) and n > mine[r])
+    if again:
+        why.append("it says a word your line already has a second time: " + ", ".join(again))
+    verbs = re.findall(r"[a-z]+(?:ed|ing)\b", text.lower())
+    for noun in sorted(set(re.findall(r"[a-z]+(?:ion|ment)s?\b", text.lower())) - set(re.findall(r"[a-z]+", original.lower()))):
+        stem = re.sub(r"(?:ation|ition|ion|ment)s?$", "", noun)
+        verb = next((v for v in verbs if len(stem) >= 4 and re.fullmatch(re.escape(stem) + r"\w*?(?:ed|ing)", v)), "")
+        if verb:
+            why.append(f'it repeats itself ("{verb} ... {noun}")')
     return why
 
 
-def faithful_rewrites(facts: dict, rewrites: dict[str, str] | None, phrases=()) -> dict[str, str]:
+
+def _content_roots(text: str) -> set[str]:
+    """The words that carry what a line did, as roots, without its tools: two lines of one role share their tools."""
+    tools = {_root(w) for t in terms(text) if not t.startswith("theme:") for w in re.findall(r"[a-z0-9+#.-]+", label(t).lower())}
+    return _ask_roots(text) - tools
+
+
+GENERATED_OVERLAP = 0.4  # a written point sharing this share of the shorter line's words (4 or more) with one of its place's repeats it
+# A written point shows work. A posting's mindset lines ("think like a product owner", "beyond simple API calls") are
+# no work to write, and an absolute ("never drifted", "guaranteeing") claims a result none of your lines states.
+TRAITS = re.compile(r"\b(ownership|mindset|passion\w*|thriv\w*|fast[- ](?:moving|paced)|self[- ]starter|go[- ]getter|"
+                    r"product owner|team player|trusted advisor|beyond (?:simple|just|basic|mere)\w*|not (?:just|only|merely))\b", re.I)
+ABSOLUTES = re.compile(r"\b(never|always|guarantee\w*|bulletproof|flawless\w*|error[- ]free|zero)\b", re.I)
+
+
+def _runs(text: str, n: int = 3) -> set[str]:
+    """Each run of `n` words a line says in a row, leaving out small words and tool names: two lines that both say
+    "data processing pipeline" repeat each other even when their tools differ."""
+    named = [m.span() for t, rx in _TERM_RX.items() if not t.startswith("theme:") for m in rx.finditer(text)]
+    words = [m.group(0) for m in re.finditer(r"[a-z][a-z0-9-]*", text.lower())
+             if m.group(0) not in _GLUE and not any(a <= m.start() < b for a, b in named)]
+    return {" ".join(words[i:i + n]) for i in range(len(words) - n + 1)}
+
+
+def _lead(text: str) -> str:
+    """The verb a line opens with, lowercased ("built", "integrating"), or "" when it doesn't open with one."""
+    acts = _acts(text)
+    return acts[0][0].lower() if acts and acts[0][1] else ""
+
+
+def generated_problems(text: str, place: dict, others=(), job_text: str = "") -> list[str]:
+    """Why a point the point engine wrote for one of your roles or projects can't go on a page; empty means it may.
+    `place`: {"points": that place's approved lines and their supporting facts, "tense": "present", "past" or none}.
+    Its numbers come only from that place's own lines (never from the posting), no field or kind of data moves into
+    the place, it doesn't repeat a line the place has or a point written for it already (`others`), it keeps the
+    place's tense and verb form and opens with a verb none of them opens with, it states work (no trait, no absolute
+    the place's lines don't claim), it copies no run of the posting, and it follows the resume's word and punctuation
+    rules."""
+    why = []
+    own = " ".join(place.get("points") or [])
+    new_nums = set(_nums(text)) - set(_nums(own)) - derived_numbers(own)
+    if new_nums:
+        why.append("it has a number the place's own lines don't: " + ", ".join(sorted(new_nums)))
+    spelled = {w.lower() for w in _SPELLED.findall(text)} - {w.lower() for w in _SPELLED.findall(own)}
+    if spelled:
+        why.append("it spells out a number the place's lines don't: " + ", ".join(sorted(spelled)))
+    why += [w for _, w in _claim_checks(own, text, rules=("R6",))]  # the place's field and kinds of data only
+    if NEVER.search(text):
+        why.append("it says " + NEVER.search(text).group(0).lower() + ", which never goes on your resume")
+    if any(x in text for x in BANNED) or REWRITE_BANNED.search(text):
+        why.append("it has a dash or an arrow")
+    if re.search(r"[:;]", text):
+        why.append("it has a colon or semicolon")
+    stock = sorted({m.group(0).lower() for m in CLICHES.finditer(text)} - {m.group(0).lower() for m in CLICHES.finditer(own)})
+    if stock:
+        why.append("it uses wording readers take for filler or AI writing: " + ", ".join(stock))
+    for rx, what in ((TRAITS, "it states a trait instead of work"), (ABSOLUTES, "it claims an absolute the place's lines don't")):
+        found = sorted({m.group(0).lower() for m in rx.finditer(text)} - {m.group(0).lower() for m in rx.finditer(own)})
+        if found:
+            why.append(f"{what}: " + ", ".join(found))
+    if not 60 <= len(text) <= 300:
+        why.append("its length is off")
+    runs = _runs(text)
+    for other in [*(place.get("points") or []), *others]:
+        shared = sorted(runs & _runs(other))
+        if shared:
+            why.append(f'it repeats a phrase another line of the place has ("{shared[0]}")')
+            break
+    mine = _content_roots(text)
+    for other in [*(place.get("points") or []), *others]:
+        theirs = _content_roots(other)
+        shared = mine & theirs
+        if len(shared) >= 4 and len(shared) / min(len(mine), len(theirs)) >= GENERATED_OVERLAP:
+            why.append("it repeats a line the place already has")
+            break
+    want, got = place.get("tense"), _tense(text)
+    if want and got and got != want:
+        why.append(f"it reads {got} for a {'current' if want == 'present' else 'finished'} role")
+    lead, leads = _lead(text), {_lead(p) for p in [*(place.get("points") or []), *others]} - {""}
+    if lead and want == "present" and not lead.endswith("ing") and any(w.endswith("ing") for w in leads):
+        why.append(f"it opens with {lead.capitalize()} where the role's lines open with -ing words (Building)")
+    if lead and _vstem(lead) in {_vstem(w) for w in leads}:
+        why.append(f"it opens with the verb another line of the place opens with ({lead.capitalize()})")
+    if job_text and copies_posting(job_text)(text):
+        why.append("it copies a run of words from the posting")
+    if re.search(r"\b(?:I|my|me|we|our)\b", text):
+        why.append("it speaks in the first person")
+    return why
+
+def faithful_rewrites(facts: dict, rewrites: dict[str, str] | None, phrases=(), posting: str = "") -> dict[str, str]:
     """The job-specific rewrites (from rewrite.py) that keep their line's facts (rewrite_problems): nothing your
     line doesn't already say, not even a tool you listed for that role or project. `phrases`: the posting's keywords,
     whose own words a rewrite may use for what its line already has."""
@@ -1280,7 +1446,7 @@ def faithful_rewrites(facts: dict, rewrites: dict[str, str] | None, phrases=()) 
             extra = mapped_tools(facts, g["id"])
             for b in g["bullets"]:
                 text = (rewrites or {}).get(b["id"])
-                if ok(b) and text and text != b["text"] and not rewrite_problems(b["text"], text, extra, supporting_facts(b), phrases):
+                if ok(b) and text and text != b["text"] and not rewrite_problems(b["text"], text, extra, supporting_facts(b), phrases, posting):
                     out[b["id"]] = text
     return out
 
@@ -1365,7 +1531,7 @@ TOOLS_MAX = 6
 # ideas and methods, not tools you build with: they stay on the skills lines
 CONCEPTS = {"data_warehouse", "data_lake", "data_modeling", "relational_db", "metadata", "streaming", "etl", "statistics",
             "ab_testing", "ml", "deep_learning", "nlp", "computer_vision", "time_series", "causal_inference", "forecasting",
-            "mlops", "fine_tuning", "prompt_engineering", "web_scraping", "rest_api", "ci_cd", "llm", "rag", "agents", "evals",
+            "mlops", "fine_tuning", "prompt_engineering", "web_scraping", "rest_api", "ci_cd", "llm", "rag", "agents", "evals", "guardrails",
             "vector_db", "nosql", "data_governance", "distributed_systems", "automated_testing", "sdlc", "agile", "observability"}
 # a general name the specific one already says: Azure Data Factory, not Azure as well
 PARENT = {"azure": {"azure_data_factory", "adls", "synapse", "fabric", "event_hubs", "azure_devops"}, "spark": {"pyspark"},
@@ -1406,7 +1572,7 @@ def strip_tools(text: str, tools) -> str | None:
     name_like = lambda s: bool(s) and (s[0].isupper() or s[0].isdigit() or any(not x.startswith("theme:") for x in terms(s.split()[0])))
     out = text
     for t in tools:
-        rx = _TERM_RX.get(t)
+        rx = t if hasattr(t, "search") else _TERM_RX.get(t)  # a term, or a phrase's own pattern
         m = rx.search(out) if rx else None
         if not m:
             continue
@@ -1443,9 +1609,21 @@ def trim_context(text: str, nums) -> str | None:
     line whose context an earlier line of the same role already states, so a role doesn't repeat it."""
     out = text
     for n in sorted(set(nums), key=lambda n: (-len(n), n)):
-        rx = re.compile(rf"(?:,\s*|\s+){_CTX_LEAD}\s+(?:an?\s+|the\s+)?{re.escape(n)}(?:\s+[A-Za-z][\w'-]*){{1,3}}?"
+        # up to 3 words after the number, ending at the first plural: never "300+ institutions reliable", which would
+        # take "reliable" out of "keeping data from 300+ institutions reliable for dashboards"
+        rx = re.compile(rf"(?:,\s*|\s+){_CTX_LEAD}\s+(?:an?\s+|the\s+)?{re.escape(n)}"
+                        rf"(?:\s+[A-Za-z][\w'-]*(?<![s'])){{0,2}}?\s+[A-Za-z][\w'-]*"
                         rf"(?=\s*[,.;]|\s+(?:and|to|with|by|for|across|in|from|at|that|which|while)\b|$)", re.I)
-        out = rx.sub("", out, count=1)
+        m = rx.search(out)
+        if not m:
+            continue
+        before = out[:m.start()]
+        # "across data from 300+ institutions": "across data" alone says nothing, so it comes out with the number's
+        # phrase, while "across pipelines" and "for analysis" stay; never a phrase that names a tool
+        lead = re.search(r"(?:,\s*|\s+)(?:across|spanning)\s+((?:[a-z][\w'-]*\s+)?[a-z][\w'-]*(?<![s']))$", before)
+        if lead and not any(_tool_at(w, False) for w in lead.group(1).split()):
+            before = before[:lead.start()]
+        out = before + out[m.end():]
     out = re.sub(r"\s+([,.;])", r"\1", re.sub(r"\s{2,}", " ", out)).strip()
     out = re.sub(r",\s*([.;])", r"\1", out)
     return out if out != text and len(out) >= 0.4 * len(text) else None  # a line keeps most of what it says
@@ -1752,6 +1930,18 @@ def your_skills(facts: dict) -> set[str]:
     return evidence(facts) | _added(facts, "used") | _item_terms([it for x in facts.get("skills") or [] if ok(x) for it in x["items"]])
 
 
+_KEYWORD_KINDS = (  # a keyword no tool or theme places, by its own words: "context engineering" is AI work
+    ("ai", re.compile(r"agent|context|prompt|\brag\b|retriev|rerank|search|evals?\b|llm|embedding|knowledge graph|ontolog|semantic|"
+                      r"orchestrat|tool[- ]calling|guardrail|tracing|mcp|transformer|\bnlp\b|generative|fine[- ]tun", re.I)),
+    ("ml", re.compile(r"anomal|classif|ranking|regression|supervised|feature|forecast|confidence|model|statistic|experiment", re.I)),
+    ("cloud", re.compile(r"monitor|alert|deploy|observab|kubernetes|docker|ci/cd|\bsso\b|rbac|soc ?2|security|infrastructure|devops", re.I)),
+    ("code", re.compile(r"python|typescript|javascript|\bjava\b|golang|\bsql\b|programming|language", re.I)))
+
+
+def _keyword_kind(text: str) -> str:
+    return next((kind for kind, rx in _KEYWORD_KINDS if rx.search(text)), "data")
+
+
 def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
     """Put each keyword that's yours but still missing from the page on the skills row it belongs to, in the posting's
     words: a tool or idea as the posting says it ("Business Intelligence"), a general phrase with the tool of yours it
@@ -1762,6 +1952,7 @@ def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
     if not rows:
         return 0
     yours = your_skills(facts)
+    exact = bool(sel.get("exact_posting"))  # exact mode: the posting's words are yours, so its keywords may go on
     themes = {t for t in terms(" ".join(b["text"] for grp in ("roles", "projects") for g in facts[grp] if ok(g)
                                         for b in g["bullets"] if ok(b))) if t.startswith("theme:")}
     named = " ".join(k["text"] for k in report)
@@ -1775,10 +1966,10 @@ def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
         general = synonym_tools(k["text"]) & yours if not tools else set()
         words = " ".join(w if any(c.isupper() or c.isdigit() for c in w) else w.capitalize() for w in k["text"].split())
         item = f"{words} ({', '.join(item_label(t) for t in sorted(general)[:3])})" if general else words
-        if not worded_item(item, yours, themes, mine):
+        if not exact and not worded_item(item, yours, themes, mine):
             continue
         kind = CATEGORY.get(next(iter(sorted(tools | general)), ""), "") or \
-            next((_THEME_KIND[t[6:]] for t in sorted(found) if t[6:] in _THEME_KIND), "data")
+            next((_THEME_KIND[t[6:]] for t in sorted(found) if t[6:] in _THEME_KIND), "") or _keyword_kind(k["text"])
         fits = sorted((r for r in rows if kind_of[r["id"]] == kind), key=lambda r: len(", ".join(r["items"]))) + \
             sorted((r for r in rows if kind_of[r["id"]] in RELATED_KINDS.get(kind, ())), key=lambda r: len(", ".join(r["items"])))
         fits = fits or sorted(rows, key=lambda r: len(", ".join(r["items"])))[:1]
@@ -1796,6 +1987,8 @@ def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
                     row["items"].remove(x)
                 row["items"].append(item)
                 row.setdefault("added", []).append(item)
+                if exact:
+                    sel.setdefault("exact_items", []).append(item)  # check() and drop_unbacked_items allow these
                 placed += 1
                 break
     return placed
@@ -1822,6 +2015,7 @@ def keyword_report(kws: list[dict], sel: dict, facts: dict) -> list[dict]:
         + [f"{e.get('degree', '')} {e.get('school', '')}" for e in facts.get("education") or [] if ok(e)]
     learning = [", ".join(x["items"]) for x in sel["skills"] if x["id"] == "learning"]
     yours, said_no = your_skills(facts), _added(facts, "no")
+    exact = bool(sel.get("exact_posting"))
     approved_lines = [b["text"] for grp in ("roles", "projects") for g in facts[grp] if ok(g) for b in g["bullets"] if ok(b)]
     themes = {t for t in terms(" ".join(approved_lines)) if t.startswith("theme:")}
     out = []
@@ -1840,6 +2034,8 @@ def keyword_report(kws: list[dict], sel: dict, facts: dict) -> list[dict]:
                       and topics <= _SKILL_THEMES and k.get("kind") != "soft" and (single or in_lines))
                   or in_lines else
                   "declined" if found & said_no else "ask" if (found - yours) or general else "only you")
+        if exact and status in ("ask", "only you") and k.get("kind") in ("skill", "tool", "domain"):
+            status = "missing"  # exact mode: asking for this job's resume says you have what it names
         out.append({"text": k["text"], "kind": k["kind"], "from": k["from"], "count": k["count"], "status": status,
                     "match": "close" if how == "alias" else how, **({"alias": True} if how == "alias" else {})})
     return out
@@ -2037,7 +2233,8 @@ def coverage_advice(report: list[dict], shows: dict, kinds: dict, page: dict[str
     covered by Education), lines that only repeat what two other lines already show or show no requirement at all,
     lines that show only preferred items while a required one is missing, then preferred items still missing.
     `page`: {line id: its text}; `groups`: {line id: its role or project}, so a role's only line is never named."""
-    short = lambda t: t if len(t) <= 70 else t[:70].rsplit(" ", 1)[0] + "..."
+    # a quoted line keeps no final period, so the sentence that follows it never reads "users.. Take it off"
+    short = lambda t: t[:70].rsplit(" ", 1)[0] + "..." if len(t) > 70 else t.rstrip(".")
     groups = groups or {}
     req = [r for r in report if r["kind"] == "required"]
     traits = [r for r in req if not r["by"] and _TRAIT.search(r["text"])]  # no line proves these: say them in interviews
@@ -2077,8 +2274,8 @@ def coverage_advice(report: list[dict], shows: dict, kinds: dict, page: dict[str
                     "text": f"{len(idle)} line{'s' if len(idle) > 1 else ''} show{'' if len(idle) > 1 else 's'} none of this job's requirements: "
                             + "; ".join(short(page[b]) for b in idle) + (f". Swap for one that does{room}." if want else ".")})
     if gaps and pref_only:
-        out.append({"level": "change", "text": f"{len(pref_only)} line{'s' if len(pref_only) > 1 else ''} show only preferred items while a required one is missing: "
-                    + "; ".join(short(page[b]) for b in pref_only) + ". Take them off (✕) first."})
+        out.append({"level": "change", "text": f"{len(pref_only)} line{'s' if len(pref_only) > 1 else ''} show{'' if len(pref_only) > 1 else 's'} only preferred items while a required one is missing: "
+                    + "; ".join(short(page[b]) for b in pref_only) + f". Take {'them' if len(pref_only) > 1 else 'it'} off (✕) first."})
     if traits:
         out.append({"level": "note", "text": "Traits it asks for, which no resume line proves: " + "; ".join(short(r["text"]) for r in traits)
                     + ". Show them in your answers and interviews."})
@@ -2101,6 +2298,13 @@ def years_asked(text: str) -> int | None:
     """The years of experience a requirement asks for: the lower end of a range, the most of several asks, or None."""
     got = [int(g) if g.isdigit() else _NUMWORD[g] for g in (m.group(1).lower() for m in _YEARS_ASKED.finditer(text or ""))]
     return max(got) if got else None
+
+
+# Words too general to say a heading shows a requirement: titles and kinds of work every heading has
+_HEADING_SKIP = frozenset(_root(w) for w in """engineer engineering engineers data ai product products system systems software
+    developer development analyst analytics scientist science assistant research researcher full stack university project
+    projects team teams intern internship experience work working build building built ml machine learning""".split()) | \
+    frozenset(_root(w) for w in GENERIC)
 
 
 def _coverage(r: dict, picked: dict, shows: dict, summary: dict | None, section: dict[str, str], educations: list,
@@ -2323,7 +2527,18 @@ def rank_draft(text: str, requirement: str, page: list[str], in_experience: bool
     return {"score": round(score, 3), "covers": covers, "share": round(share, 2), "named": round(named_share, 2), "dup": round(dup, 2)}
 
 
-def summary_problems(text: str, facts: dict, opening: str, uses: list[str], phrases=()) -> list[str]:
+def without_trait_sentences(text: str, opening: str) -> str:
+    """`text` without the sentences after its opening that state a trait ("Trusted advisor with a service mindset."),
+    or `text` as it was when there are none. The sentence the opening starts always stays."""
+    if not opening or not text.startswith(opening):
+        return text
+    parts = re.split(r"(?<=[.!?])\s+", text[len(opening):])
+    trait = lambda s: bool({m.group(0).lower() for m in TRAITS.finditer(s)} - {"ownership"})
+    kept = [p for i, p in enumerate(parts) if i == 0 or not trait(p)]
+    return opening + " ".join(kept) if len(kept) < len(parts) else text
+
+
+def summary_problems(text: str, facts: dict, opening: str, uses: list[str], phrases=(), posting: str = "") -> list[str]:
     """Why a summary written for a job can't stand; empty means it keeps your facts. It begins with your opening,
     and every number, before-and-after, tool, claim and word after it comes from the lines and highlights it
     draws on (tools also from any of your lines or the places you tied them to)."""
@@ -2339,21 +2554,30 @@ def summary_problems(text: str, facts: dict, opening: str, uses: list[str], phra
         why.append("it has a number the lines it draws on don't: " + ", ".join(sorted(set(_nums(rest)) - set(_nums(src)) - derived_numbers(src))))
     if re.search(r"\d+\+?\s+years?\b", rest):
         why.append("it states years a second time")
+    if any(sentence.count(",") >= 4 for sentence in re.split(r"(?<=[.!?])\s+", text)):
+        why.append("a sentence lists too many things at once; name at most three and say what they did")
     if not set(_pairs(rest)) <= set(_pairs(src)):
         why.append("it changes a before-and-after")
     extra = placed(facts) | evidence(facts) | _item_terms([it for x in facts.get("skills") or [] if ok(x) for it in x["items"]])
-    new = _claims(rest) - _claims(src) - extra
+    general = extra | ({t for t in terms(posting) if not t.startswith("theme:")} if posting else set())  # exact mode
+    vocab = f"{src} {posting}" if posting else src
+    new = _claims(rest) - _claims(vocab) - general
     if new:
         why.append("it names something your lines don't: " + ", ".join(label(t) for t in sorted(new)))
-    words = _new_words(f"{src} {opening}", rest, extra, phrases)
+    words = _new_words(f"{vocab} {opening}", rest, general, phrases)
     if words:
         why.append("it uses words your lines don't: " + ", ".join(words))
-    scope = {_stem(m.group(0)) for m in _SCOPE.finditer(rest)} - {_stem(m.group(0)) for m in _SCOPE.finditer(src)}
+    scope = {_stem(m.group(0)) for m in _SCOPE.finditer(rest)} - {_stem(m.group(0)) for m in _SCOPE.finditer(vocab)}
     if scope:
         why.append("it claims more scope: " + ", ".join(sorted(scope)))
+    # a trait is no work, even in the posting's words ("Trusted advisor with a service mindset"); exact mode lets a
+    # summary claim the posting's ownership, so that one stays
+    traits = {m.group(0).lower() for m in TRAITS.finditer(rest)} - {m.group(0).lower() for m in TRAITS.finditer(src)}
+    if traits - {"ownership"}:
+        why.append("it states a trait instead of work: " + ", ".join(sorted(traits - {"ownership"})))
     # the claim rules that read a summary as they read a line, against your opening and each line it cites (with where)
     cited = tuple(x for e in summary_evidence(facts) if e["id"] in uses for x in (e.get("where", ""), e["text"]))
-    why += claim_problems(opening, rest, cited, rules=SUMMARY_CLAIM_RULES)
+    why += claim_problems(opening, rest, cited, rules=SUMMARY_CLAIM_RULES, posting=posting)
     # a sentence that names a company or project uses only that place's lines: a result never moves to another role
     places: dict[str, list[str]] = {}
     for e in summary_evidence(facts):
@@ -2643,8 +2867,9 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
            drop: set[str] | frozenset = frozenset(), summary_id: str | None = None,
            title_skip: set[str] | frozenset = frozenset(), original: set[str] | frozenset = frozenset(),
            skill_skip: set[str] | frozenset = frozenset(), employer: str = "", budget: float = PAGE_PT,
-           rewrites: dict[str, str] | None = None) -> dict:
-    """Choose approved lines for one job. `exclude`: bullets you removed; `include`: bullets you
+           rewrites: dict[str, str] | None = None, exact: bool = False, proven: bool = False, fill: bool = False) -> dict:
+    """Choose approved lines for one job. `fill` (fill_page in profile.yaml): room left on a tailored page takes
+    more of your lines, so it reads full to the bottom. `exclude`: bullets you removed; `include`: bullets you
     added (kept unless they can't fit); `drop`: bullets trimmed to fit one page; `summary_id`:
     the approved summary you picked; `title_skip`: title-line skills you removed; `original`:
     bullets you want in your own wording here; `skill_skip`: skills you took off this resume;
@@ -2661,8 +2886,9 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     kws = job_keywords(job_title, job_text, getattr(rewrites, "keywords", None) or [], employer, reqs) if (job_text or "").strip() else []
     phrases = [k["text"] for k in kws]
     copied = copies_posting(job_text)  # a rewrite never copies a run of COPY_RUN words from the posting
-    for_job = {k: v for k, v in faithful_rewrites(facts, rewrites, phrases).items() if not copied(v)}
-    for_job = asked_tools_only(facts, for_job, job, phrases)
+    posting = posting_words(job_text) if exact else ""  # exact mode: the posting's words and tools count as yours
+    for_job = {k: v for k, v in faithful_rewrites(facts, rewrites, phrases, posting).items() if not copied(v)}
+    for_job = asked_tools_only(facts, for_job, job, phrases, posting)
     weight = {r["id"]: REQ_WEIGHT.get(r.get("kind"), 1.0) * (1 + 0.25 * (len(reqs) - 1 - i) / max(1, len(reqs) - 1))
               for i, r in enumerate(reqs)}  # a posting lists what matters most first
     said_by = {b["id"]: " ".join([b["text"], *supporting_facts(b), for_job.get(b["id"], "")])
@@ -2695,10 +2921,13 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         written = getattr(rewrites, "summary", None)
         if written and not base and summary_id is None:  # the summary Claude wrote for this job, if it keeps your facts
             opening = summary_opening(facts, title, variant)
-            if not summary_problems(written["text"], facts, opening, written["uses"], phrases) and not copied(written["text"]):
+            text = written["text"]
+            if summary_problems(text, facts, opening, written["uses"], phrases, posting):
+                text = without_trait_sentences(text, opening)  # the one problem taking a sentence out can fix
+            if not summary_problems(text, facts, opening, written["uses"], phrases, posting) and not copied(text):
                 summary = {"id": "job", "variant": variant, "version": "job", "tools": [], "tools_line": "", "impact": None,
                            "uses": list(written["uses"]), "covers": [r for r in written.get("covers") or [] if r in weight],
-                           "text": " ".join(x for x in (written["text"], closer) if x)}
+                           "text": " ".join(x for x in (text, closer) if x)}
 
     def version(b, job_ok=True):
         """The approved version of b that fits this job best, and a better one still waiting for your OK.
@@ -2724,6 +2953,13 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     job_kind = _kinds(job_title)
     tool_terms = lambda text: {t for t in terms(text) if not t.startswith("theme:")}
     req_tools = {r["id"]: tool_terms(r["text"]) for r in reqs}
+    # the posting's own phrases that aren't tools ("tool calling", "context engineering"): one a rewrite adds counts like
+    # an added tool, capped at ADDED_PHRASE_MAX lines
+    tool_name = lambda p: p.lower() in {x.lower() for t in tool_terms(p) for x in (label(t), item_label(t))}  # "Python"
+    phrase_rx = {f"phrase:{p.lower()}": re.compile(rf"(?<![\w-]){re.escape(p)}(?![\w-])", re.I)
+                 for p in phrases if p and len(p) > 3 and not tool_name(p)}  # "tool calling" though it reads as agents
+    cap_of = lambda t: ADDED_PHRASE_MAX if t.startswith("phrase:") else ADDED_TOOL_MAX
+    added_phrases = lambda text, own: [k for k, rx in phrase_rx.items() if rx.search(text) and not rx.search(own)]
     facts_bullet = {b["id"]: (g, b) for grp in ("roles", "projects") for g in facts[grp] if ok(g) for b in g["bullets"]}
 
     def make(g, b, v, better, prior, line_shows):
@@ -2732,7 +2968,8 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         s, shared = _score(v["text"], job)
         s += _shows_credit([weight[r] for r in line_shows])  # a line that "shows" many things gets full credit for 3
         bonus = NUMBER_BONUS if not base and _nums(v["text"]) else 0.0
-        added = sorted(tool_terms(v["text"]) - tool_terms(" ".join((b["text"], *supporting_facts(b))))) if v["version"] == "job" else []
+        own = " ".join((b["text"], *supporting_facts(b)))
+        added = sorted(tool_terms(v["text"]) - tool_terms(own)) + sorted(added_phrases(v["text"], own)) if v["version"] == "job" else []
         return {"id": b["id"], "text": v["text"], "version": v["version"], "lens": v["lens"],
                 "score": round(s + prior + bonus, 3), "fit": round(s, 3), "matched": [label(t) for t in shared],
                 "shows": list(line_shows), "added": added, "prior": prior,
@@ -2745,12 +2982,12 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         mentions taken out when it still keeps your facts, else your best version of the line. It stops counting
         for a requirement that only those tools showed."""
         g, b = facts_bullet[e["id"]]
-        text = strip_tools(e["text"], tools)
-        if text and text != b["text"] and not rewrite_problems(b["text"], text, mapped_tools(facts, g["id"]), supporting_facts(b), phrases):
+        text = strip_tools(e["text"], [phrase_rx.get(t, t) for t in tools])
+        if text and text != b["text"] and not rewrite_problems(b["text"], text, mapped_tools(facts, g["id"]), supporting_facts(b), phrases, posting):
             v = {"version": "job", "text": text, "lens": variant}
         else:
             v = version(b, job_ok=False)[0] or {"version": e["version"], "text": e["text"], "lens": e["lens"]}  # no other version may print
-        left = tool_terms(v["text"])
+        left = tool_terms(v["text"]) | {k for k, rx in phrase_rx.items() if rx.search(v["text"])}
         gone = set(tools) - left
         line_shows = [r for r in e["shows"] if not (req_tools.get(r, set()) & gone) or req_tools.get(r, set()) & left]
         new = make(g, b, v, None, e["prior"], line_shows)
@@ -2805,6 +3042,32 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     chosen_projects = projects[:MAX_PROJECTS + (1 if variant == "ai-engineer" and not base else 0)]
     skills = _skill_lines(facts, job, skill_skip, keep_order=base, wording=keyword_wording([k for k in kws if k["kind"] in ("tool", "skill", "domain")]))
 
+    # the skills your own approved lines back, anywhere in your facts, and the ones you added yourself as used (not
+    # the points written for this job, and not a skill only a job names, app.assumed_skills): proven mode keeps these
+    backed_by_you = evidence({**facts, **{grp: [dict(g, bullets=[b for b in g["bullets"] if not b.get("generated")])
+                                                for g in facts[grp]] for grp in ("roles", "projects")}}) | \
+        {a["term"] for a in facts.get("added_skills") or [] if ok(a) and a.get("level") == "used" and not a.get("assumed")}
+
+    def _own_terms(item: str) -> set[str]:
+        """An item's own tools, without the parent each implies: Redshift is proven by Redshift, never by AWS."""
+        found = _item_terms([item])
+        return found - {t for t in found if PARENT.get(t, set()) & found} or found
+
+    def proven_rows():
+        """Proven mode (skills_proven in profile.yaml): each skills row keeps only what the lines on the page show, so
+        no skill is listed that no line proves; a row left empty goes, and the learning line stays as it is."""
+        if not proven or base:
+            return skills
+        texts = [e["text"] for e in picked.values()]
+        said = {t for x in texts for t in terms(x) if not t.startswith("theme:")} | backed_by_you
+        out = []
+        for row in skills:
+            items = row["items"] if row["id"] == "learning" else \
+                [it for it in row["items"] if _own_terms(it) & said or any(keyword_shown(it, [x]) for x in texts)]
+            if len(items) >= (1 if row["id"] == "learning" else 2):  # a row of one skill reads thin; its line says it
+                out.append(dict(row, items=items, added=[a for a in row.get("added") or [] if a in items]))
+        return out
+
     overlap: dict[str, set[str]] = {}
     keeper = {b["id"]: m.group(1) for grp in ("roles", "projects") for g in facts[grp] for b in g["bullets"]
               if not ok(b) for m in [re.search(r"repeat of (\w+)", str(b.get("source") or ""))] if m}
@@ -2825,8 +3088,10 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     # ones too: screeners count the years of a role only when a line says what was done there (a heading and dates
     # alone read as a gap), so a far role shows its one best line
     picked, header_only = {}, set()
+    generated_ids = {b["id"] for g in facts["roles"] + facts["projects"] for b in g["bullets"] if b.get("generated")}
     for g, bs in roles + chosen_projects:
-        live = [b for b in bs if b["id"] not in drop]
+        live = [b for b in bs if b["id"] not in drop and b["id"] not in generated_ids] or \
+            [b for b in bs if b["id"] not in drop]  # each entry leads with one of your own lines, never a written one
         first = live[0] if live else None
         if not first:
             continue
@@ -2838,7 +3103,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     # a tool a rewrite added goes in at most ADDED_TOOL_MAX lines: lines you pinned, then the strongest, keep it
     tool_count: Counter = Counter()
     for bid in sorted(picked, key=lambda x: (not picked[x]["forced"], -picked[x]["score"])):
-        over = [t for t in picked[bid]["added"] if tool_count[t] >= ADDED_TOOL_MAX]
+        over = [t for t in picked[bid]["added"] if tool_count[t] >= cap_of(t)]
         if over:
             picked[bid] = without(picked[bid], over)
         tool_count.update(picked[bid]["added"])
@@ -2906,7 +3171,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
 
     def height():
         on = lambda bs: arrange(g_of[id(bs)], bs)
-        return _page_height(summary, educations, skills,
+        return _page_height(summary, educations, proven_rows(),
                             [(on(bs) or ([] if g["id"] in header_only else None),
                               bool((techs[g["id"]] if on(bs) else []) or g.get("place"))) for g, bs in roles],
                             [(on(bs) or None, bool(techs[g["id"]])) for g, bs in chosen_projects])
@@ -2948,6 +3213,8 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     soft = {r["id"] for r in reqs if _TRAIT.search(r["text"])}  # "fast paced", "self starter": no line proves these
     near = {gid for gid in role_ids if role_fit.get(gid, 0.0) >= top_fit / 3}
 
+    generated_roles = {bid for bid in generated_ids if any(bid == b["id"] for g in facts["roles"] for b in g["bullets"])}
+
     def value(b) -> float:
         """What line b adds to this page: requirements it shows that the page doesn't yet (required ones most),
         a second line for a requirement a little, the posting's keywords the page doesn't say yet, its own match
@@ -2962,6 +3229,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
             parts.append(x)
         v = _shows_credit(parts) + kw_gain(b) + 0.3 * b["fit"] + _result_bonus(b["text"])
         v += 1.5 if b["id"] in variant_bullets else 0.0
+        v += GENERATED_BONUS if b["id"] in generated_roles else 0.0  # written for this job's requirements, in a role
         tb = tier(b["id"])  # breadth: a relevant current role's second line, the job's kind, then each role's second
         v += 1.0 if tb == 0 and owner_of.get(b["id"]) in near else 1.0 if tb == 1 else 0.5 if tb == 2 else 0.0
         return v
@@ -2970,11 +3238,16 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         """A line's own weight for this job, apart from what the page already shows: its match, a measured result,
         whether your version for this kind of job has it, and its three strongest requirements."""
         return 0.3 * b["fit"] + _result_bonus(b["text"]) + (1.5 if b["id"] in variant_bullets else 0.0) + \
-            _shows_credit([weight[r] for r in b.get("shows") or []])
+            (GENERATED_BONUS if b["id"] in generated_roles else 0.0) + _shows_credit([weight[r] for r in b.get("shows") or []])
 
     def weak(b) -> bool:
         """A reader averages: a mild line next to strong ones lowers the whole page. So a line well under the page's
         average strength stays off, unless it shows something this job asks for that the page lacks."""
+        if proven and not any(kind_of.get(r) in ("required", "responsibility") for r in b.get("shows") or []):
+            return True  # proven mode: a dashboards or forms line on an AI page reads as other work, so it stays off
+        best_fit = max((e["fit"] for e in picked.values()), default=0.0)
+        if proven and b["id"] not in generated_roles and b["fit"] < LOW_FIT_SHARE * best_fit:
+            return True  # and so does one of your lines far from this job, when the page has much closer ones
         if any(r not in covered and r not in soft for r in b.get("shows") or []) or kw_gain(b) > 0:
             return False
         on = [strength(e) for e in picked.values()]
@@ -2995,7 +3268,7 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         tool_count.clear()
         tool_count.update(t for e in picked.values() for t in e["added"])
 
-    remaining = list(pool)
+    remaining, held = list(pool), []
     while remaining:
         if shows and not base:  # the line that adds the most to this page per printed line, lines you pinned first
             remaining.sort(key=lambda t: (not t[0]["forced"], -value(t[0]) / _lines(t[0]["text"]) ** 0.5))
@@ -3012,10 +3285,12 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
                 recount()
             continue
         if b["id"] in picked or b["id"] in drop or \
-                (not b["forced"] and (per.get(owner, 0) >= cap or clashes(b["id"]) or not worth(b, owner)
-                                      or (shows and not base and (value(b) < MIN_LINE_VALUE or weak(b))))):
+                (not b["forced"] and (per.get(owner, 0) >= cap or clashes(b["id"]) or not worth(b, owner))):
             continue  # a line you pinned skips these: it stays
-        over = [t for t in b["added"] if tool_count[t] >= ADDED_TOOL_MAX]
+        if not b["forced"] and shows and not base and (value(b) < MIN_LINE_VALUE or weak(b)):
+            held.append((b, owner, cap))  # proven mode may still print it if the page has room left
+            continue
+        over = [t for t in b["added"] if tool_count[t] >= cap_of(t)]
         if over:  # that added tool is in enough lines already: this line competes again without it
             remaining.append((without(b, over), owner, cap))
             continue
@@ -3030,6 +3305,50 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         covered_in[section_of(owner)] |= set(b.get("shows") or [])
         shown_n.update(b.get("shows") or [])
 
+    if proven and not base:  # room left on the page: your own lines held back above fill it, strongest first
+        for b, owner, cap in sorted(held, key=lambda t: -strength(t[0])):
+            if b["id"] in picked or b["id"] in generated_ids or per.get(owner, 0) >= cap or clashes(b["id"]) \
+                    or any(tool_count[t] >= cap_of(t) for t in b["added"]):
+                continue
+            picked[b["id"]] = b
+            if height() > budget:
+                del picked[b["id"]]
+                continue
+            per[owner] = per.get(owner, 0) + 1
+            tool_count.update(b["added"])
+    if fill and not base:  # fill mode (you asked for full pages, 2026-11-04): room left takes more of your lines, the
+        # job's closest first, past the per-entry caps and the floors above; then another project that fits the job;
+        # then your other lines. Never a repeat, a line over a tool cap, or one trimmed to fit
+        def fill_from(cands, relevant: bool) -> None:
+            for b, owner, _ in sorted(cands, key=lambda t: (t[0]["id"] in generated_ids, -strength(t[0]))):
+                if b["id"] in picked or b["id"] in drop or (relevant and b["fit"] <= 0 and not b.get("shows")) \
+                        or per.get(owner, 0) >= (MAX_PER_ROLE if owner in role_ids else MAX_PER_PROJECT + 1) \
+                        or clashes(b["id"]) or any(tool_count[t] >= cap_of(t) for t in b["added"]):
+                    continue
+                picked[b["id"]] = b
+                if height() > budget:
+                    del picked[b["id"]]
+                    continue
+                per[owner] = per.get(owner, 0) + 1
+                tool_count.update(b["added"])
+        fill_from(pool + held, True)
+        for g, bs in projects[len(chosen_projects):]:
+            if not any(b["fit"] > 0 for b in bs):
+                continue  # a project far from this job stays off even with room left
+            chosen_projects.append((g, bs))
+            g_of[id(bs)] = g
+            techs[g["id"]] = tech_items(g, job, extra=mapped_tools(facts, g["id"]))
+            context[g["id"]] = context_numbers(g)
+            more = [(b, g["id"], MAX_PER_PROJECT) for b in bs]
+            pool += more
+            for b in bs:
+                owner_of[b["id"]], text_of[b["id"]], group_of[b["id"]] = g["id"], b["text"], g["id"]
+            before = len(picked)
+            fill_from(more, True)
+            if len(picked) == before:  # not even its best line fits: it stays off, and so do the ones after it
+                chosen_projects.pop()
+                break
+        fill_from(pool + held, False)
     # the tools lines: a tool you added as used in several places goes on at most ADDED_TOOL_MAX of them, the ones
     # whose lines on the page name it, else the closest one; it's always on your skills lines
     added_at = {g["id"]: mapped_tools(facts, g["id"]) - _item_terms(g.get("tools") or []) for g, _ in roles + chosen_projects}
@@ -3054,6 +3373,10 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         named_here = set().union(set(), *(tool_terms(picked[b["id"]]["text"]) for b in bs if b["id"] in picked))
         full = {t for t, n in times.items() if n >= KEYWORD_PAGE_MAX and t not in yearly}
         extra_tools = _item_terms(g.get("tools") or []) | allow.get(g["id"], set())
+        if proven and not base:  # proven mode: the tags name what this entry's lines use, so tags and lines agree
+            techs[g["id"]] = [item_label(t) for t in sorted(named_here - CONCEPTS, key=lambda t: (-job.get(t, 0.0), label(t)))][:TOOLS_KEEP + 2]
+            times.update(_item_terms(techs[g["id"]]))
+            continue
         techs[g["id"]] = tech_items(g, job, extra=extra_tools, skip=(named_here | full) if not base else frozenset())
         if not techs[g["id"]] and named_here and not base:  # every tool is in its lines: the line still shows the top few
             techs[g["id"]] = tech_items(g, job, extra=extra_tools, skip=full)[:TOOLS_KEEP]
@@ -3071,6 +3394,10 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
                             "tech": techs[g["id"]] if keep else [], "bullets": keep})
         return out
 
+    if proven and not base and reqs:  # the project whose best line fits this job best goes first
+        best_line = lambda bs: max((picked[b["id"]]["score"] for b in bs if b["id"] in picked), default=0.0)
+        chosen_projects = sorted(chosen_projects, key=lambda gb: -best_line(gb[1]))
+    skills = proven_rows()
     sel = {"title_line": "", "title": "", "summary": summary, "experience": section(roles, "role"),
            "projects": section(chosen_projects, "project"), "skills": skills,
            "logistics": [{"id": r["id"], "text": r["text"]} for r in logistics]}
@@ -3079,8 +3406,18 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     shown_by = {bid: e["shows"] for bid, e in picked.items()}
     sel["requirements"] = [_coverage(r, picked, shown_by, summary, {b["id"]: "experience" if grp == roles else "projects"
                                                                     for grp in (roles, chosen_projects) for _, bs in grp for b in bs},
-                                     educations, _item_terms([it for row in skills for it in row["items"]]), experience_years(facts),
+                                     # a skill you're only learning shows no requirement, so the learning line doesn't count
+                                     educations, _item_terms([it for row in skills if row["id"] != "learning" for it in row["items"]]),
+                                     experience_years(facts),
                                      tool_terms(page_lines), lambda ts: tool_months(facts, ts)) for r in reqs]
+    for q in sel["requirements"]:  # a heading on the page ("Solo Founder") shows what a requirement asks in its words
+        if q["status"] == "missing" and q["kind"] != "logistics":
+            want = _ask_roots(q["text"]) - _HEADING_SKIP
+            for kind, groups in (("experience", sel["experience"]), ("projects", sel["projects"])):
+                hit = next((g for g in groups if want & (_ask_roots(g.get("heading", "")) - _HEADING_SKIP)), None)
+                if hit:
+                    q.update(status="full", by=["heading"], where=q["where"] + [kind], gaps=[])
+                    break
     on_page = _on_page(sel)
     learning = _item_terms([it for s in skills if s["id"] == "learning" for it in s["items"]])
     skill_terms = sorted([t for t in job if not t.startswith("theme:") and t in on_page and item_label(t) not in title_skip],
@@ -3119,10 +3456,10 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
         "emphasis": emphasis,
         "height": round(height(), 1),
         "rewrites": {bid: e["text"] for bid, e in picked.items() if e["version"] == "job"},  # check() verifies each
-        "phrases": phrases,
+        "phrases": phrases, "exact_posting": posting, "proven": proven,
     })
     sel["keywords"] = keyword_report(kws, sel, facts)
-    if not base and place_keywords(sel, sel["keywords"], facts):  # what's yours but still missing goes on a skills row
+    if not base and not proven and place_keywords(sel, sel["keywords"], facts):  # what's yours but still missing goes on a skills row
         sel["keywords"] = keyword_report(kws, sel, facts)
     sel["dropped_items"] = drop_unbacked_items(facts, sel)
     if sel["dropped_items"]:
@@ -3145,6 +3482,8 @@ def drop_unbacked_items(facts: dict, sel: dict) -> list[str]:
     """Take off any skills item check() would refuse, so one wrong item never stops the whole resume; the items
     taken off, for the preview. Nothing is ever added here."""
     allowed, dropped = allowed_skill_items(facts), []
+    for row in {s["id"] for s in sel["skills"]}:  # exact mode: the posting's keywords placed on a row
+        allowed[row] = set(allowed.get(row) or ()) | set(sel.get("exact_items") or ())
     for s in sel["skills"]:
         bad = [it for it in s["items"] if not skill_item_ok(facts, s["id"], it, allowed)]
         if bad:
@@ -3240,15 +3579,16 @@ def emphasize(text: str, emphasis: list[str], limit: int = 2) -> list[tuple[str,
         if t in NO_BOLD:
             continue
         rx = _TERM_RX.get(t)
-        whole = re.search(re.escape(item_label(t)), text, re.I)
+        label = item_label(t)  # as a whole word, and in its own capitals when that short: "R" isn't the r in "for"
+        whole = re.search(rf"(?<!\w){re.escape(label)}(?!\w)", text, re.I if len(label) > 2 else 0) if label else None
         m = whole or (rx.search(text) if rx else None)
         if not m:
             continue
         a, z = m.start(), m.end()
         while a > 0 and (text[a - 1].isalnum() or text[a - 1] in "-."):
             a -= 1
-        while z < len(text) and (text[z].isalnum() or text[z] in "+#-"):
-            z += 1
+        while z < len(text) and (text[z].isalnum() or text[z] in "+#-" or (text[z] == "." and text[z + 1:z + 2].isalpha())):
+            z += 1  # through ".js" in "React.js", never a sentence's last period
         par = re.match(r"\s?\([^()]{1,60}\)", text[z:])
         if par:
             z += par.end()
@@ -3399,7 +3739,7 @@ def check(facts: dict, sel: dict, pages: int | None) -> list[str]:
                 for b in g["bullets"]:
                     if ok(b):
                         allowed_text[b["id"]] = {b["text"]} | {a["text"] for a in usable_versions(b)}
-    for bid, text in faithful_rewrites(facts, sel.get("rewrites"), sel.get("phrases") or ()).items():
+    for bid, text in faithful_rewrites(facts, sel.get("rewrites"), sel.get("phrases") or (), sel.get("exact_posting") or "").items():
         allowed_text.setdefault(bid, set()).add(text)
     for g in sel["experience"] + sel["projects"]:
         said: set[str] = set()  # the numbers this entry's earlier lines state
@@ -3413,8 +3753,9 @@ def check(facts: dict, sel: dict, pages: int | None) -> list[str]:
             said |= set(_nums(source))
     groups = {g["id"]: g for grp in ("roles", "projects") for g in facts[grp] if ok(g)}
     for g in sel["experience"] + sel["projects"]:
-        if g.get("tech") and not set(g["tech"]) <= set(tech_items(groups[g["id"]], fit=False, extra=mapped_tools(facts, g["id"]))
-                                                       if g["id"] in groups else []):
+        said_here = {item_label(t) for b in g["bullets"] for t in terms(b["text"]) if not t.startswith("theme:")} if sel.get("proven") else set()
+        if g.get("tech") and not set(g["tech"]) <= (set(tech_items(groups[g["id"]], fit=False, extra=mapped_tools(facts, g["id"]))
+                                                        if g["id"] in groups else []) | said_here):
             fail.append(f"The tools line for {g.get('name', g['id'])} names something its approved lines don't.")
     titles = facts["titles"]["items"] if ok(facts["titles"]) else []
     years = experience_years(facts)
@@ -3425,11 +3766,12 @@ def check(facts: dict, sel: dict, pages: int | None) -> list[str]:
         text = sel["summary"]["text"]
         body = next((text[: -len(c) - 1] for c in closers if c and text.endswith(" " + c)), text)
         if summary_problems(body, facts, summary_opening(facts, sel["title"], sel["summary"].get("variant", "")), sel["summary"].get("uses") or [],
-                            sel.get("phrases") or ()):
+                            sel.get("phrases") or (), sel.get("exact_posting") or ""):
             fail.append("The summary written for this job doesn't keep your facts.")
     elif sel["summary"]:
         tools, line = list(sel["summary"].get("tools") or []), sel["summary"].get("tools_line") or ""
         may = {item_label(t) for t in placed(facts) | evidence(facts)}  # a summary names only tools with work behind them
+        may |= {item_label(t) for t in terms(sel.get("exact_posting") or "") if not t.startswith("theme:")}  # exact mode
         if not set(tools) <= may:
             fail.append("The summary names a skill you haven't added or shown in your lines.")
         if line and line not in {tools_sentence(v, tools) for v in TOOLS_SENTENCE}:
@@ -3438,6 +3780,8 @@ def check(facts: dict, sel: dict, pages: int | None) -> list[str]:
             fail.append("The summary isn't an approved summary.")
     allowed_items = allowed_skill_items(facts)
     for s in sel["skills"]:
+        if sel.get("exact_items") and s["id"] in allowed_items:  # exact mode: the posting's keywords placed on rows
+            allowed_items[s["id"]] = set(allowed_items[s["id"]]) | set(sel["exact_items"])
         if s["id"] not in allowed_items or not all(skill_item_ok(facts, s["id"], it, allowed_items) for it in s["items"]):
             fail.append(f"Skills line {s['label']} has an item that isn't approved, backed by your lines, or added by you.")
         if (s["id"] == "learning") != (s["label"] == LEARNING_LINE):
@@ -3479,28 +3823,59 @@ def build(facts: dict, job_text: str, job_title: str, variant: str, workdir: Pat
           exclude: set[str] | frozenset = frozenset(), include: set[str] | frozenset = frozenset(),
           summary_id: str | None = None, title_skip: set[str] | frozenset = frozenset(),
           original: set[str] | frozenset = frozenset(), skill_skip: set[str] | frozenset = frozenset(),
-          employer: str = "", rewrites: dict[str, str] | None = None) -> dict:
-    """Pick, print, and trim until one page. Returns the selection, the PDF and the check results.
+          employer: str = "", rewrites: dict[str, str] | None = None, exact: bool = False, proven: bool = False,
+          fill: bool = False) -> dict:
+    """Pick, print, and trim until one page. Returns the selection, the PDF and the check results. With `fill`, a
+    page that fits tries the next fuller budget too, and the fullest one that still prints on one page stands.
     With no filename, the PDF is named after you and the approved title: Your-Name-Data-Engineer.pdf."""
     drop: set[str] = set()
     trimmed = []
     budgets = list(BUDGETS[max(0, _FIT["index"] - 1):])
-    for _ in range(14):
+    fitted, last_page = None, None  # fill mode: the fullest page that printed on one page so far, and its HTML
+
+    def settle(res: dict) -> dict:
+        """The fullest page that fit, back under its own file name."""
+        kept = Path(res["pdf"])
+        if kept.name.startswith("fits-"):
+            main = kept.with_name(kept.name[len("fits-"):])
+            shutil.copy2(kept, main)
+            kept.unlink()
+            res["pdf"] = str(main)
+        return res
+
+    for _ in range(24 if fill else 14):
         sel = select(facts, job_text, job_title, variant, exclude, include, frozenset(drop), summary_id, title_skip,
-                     original, skill_skip, employer, budgets[0], rewrites)
+                     original, skill_skip, employer, budgets[0], rewrites, exact=exact, proven=proven, fill=fill)
         if filename is None and sel["title"]:
             name = "-".join(re.sub(r"[^A-Za-z0-9]+", " ", f"{facts['contact']['name']} {sel['title']}").split())
             filename = f"{name}.pdf"
         page = render(facts, sel)
         fail = check(facts, sel, None) + print_problems(page)
         if fail:
-            return {"selection": sel, "pdf": None, "pages": None, "failures": fail, "trimmed": trimmed}
+            return settle(fitted) if fitted else {"selection": sel, "pdf": None, "pages": None, "failures": fail, "trimmed": trimmed}
+        step = BUDGETS.index(budgets[0])
+        if fitted and page == last_page:  # a fuller budget added nothing: no need to print it
+            if step > 0:
+                budgets.insert(0, BUDGETS[step - 1])
+                continue
+            return settle(fitted)
         pdf = _print_pdf(page, workdir, filename, chrome)
         pages = _pages(pdf)
         if pages == 1:
-            _FIT["index"] = BUDGETS.index(budgets[0])
-            return {"selection": sel, "pdf": str(pdf), "pages": 1, "failures": check(facts, sel, 1) + print_problems(page),
-                    "trimmed": trimmed}
+            _FIT["index"] = step
+            result = {"selection": sel, "pdf": str(pdf), "pages": 1, "failures": check(facts, sel, 1) + print_problems(page),
+                      "trimmed": trimmed}
+            if fill and step > 0 and not drop:  # room may be left: try the next fuller budget, keeping this one
+                fitted, last_page = result, page
+                kept = Path(pdf).with_name("fits-" + Path(pdf).name)
+                shutil.copy2(pdf, kept)
+                fitted["pdf"] = str(kept)
+                budgets.insert(0, BUDGETS[step - 1])
+                continue
+            return result
+        if fitted:  # the fuller page ran over: the fullest one that fit stands
+            _FIT["index"] = BUDGETS.index(budgets[1]) if len(budgets) > 1 else _FIT["index"]
+            return settle(fitted)
         if len(budgets) > 1:  # the fuller page ran over: redo it at the budget that fits
             budgets.pop(0)
             continue
@@ -3513,6 +3888,8 @@ def build(facts: dict, job_text: str, job_title: str, variant: str, workdir: Pat
         worst = min(optional, key=lambda b: b["score"])
         drop.add(worst["id"])
         trimmed.append(worst["text"][:60])
+    if fitted:
+        return settle(fitted)
     return {"selection": sel, "pdf": None, "pages": pages, "failures": [f"Couldn't fit one page (still {pages})."], "trimmed": trimmed}
 
 

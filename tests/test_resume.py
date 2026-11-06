@@ -56,6 +56,21 @@ class SelectTest(unittest.TestCase):
         self.assertIn("p2a", bullet_texts(sel))  # tapping + puts it on
         self.assertEqual(len(sel["projects"]), resume.MAX_PROJECTS)
 
+    def test_fill_mode_takes_your_held_back_lines_but_no_project_far_from_the_job(self):
+        facts = copy.deepcopy(FACTS)
+        facts["roles"][1]["bullets"].append({"id": "r2b", "text": "Organized a weekly reading group for 12 students.", "status": "approved"})
+        facts["projects"] = [{"id": f"p{i}", "title": f"Project {i}", "subtitle": "", "status": "approved", "bullets": [
+            {"id": f"p{i}a", "text": f"Built project {i} with {tool} for {n} users.", "status": "approved"}]}
+            for i, (tool, n) in enumerate((("SQL and Airflow ETL pipelines", 100), ("Tableau dashboards", 200), ("a website", 300)))]
+        plain = bullet_texts(resume.select(facts, JD, "Data Engineer", "data-engineer"))
+        full_sel = resume.select(facts, JD, "Data Engineer", "data-engineer", fill=True)
+        full = bullet_texts(full_sel)
+        self.assertNotIn("r2b", plain)  # a line far from the job stays off a page that isn't filled
+        self.assertIn("r2b", full)  # with room left, fill mode puts it on
+        self.assertTrue(set(plain) <= set(full))
+        self.assertNotIn("p2a", full)  # a project that fits no part of the job never fills the page
+        self.assertEqual(resume.check(facts, full_sel, 1), [])
+
     def test_exclude_removes_a_bullet(self):
         sel = resume.select(FACTS, JD, "Data Engineer", "data-engineer", exclude={"r1b"})
         self.assertNotIn("r1b", [b["id"] for g in sel["experience"] for b in g["bullets"]])
@@ -641,7 +656,8 @@ class CoverageAdviceTest(unittest.TestCase):
         self.assertIn("to make room for: Use PyTorch", texts)
         self.assertIn("1 line shows none of this job's requirements: Designed internal forms.", texts)
         self.assertNotIn("Tracked inventory", texts)  # a role's only line is never named
-        self.assertIn("show only preferred items while a required one is missing", texts)
+        self.assertIn("1 line shows only preferred items while a required one is missing", texts)
+        self.assertIn("Built Tableau charts. Take it off", texts)  # one line: "shows" and "it", one period
         self.assertNotIn("Know dbt", texts)  # preferred waits until every required item is on the page
         report[1].update(by=["e"], where=["experience"])
         shows["e"] = ["R2"]
@@ -677,10 +693,29 @@ class JobSummaryTest(unittest.TestCase):
                     good.replace("building", "leading teams building"),            # scope the lines don't claim
                     good.replace("building ETL", "I build ETL"),                   # first person
                     good.replace(", building", "; building"),                      # a semicolon
+                    good.replace("in Python and SQL", "in Python, SQL, ETL, Airflow, pipelines and SQL"),  # a keyword list
                     "Data Engineer with 9+ years building ETL pipelines in Python and SQL for 1M+ rows."):  # other years
             with self.subTest(bad):
                 self.assertTrue(resume.summary_problems(bad, facts, opening, ["r1a"]))
         self.assertTrue(resume.summary_problems(good, facts, opening, []))  # it must cite the lines it draws on
+
+    def test_a_trait_from_the_posting_is_no_work_even_in_exact_mode(self):
+        facts = self.facts()
+        opening = self.opening(facts)
+        good = opening + ", building ETL pipelines in Python and SQL with Airflow for 1M+ rows."
+        posting = "Act as a trusted advisor with a service mindset. Build ETL pipelines in Python and SQL with Airflow."
+        self.assertEqual(resume.summary_problems(good, facts, opening, ["r1a"], posting=posting), [])
+        trait = good + " Trusted advisor with a service mindset."
+        self.assertTrue(any("trait" in p for p in resume.summary_problems(trait, facts, opening, ["r1a"], posting=posting)))
+        self.assertEqual(resume.without_trait_sentences(trait, opening), good)  # the sentence comes out
+        self.assertEqual(resume.without_trait_sentences(good, opening), good)
+        from tailor import rewrite
+        got = rewrite.Rewrites()
+        got.summary = {"text": trait, "uses": ["r1a"]}
+        sel = resume.select(facts, JD, "Data Engineer", "data-engineer", rewrites=got)
+        self.assertEqual(sel["summary"]["version"], "job")  # the written summary stays, without the trait
+        self.assertNotIn("mindset", sel["summary"]["text"])
+        self.assertEqual(resume.check(facts, sel, 1), [])
 
     def test_a_result_never_moves_to_another_company(self):
         facts = self.facts()
@@ -768,6 +803,13 @@ class LayoutTest(unittest.TestCase):
         self.assertTrue(any(bold for _, bold in runs))
         self.assertLessEqual(sum(bold for _, bold in runs), 2)
 
+    def test_bold_finds_a_skill_only_as_a_whole_word(self):
+        bold = lambda text, terms: [x for x, b in resume.emphasize(text, terms) if b]
+        self.assertEqual(bold("Built web maps for the consortium.", ["r_lang"]), [])  # not the r in "for"
+        self.assertEqual(bold("Modeled churn in R and Python for 40 clinics.", ["r_lang"]), ["R"])  # not "churn"
+        self.assertEqual(bold("Cleaned survey data in SQL.", ["sql"]), ["SQL"])  # not the period
+        self.assertEqual(bold("Built a platform with Django, React.js and MySQL.", ["react"]), ["React.js"])
+
     def test_a_range_counts_both_numbers(self):
         self.assertEqual(resume._nums("replacing 20-30 minutes"), ["20", "30"])
         self.assertEqual(resume._nums("H-1B filings on EC2 and S3"), [])
@@ -836,6 +878,17 @@ class ContextTest(unittest.TestCase):
         self.assertEqual(trim("Analyzed performance data from 300+ institutions for a $10M NSF-funded alliance, building ETL pipelines.",
                               ["$10M", "300+"]), "Analyzed performance data, building ETL pipelines.")
         self.assertIsNone(trim("Processed 1M+ rows with Spark.", ["1M+"]))  # there the number is the result, not context
+        self.assertEqual(trim("Modeled semantic layers, feeding Tableau dashboards for alliance leadership across data from "
+                              "300+ institutions.", ["300+"]),
+                         "Modeled semantic layers, feeding Tableau dashboards for alliance leadership.")  # not "across data."
+        self.assertEqual(trim("Built Tableau dashboards for 500 users across a $10M NSF-funded alliance.", ["$10M"]),
+                         "Built Tableau dashboards for 500 users.")  # a phrase with its own number stays
+        self.assertEqual(trim("Reduced errors in model inputs across pipelines handling 1M+ customer-interaction records.", ["1M+"]),
+                         "Reduced errors in model inputs across pipelines.")  # "across pipelines" says something
+        self.assertEqual(trim("Cut processing time by 40% for analysis across a $10M NSF funded alliance.", ["$10M"]),
+                         "Cut processing time by 40% for analysis.")
+        self.assertIsNone(trim("Maintained ETL pipelines, keeping data from 300+ institutions reliable for dashboards.",
+                               ["300+"]))  # "keeping data for dashboards" would lose what the line says
 
     def test_the_first_line_keeps_it_and_the_check_verifies_the_rest(self):
         facts = copy.deepcopy(FACTS)
@@ -1175,6 +1228,9 @@ class BuiltInPatternTest(unittest.TestCase):
         self.assertEqual(tools("Load it into Snowflake."), {"snowflake"})
         self.assertEqual(tools("Dashboards in Looker Studio."), {"looker_studio"})
         self.assertEqual(tools("Dashboards in Looker."), {"looker"})
+        self.assertNotIn("scikit_learn", tools("A scikit-image Frangi baseline."))  # another library
+        self.assertIn("scikit_learn", tools("Models in scikit-learn."))
+        self.assertIn("scikit_learn", tools("Models in sklearn."))
 
     def test_a_tool_keyword_shows_exactly_only_where_the_engine_reads_the_tool(self):
         self.assertEqual(resume.keyword_shown("Looker", ["Looker Studio reports"]), "")

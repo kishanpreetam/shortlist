@@ -48,6 +48,10 @@ contacts: {}
 
 exclude_companies: []
 
+# Startups come first in the queue and the list: founded in the last startup_max_years years, with at most startup_max_employees people (numbers in shortlist/company_facts.yaml).
+# startup_max_years: 10
+# startup_max_employees: 500
+
 # ---- Daily apply queue (python -m shortlist today) ----
 # Optional. Paths to the resume version you send for each kind of role, and one sentence
 # of proof per version for the short message to a person at the company.
@@ -57,15 +61,21 @@ resumes: {}
 #  data-engineer: /path/to/Your-Name-Data-Engineer.pdf
 pitch: {}
 #  data-engineer: "I built the Python and SQL pipelines behind <something real>."
-# Optional: tailor a resume to each job on the page, from your facts file (see shortlist/resume.py).
-# resume_facts: /path/to/facts.json
+
+# ---- Tailor (python -m tailor) ----
+# Optional: Tailor builds a one-page resume for a job from your facts file (see tailor/resume.py).
+# The two pages link to each other, so each one needs to know the other's port.
+# tailor_port: 8766             # Tailor's page; the queue's "Tailor this job" links open it
+# shortlist_port: 8765          # the queue page; Tailor's link back to the queue opens it
+# resume_facts: /path/to/facts.json   # the queue's Tailor links show once this is set
 # tailored_dir: ~/Documents/Resumes
 # With Claude Code installed and signed in (`claude auth login`), Claude rewrites your points for each job,
 # and only rewrites that keep your facts are used.
 # rewrite_points: true          # false keeps your own wording
-# rewrite_warmup: 5             # how many of the next jobs to rewrite in the background (0 waits for a Tailor click)
+# rewrite_warmup: 5             # how many of the next jobs in the queue to rewrite in the background while Tailor is open (0 waits for a click)
 # rewrite_repair: true          # rewrites the fact check drops go back to Claude once with its reasons; false skips it
 # claude_path: /path/to/claude  # if it isn't on your PATH
 # learn_keywords: true          # learn the tools postings name beyond the built-in list (data/lexicon.json); false turns it off
+# fill_page: false              # true: room left on a page takes more of your lines, so it fills to the bottom
 # Words that never go on any resume it builds: headings drop them, and lines that use one stay off.
 # resume_never_words: [contract]

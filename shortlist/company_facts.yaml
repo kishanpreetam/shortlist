@@ -1,0 +1,1746 @@
+# Each employer's founding year and headcount, for the startup rule in startups.py: a startup was founded in the
+# last 10 years and has at most 500 people (startup_max_years and startup_max_employees in profile.yaml).
+# employees is the best current estimate; source says where each number comes from; confidence is high, medium or
+# low; note flags anything that could change the call. An employer missing here counts as established until added.
+# Researched 2026-10-29 from public sources (Wikipedia, company pages, LinkedIn size bands, Crunchbase, press).
+
+Abacus Insights Inc:
+  founded: 2017
+  employees: 344
+  source: Most profiles say 2017 (one says 2016); LeadIQ LinkedIn-based headcount ~344 (Apr 2026), older directories 94 to 209
+  confidence: medium
+  checked: '2026-10-29'
+Acuitymd Inc:
+  founded: 2019
+  employees: 230
+  source: Built In, StartupHub, Yespress (founded 2019; PitchBook says 2018); PitchBook/StartupHub about 254, Built In 168-250, Unify 210
+  confidence: medium
+  note: AcuityMD, Boston medtech sales intelligence; matched by Greenhouse slug acuitymd
+  checked: '2026-10-29'
+Addepar Inc:
+  founded: 2009
+  employees: 1000
+  source: founded 2009 (Wikipedia); about 1,000 people (LinkedIn 501-1,000 and 1,001-5,000 bands)
+  confidence: high
+  checked: '2026-10-29'
+Agility Robotics Inc:
+  founded: 2015
+  employees: 370
+  source: Wikipedia (founded 2015, Oregon State spinout); 2026 trackers 350-400 (Seedtable May 2026, Komo, TrueUp)
+  confidence: medium
+  note: Renamed Agility on March 5, 2026. Founded one year before the 2016 cutoff.
+  checked: '2026-10-29'
+Airtable:
+  founded: 2012
+  employees: 800
+  source: 'Wikipedia infobox: founded 2012 (no headcount there); about 800 from memory of LinkedIn band 501-1,000, not re-verified (search quota ran out)'
+  confidence: medium
+  checked: '2026-10-29'
+Ambience Healthcare Inc:
+  founded: 2020
+  employees: 220
+  source: Built In 160, Yespress ~200, Cyberdb 101-250; founded 2020 per profiles (Mike Ng, Nikhil Buduma)
+  confidence: medium
+  checked: '2026-10-29'
+Antheia Inc:
+  founded: 2015
+  employees: 65
+  source: Company announcement (June 2025) gives 2015; Revelio ~68 (Mar 2026), YesPress 65
+  confidence: medium
+  note: Two profiles list 2013.
+  checked: '2026-10-29'
+Anthropic:
+  founded: 2021
+  employees: 5000
+  source: Founded 2021 (Wikipedia/company); TipRanks 5,051 (Jun 2026), Tracxn about 5,000 (Mar 2026); other trackers 2,900 to 6,000
+  confidence: high
+  checked: '2026-10-29'
+Appzen Inc:
+  founded: 2012
+  employees: 380
+  source: PitchBook 378, TipRanks 370 (Jun 2026), Revelio 420 (Dec 2025); founded 2012 per PitchBook/CB Insights
+  confidence: medium
+  checked: '2026-10-29'
+Arkose Labs Inc:
+  founded: 2016
+  employees: 255
+  source: Revelio, LeadIQ and Datanyze say 2016; Revelio 264 and LeadIQ ~250 (Mar 2026)
+  confidence: medium
+  note: Welcome to the Jungle and Built In London say 2017.
+  checked: '2026-10-29'
+Arta Finance Inc:
+  founded: 2021
+  employees: 109
+  source: LeadIQ (founded 2021; about 110 staff Jun 2026), Crustdata 109, Built In 106
+  confidence: high
+  note: digital family office, SEC-registered investment adviser; headcount down about 13% year over year per Crustdata
+  checked: '2026-10-29'
+Artera Inc:
+  founded: 2019
+  employees: 150
+  source: No fetched source states founding year or headcount; 2019 is from general knowledge, headcount is a rough estimate (its own postings call it 'an AI startup'; site shows 9 team profiles, eight remote-US roles open)
+  confidence: low
+  note: Matched by the Lever slug and sample posting to Artera (ArteraAI, AI precision-medicine tests for cancer, Los Altos/San Francisco, co-founders Andre Esteva and Felix Feng), NOT Artera (formerly WELL Health, Santa Barbara, founded 2015, ~250-300 staff). The H-1B filer name could be either company.
+  checked: '2026-10-29'
+Ataraxis Ai Inc:
+  founded: 2023
+  employees: 15
+  source: 360Dx, Built In and Simplify say 2023 (NYU spinout); Built In 11 employees; $20.4M Series A Mar 2025
+  confidence: medium
+  note: Two profiles say 2022.
+  checked: '2026-10-29'
+Attentive:
+  founded: 2016
+  employees: 1200
+  source: Wikipedia/Built In (founded 2016); Revelio 1,360 (Dec 2025), Built In about 1,000 (Apr 2026), LeadIQ about 1,500 (Feb 2026)
+  confidence: high
+  note: estimates 1,000 to 1,500; cut about 15% of staff in Jan 2023; founded in the cutoff year but far above 500 employees
+  checked: '2026-10-29'
+Avant Llc:
+  founded: 2009
+  employees: 230
+  source: Avantus (formerly 8minute Solar Energy, founded 2009, rebranded 2022); Revelio ~282 (Mar 2026), LeadIQ ~208, PitchBook 197, Built In 185
+  confidence: medium
+  note: Board is Avantus (clean energy developer, KKR-owned since 2024), matched by the Greenhouse slug and avantus.com posting. The H-1B filer 'Avant LLC' may instead be Avant (Chicago consumer lender, founded 2012, from general knowledge). Neither is a startup.
+  checked: '2026-10-29'
+Baseten:
+  founded: 2019
+  employees: 330
+  source: 'AI Wiki, Komo and SV Investclub say 2019; 2026 trackers: TipRanks 352 (Jul 2026), LeadIQ ~217 (Apr 2026), range 165-415 in an Oct 2026 write-up'
+  confidence: medium
+  note: Plans to triple headcount in 2026; no official figure.
+  checked: '2026-10-29'
+Benchling:
+  founded: 2012
+  employees: 810
+  source: 'Wikipedia infobox: founded 2012, 810 employees (2026)'
+  confidence: high
+  checked: '2026-10-29'
+Bend Health Inc:
+  founded: 2021
+  employees: 2800
+  source: Acquired by Lyra Health Jul 2025; Lyra has ~2,700-2,900 staff (Revelio ~2,869 Mar 2026); Bend alone ~170 (LeadIQ Feb 2026); Bend founded 2021 per directories
+  confidence: medium
+  note: 'Subsidiary of Lyra Health (founded 2015), counted as Lyra. Bend alone: founded 2021, about 170 staff, Madison WI.'
+  checked: '2026-10-29'
+Betterup Inc:
+  founded: 2013
+  employees: 1300
+  source: Wikipedia (founded 2013); Revelio ~1,287 (Mar 2026); other trackers 2,700-2,800
+  confidence: medium
+  note: Trackers disagree (1,300 to 2,800, some may count coaches) but all are far above 500.
+  checked: '2026-10-29'
+Beyond Finance Llc:
+  founded: 2014
+  employees: 800
+  source: From memory (company materials say founded 2014; LinkedIn band about 501-1,000), not re-verified (search quota ran out)
+  confidence: low
+  checked: '2026-10-29'
+Biofourmis Inc:
+  founded: 2015
+  employees: 450
+  source: Profiles date founding to 2015 (Singapore); company said ~650 staff in 2023 before cutting ~250; LeadIQ ~379 (Nov 2024), Built In 280, Techlist 662
+  confidence: low
+  note: Merger with CopilotIQ announced Oct 2024 and life-sciences unit sold to ActiGraph Jan 2025, so current size is uncertain. One data site dates the US entity to 2016.
+  checked: '2026-10-29'
+Biointellisense Inc:
+  founded: 2018
+  employees: 110
+  source: ColoradoBiz profile (founded 2018, about 100 employees in Jan 2022); LeadIQ ~101 (Oct 2025), Built In 106
+  confidence: medium
+  checked: '2026-10-29'
+Bolster Inc:
+  founded: 2017
+  employees: 70
+  source: Several profiles (founded 2017, formerly RedMarlin); Latka 70, Built In 47, other directories 11-100
+  confidence: medium
+  note: Bolster AI brand protection, Santa Clara CA; the Lever board matches; a different Bolster (Calgary contractor platform) exists
+  checked: '2026-10-29'
+Boson Ai Usa Inc:
+  founded: 2023
+  employees: 40
+  source: CB Insights founded 2023 (Santa Clara); Built In 21, Taffin 27, Rocketlist 30; estimate nudged up for hiring
+  confidence: low
+  checked: '2026-10-29'
+Brex:
+  founded: 2017
+  employees: 1150
+  source: Wikipedia (founded Jan 2017; 1,100 employees in 2025); SV Investclub chart 1,221 (Q1 2026)
+  confidence: high
+  note: Acquired by Capital One for $5.15B (announced Jan 22, 2026; closed Apr 2026), now a subsidiary of Capital One (about 52,000 employees), so it counts as the large company. Brex alone is already over 500.
+  checked: '2026-10-29'
+Cala Health Inc:
+  founded: 2014
+  employees: 200
+  source: From memory (wearable neuromodulation company in Burlingame CA, founded 2014); headcount rough, not re-verified (search quota ran out)
+  confidence: low
+  checked: '2026-10-29'
+Cambridge Mobile Telematics Inc:
+  founded: 2010
+  employees: 470
+  source: LeadIQ ~469 (Apr 2026), Latka ~456, Revelio ~491; founded 2010 per Latka/ZoomInfo
+  confidence: medium
+  note: Headcount is close to 500 but the company was founded in 2010.
+  checked: '2026-10-29'
+Campfire Llc:
+  founded: 2023
+  employees: 150
+  source: Company About page (started 2023 by John Glasgow); TipRanks 172 (Aug 2026), YesPress 140; CEO said 40 in Oct 2025
+  confidence: medium
+  note: Matched to campfire.ai (AI-native ERP, San Francisco) via the Ashby slug and an Account Executive Non Tech Vertical posting, not the AR/VR Campfire. Raised $35M Series A (Jun 2025) and $65M Series B (Oct 2025).
+  checked: '2026-10-29'
+Candid:
+  founded: 1956
+  employees: 250
+  source: 'Candid history: Foundation Center (1956) merged with GuideStar (1994) in Feb 2019 and took the Candid name; headcount from memory of LinkedIn band 201-500, not re-verified'
+  confidence: medium
+  note: nonprofit and not a startup in spirit; formed by a 2019 merger of two long-established nonprofits (use 2019 only if you count the merged entity as new)
+  checked: '2026-10-29'
+Capsule Corporation:
+  founded: 2021
+  employees: 30
+  source: Not found; Capsule's own postings call it a 'Series A startup led by two serial founders' with a 'small team' (CEO Champ Bennett); a link in its postings suggests a $12M Series A
+  confidence: low
+  note: Matched by the Ashby slug and postings to Capsule (AI video creation for software brands, Los Angeles/remote), NOT Capsule the NYC pharmacy (Capsule Corporation, founded 2015-2016, ~770 staff), which is probably the H-1B filer. Founding year is a guess.
+  checked: '2026-10-29'
+Cavnue Llc:
+  founded: 2020
+  employees: 1500
+  source: Revelio and TechCrunch (Aug 2020 launch coverage) give 2020; Revelio ~58 own staff (Mar 2026); Consor acquisition release Feb 2026; Consor size not verified
+  confidence: low
+  note: Acquired by Consor (New Mountain Capital-backed engineering firm) in early Feb 2026, so it counts as the larger parent. The employees value is an unverified estimate of Consor's size; Cavnue alone is about 58.
+  checked: '2026-10-29'
+Cellanome Inc:
+  founded: 2019
+  employees: 150
+  source: Company site names cofounder Mostafa Ronaghi (ex-Illumina) but states no year or headcount; founding about 2019 and headcount from memory, not verified
+  confidence: low
+  note: venture-backed Foster City biotech; clearly small but founding year unverified
+  checked: '2026-10-29'
+Chaos Industries Inc:
+  founded: 2022
+  employees: 350
+  source: 'Company job posting: ''founded in 2022'', ''350 employees and counting across 5 global offices'', $1B raised'
+  confidence: high
+  checked: '2026-10-29'
+Cherre Inc:
+  founded: 2016
+  employees: 90
+  source: Builtworlds, VentureBeat and Preqin say 2016; Built In 86 employees, other directories 51-200
+  confidence: medium
+  checked: '2026-10-29'
+Classdojo Inc:
+  founded: 2011
+  employees: 120
+  source: 'Wikipedia infobox: founded Aug 2011, 40 employees (2019, stale); current size from memory (LinkedIn band about 51-200)'
+  confidence: medium
+  checked: '2026-10-29'
+Click Therapeutics Inc:
+  founded: 2012
+  employees: 70
+  source: 'MDDI (Apr 2026): 93 staff before a 25-person cut after a $50M Series D; founded 2012 per PitchBook/Preqin'
+  confidence: medium
+  checked: '2026-10-29'
+Clutch Holdings Llc:
+  founded: 2017
+  employees: 800
+  source: Retail Insider (Apr 2025) and the company's job post say 2017 (company blog says 2016); directories show 201-500 and about 450 Canadian staff (undated); new Mississauga flagship adds 400+ jobs
+  confidence: low
+  note: Facts are for Clutch Technologies Inc (Toronto online used-car retailer), the owner of the greenhouse/clutch board; the H-1B filer Clutch Holdings LLC may be a different entity. Headcount is uncertain and likely above the 500 cutoff (estimate 450 to 900).
+  checked: '2026-10-29'
+Cohere:
+  founded: 2019
+  employees: 1000
+  source: LeadIQ/TrueUp (founded 2019); LeadIQ about 847 (Feb 2026), TipRanks 1,019 (Jun 2026), Autobound 1,182 (Sep 2026)
+  confidence: high
+  checked: '2026-10-29'
+Cohere Health Inc:
+  founded: 2019
+  employees: 850
+  source: 6figr ~827 (Sep 2026), Built In ~900 (Aug 2026), LeadIQ ~924 (Apr 2026); founded 2019 per profiles
+  confidence: medium
+  note: Acquired ZignaAI in 2025. Over the 500 cutoff despite a recent founding. Not the Toronto AI company Cohere.
+  checked: '2026-10-29'
+Collectivehealth Inc:
+  founded: 2013
+  employees: 750
+  source: Profiles agree on 2013 (San Francisco); PitchBook 799 (2026), company-attributed 750+ (Apr 2024), Revelio 860, Built In 500
+  confidence: medium
+  checked: '2026-10-29'
+Course Hero Inc:
+  founded: 2006
+  employees: 600
+  source: 'Wikipedia infobox: founded Oct 2006 (no headcount there); about 500-700 after 2022-2023 cuts from memory, not re-verified'
+  confidence: medium
+  checked: '2026-10-29'
+Curai Inc:
+  founded: 2017
+  employees: 80
+  source: Built In 76-77, Datanyze 51, Dealroom 102; founded 2017 per profiles (Neal Khosla, Xavier Amatriain)
+  confidence: medium
+  checked: '2026-10-29'
+Cursor:
+  founded: 2022
+  employees: 22621
+  source: 'Wikipedia: Cursor (Anysphere) founded 2022, about 300 staff in 2025; SpaceX deal per Wikipedia, BNN Bloomberg, Builtin and Gigazine; SpaceX 22,621 employees (Wikipedia infobox, 2026)'
+  confidence: high
+  note: Acquired by SpaceX for about $60B in stock (announced Jun 16, 2026; closed Aug 14-15, 2026), now a wholly owned subsidiary under SpaceXAI, so it counts as the large parent and employees is the SpaceX figure. Cursor's own team is roughly 300 to 400.
+  checked: '2026-10-29'
+Cyvl Inc:
+  founded: 2021
+  employees: 45
+  source: Job boards and TechCrunch (2020 to 2022 depending on source); Built In 45, other directories 33-50
+  confidence: medium
+  note: Somerville MA infrastructure AI; $14M Series A Oct 2025; sources disagree on founding year (2020 to 2022), all after 2016
+  checked: '2026-10-29'
+Databricks:
+  founded: 2013
+  employees: 15000
+  source: 'Third-party mid-2026: TipRanks ~15.8K, remowork ~15.6K, Autobound ~17.6K; company said ~8,000 in Mar 2025; founded 2013'
+  confidence: high
+  checked: '2026-10-29'
+Datacamp Inc:
+  founded: 2013
+  employees: 500
+  source: Co-founder bio says 2013 (Simplify says 2014); Built In 504, remowork 441, EveryDev 650, LinkedIn-style band 201-500
+  confidence: low
+  note: Trackers range 440 to 1,800; founded before 2016 either way.
+  checked: '2026-10-29'
+dbt Labs:
+  founded: 2016
+  employees: 1900
+  source: 'Merged with Fivetran Jun 1, 2026; Built In: dbt Labs ~700 (Apr 2026) and Fivetran ~1,200; tear sheet 1,165 (Jun 2026)'
+  confidence: medium
+  note: Counts as the combined Fivetran + dbt Labs company; dbt Labs alone is about 700-1,100. Founded 2016 as Fishtown Analytics (general knowledge).
+  checked: '2026-10-29'
+Dealerware Llc:
+  founded: 2016
+  employees: 110
+  source: Most profiles say 2016 (Datanyze 2017); LeadIQ about 109 (Feb 2026), PitchBook 107, sales brief about 118 (Apr 2026)
+  confidence: medium
+  note: acquired by growth investors (Wavecrest Growth Partners, Radian Capital) in Jan 2026; still an independent company
+  checked: '2026-10-29'
+Decagon:
+  founded: 2023
+  employees: 400
+  source: 'Wikipedia: founded Aug 2023; Revelio ~405 (Mar 2026), Yespress ~350 (May 2026), Rocketlist 317; $250M Series D Jan 2026'
+  confidence: medium
+  note: Growing fast, could pass 500 within a year.
+  checked: '2026-10-29'
+Deel Us Llc:
+  founded: 2019
+  employees: 9000
+  source: Wikipedia (founded 2019; 7,500 employees in 2025); TipRanks 9,637 (Jun 2026), Autobound ~9,873 (Sep 2026)
+  confidence: medium
+  note: Entry is the US entity of Deel.
+  checked: '2026-10-29'
+Demandbase Inc:
+  founded: 2006
+  employees: 900
+  source: Founded 2006 (well established, not re-verified); headcount from memory of LinkedIn band 501-1,000
+  confidence: medium
+  checked: '2026-10-29'
+Dexterity Inc:
+  founded: 2017
+  employees: 200
+  source: Built In 211, Rocketlist 205, TrueUp 190; founded 2017 per profiles
+  confidence: medium
+  checked: '2026-10-29'
+Discord Inc:
+  founded: 2015
+  employees: 800
+  source: Wikipedia (founded May 2015; infobox 501 for 2025); other estimates 700-800 (Tech Insider, Danelfin); 170 laid off Jan 2024
+  confidence: medium
+  note: Headcount estimates range 500 to 1,000+. Confidentially filed for an IPO in Jan 2026.
+  checked: '2026-10-29'
+Disqo Inc:
+  founded: 2012
+  employees: 450
+  source: From memory (DISQO, Glendale CA, founded about 2012); headcount rough, not re-verified (search quota ran out)
+  confidence: low
+  checked: '2026-10-29'
+Doxel Inc:
+  founded: 2016
+  employees: 120
+  source: Revelio ~122 (Mar 2026), TipRanks ~121 (Jun 2026); founded 2016 per CB Insights, Analytics India Magazine, Built In
+  confidence: medium
+  note: Revelio says founded 2015, other sources say 2016.
+  checked: '2026-10-29'
+Envoy Inc:
+  founded: 2013
+  employees: 350
+  source: Company profile sites say 2013 (founder Larry Gadea); LeadIQ ~426 (Dec 2025), 6figr ~331, Built In 250
+  confidence: medium
+  checked: '2026-10-29'
+Evenup Inc:
+  founded: 2019
+  employees: 700
+  source: Founded 2019 per all sources; Revelio 877 (Dec 2025), LeadIQ about 721 (Feb 2026), ContactOut 852 (Jun 2026), Growjo 620, TrueUp 600
+  confidence: medium
+  note: legal AI, $150M Series E at $2B in Oct 2025; headcount about doubled in two years; older 201-500 bands are stale; likely above 500 now
+  checked: '2026-10-29'
+Extend Inc:
+  founded: 2019
+  employees: 280
+  source: Yespress ~350 (Jul 2026), Latka 318, BounceWatch 304, Built In SF 181; founded 2019 per directories (CB Insights says 2018)
+  confidence: medium
+  note: Matched by the Greenhouse slug and posting to Extend (extend.com, post-purchase protection and returns, San Francisco), NOT Extend (extend.ai, document AI, founded 2023) or the IT-services Extend Inc in Covina CA.
+  checked: '2026-10-29'
+ezCater:
+  founded: 2007
+  employees: 750
+  source: Wikipedia lead says co-founded 2007 (infobox says 2011); Built In 750 employees
+  confidence: medium
+  checked: '2026-10-29'
+Feedzai Inc:
+  founded: 2011
+  employees: 830
+  source: Wikipedia and most profiles say 2011 (Coimbra); 2026 trackers cluster 800-880 (PitchBook 828, Revelio 814, StartupHub 860)
+  confidence: high
+  checked: '2026-10-29'
+Field Ai Inc:
+  founded: 2023
+  employees: 260
+  source: Caplight 259 (Jun 2026), Contrary Research 257 (2026); press figures of about 30 in late 2024 and about 130 in 2025
+  confidence: medium
+  note: growing fast (about 30 to about 260 in 18 months); could pass 500 within a year
+  checked: '2026-10-29'
+Fivetran:
+  founded: 2012
+  employees: 1900
+  source: 'Built In 2026: Fivetran ~1,200 plus dbt Labs ~700, combined after the merger closed Jun 1, 2026; founded 2012'
+  confidence: medium
+  note: Merged with dbt Labs on Jun 1, 2026 (all-stock, CEO George Fraser). Headcount is for the combined company; Fivetran alone is about 1,200.
+  checked: '2026-10-29'
+Flexport Inc:
+  founded: 2013
+  employees: 2500
+  source: Wikipedia infobox (founded 2013; 2,100 employees in 2025); 2026 trackers 2,800-3,100
+  confidence: high
+  checked: '2026-10-29'
+Formlabs:
+  founded: 2011
+  employees: 750
+  source: Wikipedia infobox (founded Sept 2011, 750 employees 2026), Built In 750, PitchBook 721, Revelio 894 (Mar 2026)
+  confidence: high
+  checked: '2026-10-29'
+Fourkites Inc:
+  founded: 2014
+  employees: 580
+  source: LeadIQ ~565 (Feb 2026), Revelio ~630 (Dec 2025), PitchBook 544; founded 2014 per Sacra/StartupHub
+  confidence: medium
+  checked: '2026-10-29'
+Furtherai Inc:
+  founded: 2023
+  employees: 35
+  source: Coverager says 2023 (San Francisco); Built In 21 employees; raised $30M+ including a16z Series A (Oct 2025)
+  confidence: low
+  checked: '2026-10-29'
+Gather Ai Inc:
+  founded: 2017
+  employees: 90
+  source: 'Company About page: founded 2017, Pittsburgh, Series B with $74M raised; headcount from memory (LinkedIn band about 51-200), not verified'
+  confidence: medium
+  checked: '2026-10-29'
+Gatik Ai Inc:
+  founded: 2017
+  employees: 210
+  source: 'Company posting: ''Founded in 2017''; GoFractional 207 (Aug 2026), LeadIQ ~201 (Dec 2025), Dealroom 213, TrueUp 230'
+  confidence: high
+  checked: '2026-10-29'
+Gecko Robotics Inc:
+  founded: 2013
+  employees: 300
+  source: Nearly all profiles say 2013 (Pittsburgh); LeadIQ 314 (Apr 2026), Unify 266, Exa directory 240-300 (Aug 2026)
+  confidence: medium
+  note: StartupHub lists 2016 (outlier).
+  checked: '2026-10-29'
+Genies Inc:
+  founded: 2017
+  employees: 200
+  source: Wikipedia/ChoppingBlock (founded 2017, formerly Blend Systems); Clay 234 (Apr 2025), PitchBook 120 (2024), Built In 132, TheATDB 51-200 (May 2026)
+  confidence: medium
+  checked: '2026-10-29'
+Gensyn Inc:
+  founded: 2020
+  employees: 50
+  source: Built In 44, Dealroom 51; UK registry shows Gensyn Limited incorporated 13 May 2020
+  confidence: medium
+  checked: '2026-10-29'
+Glean:
+  founded: 2019
+  employees: 1400
+  source: Company site structured data (foundingDate 2019-01); Revelio 1,791 (Mar 2026), TipRanks 1,680 (Jun 2026), Unify 1,063 (Apr 2026)
+  confidence: medium
+  checked: '2026-10-29'
+Gofundme Inc:
+  founded: 2010
+  employees: 800
+  source: Wikipedia (launched May 2010, no headcount there); about 700-900 from memory, not re-verified (search quota ran out)
+  confidence: medium
+  checked: '2026-10-29'
+Gorgias Inc:
+  founded: 2015
+  employees: 450
+  source: Revelio ~452 (Dec 2025), LeadIQ ~521 (Mar 2026), Built In 400; founded 2015 per Built In/Techstars
+  confidence: medium
+  note: Founded just before the 2016 cutoff and headcount is near 500.
+  checked: '2026-10-29'
+Grammarly:
+  founded: 2009
+  employees: 1100
+  source: Wikipedia (founded 2009, Ukraine); 2026 trackers 900-1,500; 230 jobs cut in 2024
+  confidence: medium
+  note: Rebranded to Superhuman in Oct 2025 (legal entity Superhuman Platform Inc., formerly Grammarly Inc.) after acquiring the Superhuman email client in Jul 2025.
+  checked: '2026-10-29'
+Gumgum Inc:
+  founded: 2008
+  employees: 300
+  source: Founded 2008 (well established, not re-verified); headcount from memory of LinkedIn band 201-500
+  confidence: medium
+  checked: '2026-10-29'
+Gusto:
+  founded: 2011
+  employees: 4000
+  source: Built In 4,405 (Jun 2026), Revelio ~3,809 (Mar 2026); founded 2011 as ZenPayroll
+  confidence: high
+  checked: '2026-10-29'
+Haize Labs Inc:
+  founded: 2023
+  employees: 15
+  source: PitchBook, StartupHub and Soma Capital say 2023 (Yespress and TNW say 2024); PitchBook 14, Built In 10
+  confidence: medium
+  note: Acquired by Beacon Software (Toronto software holding company with 45 businesses), announced Sep 17, 2026, terms undisclosed; the team is now Beacon's Applied AI Research Group. Beacon's headcount is not published, so own numbers are kept.
+  checked: '2026-10-29'
+Happy Money Inc:
+  founded: 2013
+  employees: 220
+  source: From memory (formerly Payoff, founded about 2013, Southern California); LinkedIn band about 201-500, not re-verified
+  confidence: low
+  checked: '2026-10-29'
+Harvey:
+  founded: 2022
+  employees: 1000
+  source: 'LeadIQ ~960 (Mar 2026, citing company video), Revelio ~1,014, TipRanks ~2,019 (Oct 2026); Wikipedia: founded summer 2022; Built In 373 looks stale'
+  confidence: medium
+  note: Raised $550M at a $15.5B valuation in 2026. Well over 500 staff, so not a startup by the default rule despite a 2022 founding.
+  checked: '2026-10-29'
+Healthverity Inc:
+  founded: 2014
+  employees: 225
+  source: Federal contracts database founding date Feb 27, 2014 (some directories say 2015); Employbl 225, Datanyze ~239, YesPress ~210
+  confidence: medium
+  checked: '2026-10-29'
+Hebbia:
+  founded: 2020
+  employees: 200
+  source: 'Wikipedia infobox: founded Aug 2020 (no headcount there); about 100-250 after the 2024 Series B from memory, not verified'
+  confidence: medium
+  checked: '2026-10-29'
+Hg Insights Inc:
+  founded: 2010
+  employees: 600
+  source: Most directories say founded 2010 (one says 2013); headcount sources range 150 to 870 (Built In 200, Latka 582, Bouncewatch 749, LeadIQ ~866)
+  confidence: low
+  checked: '2026-10-29'
+Hiddenlayer Inc:
+  founded: 2022
+  employees: 170
+  source: Built In Colorado says March 2022; PitchBook 167, LeadIQ ~168 (Mar 2026), CryptoBriefing 170-178; $100M Series B Sep 2026
+  confidence: high
+  checked: '2026-10-29'
+Hiya Inc:
+  founded: 2016
+  employees: 180
+  source: 'Wikipedia/GeekWire/CB Insights: spun out of Whitepages in Apr 2016; LeadIQ about 221 (Feb 2026), H-1B data page 124 (Apr 2026), Built In 145, Datanyze 160'
+  confidence: medium
+  note: company site dates its first caller-ID apps to 2015; founded in the cutoff year
+  checked: '2026-10-29'
+Hockeystack Inc:
+  founded: 2021
+  employees: 95
+  source: Built In 85, Seedtable ~100 (May 2026), LeadIQ ~99 (Mar 2026); founded 2021 per Built In/Rocketlist
+  confidence: medium
+  checked: '2026-10-29'
+Hopper:
+  founded: 2007
+  employees: 600
+  source: Wikipedia (founded 2007, Montreal; 1,200 employees in 2023); PitchBook ~400 (2026), Built In ~800 (Apr 2026)
+  confidence: low
+  note: Headcount estimates range 400 to 1,200; founded well before 2016.
+  checked: '2026-10-29'
+Houzz Inc:
+  founded: 2009
+  employees: 1700
+  source: Wikipedia (launched Feb 2009; infobox says 1,700+ staff, undated, possibly older)
+  confidence: low
+  note: headcount likely lower after later layoffs; not a startup either way
+  checked: '2026-10-29'
+Illumio Inc:
+  founded: 2013
+  employees: 850
+  source: Revelio ~891 (Mar 2026), LeadIQ and Latka ~838, TrueUp 800; founded 2013 per CB Insights
+  confidence: high
+  checked: '2026-10-29'
+Imagine Pediatrics Holdings Llc:
+  founded: 2022
+  employees: 300
+  source: Company job posts and Built In Toronto say 2022 (Houston); Built In 330, Village 260, listings 201-500; $67M raise Sep 2025
+  confidence: medium
+  note: Optum Ventures (UnitedHealth Group) is an investor, not an owner, as far as I could tell.
+  checked: '2026-10-29'
+Jam City Inc:
+  founded: 2010
+  employees: 600
+  source: Founded 2010 (well established, not re-verified); headcount from memory (about 600-900 after 2023-2024 cuts)
+  confidence: low
+  checked: '2026-10-29'
+Jumio Corporation:
+  founded: 2010
+  employees: 700
+  source: LeadIQ ~615 (Apr 2026), Dealroom ~609; large India unit (Revelio ~1,044) suggests the global total is higher; founded 2010 per LeadIQ/Vaia
+  confidence: medium
+  checked: '2026-10-29'
+Kalderos Inc:
+  founded: 2016
+  employees: 1100
+  source: Company press release says founded 2016; Built In 120, Employbl 96; parent Model N founded Dec 1999 with 1,089 employees (Wikipedia, 2023)
+  confidence: medium
+  note: Acquired by Model N (owned by Vista Equity Partners); announced Jun 17, 2026 as done (has acquired), terms undisclosed. Counts as the larger parent, so employees is about Model N's headcount; Kalderos alone is about 100 to 120.
+  checked: '2026-10-29'
+Kasheesh Inc:
+  founded: 2021
+  employees: 30
+  source: Rocketlist (founded 2021, 29 staff), Prospeo 21-50; Pulse2 interview with CEO Sam Miller (Oct 2024)
+  confidence: medium
+  note: New York split-payments fintech, not an AI company despite the name; matched by Lever slug
+  checked: '2026-10-29'
+Kikoff Inc:
+  founded: 2019
+  employees: 220
+  source: Built In 220, Revelio ~226 (Mar 2026), LeadIQ ~196 (Feb 2026); founded 2019 per Built In and profiles
+  confidence: medium
+  checked: '2026-10-29'
+Knock Inc:
+  founded: 2015
+  employees: 200
+  source: Company About page says founded 2015; team passed 100 in 2019; about 250 before the 46% layoff in Mar 2022 (HousingWire); no current figure found
+  confidence: low
+  note: This is knock.com (home trade-in and Knock Bridge Loan, remote), not knock.app. Headcount is a rough estimate.
+  checked: '2026-10-29'
+Komodo Health Inc:
+  founded: 2014
+  employees: 600
+  source: Founded 2014 per company materials (from memory); headcount from memory of LinkedIn band 501-1,000, not re-verified (search quota ran out)
+  confidence: medium
+  checked: '2026-10-29'
+Kpler Inc:
+  founded: 2014
+  employees: 800
+  source: Kpler team page 750+, LeadIQ ~810 (Apr 2026), Jobera 750 (Jun 2026), StartupHub ~854; founded 2014
+  confidence: high
+  checked: '2026-10-29'
+Labelbox Inc:
+  founded: 2018
+  employees: 200
+  source: Most listings say 2018 (Built In says 2017); Built In 115 (May 2026), StartupHub ~120 (Apr 2026), Unify 299, Revelio 551 (Dec 2025)
+  confidence: low
+  checked: '2026-10-29'
+Lambda Inc:
+  founded: 2012
+  employees: 760
+  source: PitchBook (founded 2012, 762 staff), Clay about 762 (2026), BounceWatch 753; TrueUp about 600
+  confidence: high
+  note: Lambda Labs, GPU cloud, San Francisco
+  checked: '2026-10-29'
+Latitude Inc:
+  founded: 2023
+  employees: 170000
+  source: Ford Motor Co headcount (about 170,000, general knowledge); Latitude AI alone ~430-600 (Built In 431, Revelio 598 Dec 2025, Ford said ~550 at launch Mar 2023)
+  confidence: medium
+  note: Board is Latitude AI (Pittsburgh), a wholly owned Ford subsidiary formed Mar 2023 after the Argo AI wind-down, counted as Ford. Latitude AI alone is about 430-600 staff.
+  checked: '2026-10-29'
+Leantaas Inc:
+  founded: 2010
+  employees: 400
+  source: Built In and Purpose.jobs say 2010; LeadIQ ~406 (Feb 2026), Unify 336
+  confidence: medium
+  note: Acquired care-transition platform Aidin in Sep 2026.
+  checked: '2026-10-29'
+Lendbuzz Inc:
+  founded: 2015
+  employees: 500
+  source: LinkedIn and PitchBook (founded 2015; Built In says 2018); PitchBook about 500 (2026), Revelio 514, Datanyze 475, TipRanks 389
+  confidence: medium
+  note: founded one year before the 2016 cutoff and headcount sits right at 500
+  checked: '2026-10-29'
+Lessen Inc:
+  founded: 2019
+  employees: 1000
+  source: Built In 713, Village 1,000+; bought SMS Assist for about $950M (2023); StartupIntros dates founding to 2019 (Built In Dublin's 1999 looks like an error)
+  confidence: low
+  checked: '2026-10-29'
+Lightmatter:
+  founded: 2017
+  employees: 315
+  source: Two profiles say 2017; StartupHub ~318 (Jul 2026), Neuronfeed ~315 (early 2026), Taffin 285
+  confidence: medium
+  checked: '2026-10-29'
+Linear:
+  founded: 2019
+  employees: 120
+  source: From memory (Karri Saarinen, Tuomas Artman, Jori Lallo; founded 2019; about 100 staff around the June 2025 Series C), not re-verified (search quota ran out)
+  confidence: medium
+  checked: '2026-10-29'
+Liquid AI:
+  founded: 2023
+  employees: 100
+  source: Company site 'Est. 2023' (MIT CSAIL spinout); estimates 71 (StartupHub Apr 2026) to 130 (SVIC Aug 2026), Yespress ~100
+  confidence: medium
+  checked: '2026-10-29'
+Lirio Inc:
+  founded: 2017
+  employees: 90
+  source: Built In says 2017 (Knoxville; 87 employees), Zippia 96; other directories 2016-17
+  confidence: medium
+  checked: '2026-10-29'
+Lucidworks Inc:
+  founded: 2007
+  employees: 250
+  source: 'Wikipedia infobox: founded 2007, 250+ employees (undated)'
+  confidence: medium
+  checked: '2026-10-29'
+Lyra Health Inc:
+  founded: 2015
+  employees: 2800
+  source: Revelio ~2,869 (Mar 2026), LeadIQ ~2.7K, StartupHub ~2,853; Lyra's site dates founding to 2015
+  confidence: high
+  checked: '2026-10-29'
+Machinify Inc:
+  founded: 2016
+  employees: 2000
+  source: 'Built In says founded 2016 (lists 96 employees); company statement via Fierce Healthcare (Jan 2025): combined group with Rawlings Group, Apixio payment integrity and VARIS has 2,000+ employees'
+  confidence: medium
+  note: Owned by New Mountain Capital (deal Jan 2025). The board likely covers the combined group; Machinify alone was much smaller.
+  checked: '2026-10-29'
+Madhive Inc:
+  founded: 2016
+  employees: 480
+  source: Dealroom/LeadIQ/SignalHire (2016; Built In says 2017); Revelio 487 (Mar 2026), Built In 483 (Jun 2026), LeadIQ about 465 (Jul 2026)
+  confidence: medium
+  note: within about 4% of the 500 cutoff and founded in the cutoff year; SignalHire shows a 500-1,000 band
+  checked: '2026-10-29'
+Marble Inc:
+  founded: 2021
+  employees: 35
+  source: Marble (marble.studio) says 'Since 2021, we have launched 15 companies'; directories show 1-5 to 11-50 staff; no precise count found
+  confidence: low
+  note: Matched by the Ashby slug and posting to Marble, a Paris-based climate deep-tech venture studio (Station F). The H-1B filer 'Marble Inc' may be a different company.
+  checked: '2026-10-29'
+Menlo Security Inc:
+  founded: 2013
+  employees: 445
+  source: Co-founder profile says 2013 (PitchBook and LeadIQ say 2012); LeadIQ ~449 (May 2026), PitchBook 437, YesPress 440
+  confidence: medium
+  checked: '2026-10-29'
+Metabase Inc:
+  founded: 2014
+  employees: 120
+  source: Revelio/PitchBook/EveryDev (2014; StartupHub and ATDB say 2015); Revelio 119 (Mar 2026), PitchBook 126, StartupHub about 125 (May 2026)
+  confidence: medium
+  checked: '2026-10-29'
+Middesk Inc:
+  founded: 2018
+  employees: 135
+  source: 'Middesk About page: ''135 team members'' (2026), YC-backed; 2018 founding is from general knowledge (Built In and Bouncewatch say 2019)'
+  confidence: medium
+  checked: '2026-10-29'
+Minted Llc:
+  founded: 2007
+  employees: 350
+  source: Wikipedia infobox (founded April 2007; 350 employees, undated); Datanyze and Built In also 350, Levels.fyi 420
+  confidence: medium
+  checked: '2026-10-29'
+Misfits Market:
+  founded: 2018
+  employees: 1500
+  source: Wikipedia (founded 2018 by Abhi Ramesh, Philadelphia); headcount from memory (merged with Imperfect Foods in 2022; LinkedIn band 1,001-5,000), not re-verified
+  confidence: medium
+  note: many warehouse and fulfillment employees; well above 500 even after cuts
+  checked: '2026-10-29'
+Mission Lane Llc:
+  founded: 2018
+  employees: 470
+  source: 'Company posting: ''Founded in December 2018'' (spun out of LendUp''s card business); Built In 472 (undated), size bands 201-500'
+  confidence: medium
+  note: Close to the 500 cutoff. Applied for a national bank charter in Apr 2026.
+  checked: '2026-10-29'
+Mistral AI:
+  founded: 2023
+  employees: 1000
+  source: Wikipedia (founded Apr 28, 2023; 1,000+ in 2026); company said about 1,000 (VentureBeat); trackers up to ~1,600 (Sep 2026)
+  confidence: high
+  checked: '2026-10-29'
+Mixpanel:
+  founded: 2009
+  employees: 450
+  source: 'Wikipedia infobox: founded 2009 (no headcount there); about 400-500 from memory, not re-verified (search quota ran out)'
+  confidence: medium
+  checked: '2026-10-29'
+Modal:
+  founded: 2021
+  employees: 160
+  source: 'Company blog via RL List: 120+ (May 2026); LinkedIn-based ~153 (Apr 2026); Revelio ~136 (Mar 2026); founded 2021 per Lux Capital job board'
+  confidence: medium
+  checked: '2026-10-29'
+Modern Life Inc:
+  founded: 2021
+  employees: 40
+  source: Built In and PremierAlts say 2021 (Coverager says 2022; public Aug 2022); Built In 28, PremierAlts 44; $20M Series A Nov 2025
+  confidence: low
+  note: A Revelio page showing 555 employees is a different company with the same name.
+  checked: '2026-10-29'
+Modulate Inc:
+  founded: 2017
+  employees: 40
+  source: TechCrunch Sep 2026 (founded 2017, MIT cofounders), Built In 41, AI Weekly about 40 (2026 round coverage)
+  confidence: high
+  checked: '2026-10-29'
+Moloco Inc:
+  founded: 2013
+  employees: 900
+  source: 'Company posting: ''Founded in 2013''; LeadIQ ~875 (Feb 2026), Yespress ~930 (Apr 2026), Simplify 501-1,000'
+  confidence: high
+  checked: '2026-10-29'
+Monumental Llc:
+  founded: 2021
+  employees: 90
+  source: Amsterdam bricklaying-robot startup founded 2021 by Salar al Khafaji and Sebastiaan Visser; headcount 102 (one directory) to 50 (TrueUp); $32M Series B led by Khosla
+  confidence: low
+  note: Matched by the Ashby slug (General Opportunity posting) to Monumental in Amsterdam; the H-1B filer Monumental LLC could be its US entity or another firm.
+  checked: '2026-10-29'
+Murj Inc:
+  founded: 2014
+  employees: 100
+  source: Murj job listing and GetLatka say 2014 (CB Insights and Bitscale say 2015); GetLatka about 100 (2024), Zippia 37
+  confidence: medium
+  note: founded before the 2016 cutoff either way
+  checked: '2026-10-29'
+Mx Technologies Inc:
+  founded: 2010
+  employees: 870
+  source: Built In 864 (Apr 2026), Revelio ~886 (Dec 2025); founded 2010 per Built In/Preqin
+  confidence: high
+  checked: '2026-10-29'
+Neuralink Corp:
+  founded: 2016
+  employees: 600
+  source: 'Wikipedia (founded Jun 21, 2016; about 300 in 2022); 2026 trackers: LeadIQ ~608 (Feb), Revelio 484 (Mar), PitchBook 492, Autobound ~698 (Sep 29)'
+  confidence: low
+  note: Straddles the 500 cutoff (estimates 484 to 698); leaning above after the $650M raise in Jun 2025 and fast hiring.
+  checked: '2026-10-29'
+Nimblerx Inc:
+  founded: 2015
+  employees: 100
+  source: Press and directories say 2015 (some 2014), founder Talha Sattar, Redwood City; headcount rough from memory, not re-verified
+  confidence: low
+  note: deal listings report it was acquired by Swoop in May 2026
+  checked: '2026-10-29'
+Nomi Health Inc:
+  founded: 2019
+  employees: 400
+  source: 'Company posting: ''team of 300+ people''; Built In 410, Revelio ~439 (Dec 2025); founded 2019 per profiles'
+  confidence: medium
+  note: Near the 500 cutoff. Nomi claimed 2,000+ people nationwide in 2022 when counting clinical field staff.
+  checked: '2026-10-29'
+Northslope Technologies Inc:
+  founded: 2024
+  employees: 100
+  source: Simplify and Built In say 2024 (Denver); Simplify band 51-200, Built In 100; $22M Series A Jan 2026
+  confidence: low
+  note: OpenAI Deployment Company agreed to acquire it (Axios, Jul 8, 2026), pending regulatory clearance in the reports I could read; closing not confirmed. If closed it counts as OpenAI. One profile says founded 2023.
+  checked: '2026-10-29'
+Notion:
+  founded: 2013
+  employees: 1000
+  source: Notion Labs, founded 2013 (Wikipedia); about 1,000 people (press, 2025)
+  confidence: high
+  checked: '2026-10-29'
+Nuro Inc:
+  founded: 2016
+  employees: 750
+  source: 'Wikipedia: 700 employees (2025, unsourced); 6figr ~804 (Apr 2026); other trackers 900-1,000; founded Sep 2016'
+  confidence: medium
+  note: Cut about 20% (Nov 2022) and about 30% (May 2023).
+  checked: '2026-10-29'
+Obsidian Security Inc:
+  founded: 2017
+  employees: 270
+  source: Multiple directories say 2017 (Newport Beach); profile dated Jun 13, 2026 and YesPress say about 270
+  confidence: medium
+  checked: '2026-10-29'
+Ocrolus Inc:
+  founded: 2014
+  employees: 350
+  source: From memory (New York document-automation company, founded 2014); headcount rough (LinkedIn band about 201-500), not re-verified
+  confidence: low
+  checked: '2026-10-29'
+Offerup Inc:
+  founded: 2011
+  employees: 345
+  source: Revelio ~341 (Mar 2026), GoFractional ~343 (Sep 2026), job pages 350; founded 2011 per company press release (it left stealth in 2015)
+  confidence: high
+  checked: '2026-10-29'
+Omaze Inc:
+  founded: 2012
+  employees: 120
+  source: Wikipedia (formed Sep 2012); Built In 178, Premier Alts 54; laid off 103 in Dec 2022 and paused US activity in 2023
+  confidence: low
+  checked: '2026-10-29'
+Onetrust Llc:
+  founded: 2016
+  employees: 2300
+  source: Wikipedia infobox about 2,300; Built In about 2,000 (Apr 2026), Revelio 2,517 (Dec 2025), 6figr 1,465; founded 2016 by Kabir Barday in Atlanta
+  confidence: high
+  checked: '2026-10-29'
+OpenAI:
+  founded: 2015
+  employees: 3000
+  source: founded December 2015 (Wikipedia); thousands of people (press, 2025)
+  confidence: high
+  checked: '2026-10-29'
+Osaro Inc:
+  founded: 2015
+  employees: 80
+  source: Directories and CB Insights AI 100 coverage say 2015; LeadIQ ~82 (Dec 2025), StartupHub 86, Built In 69
+  confidence: medium
+  checked: '2026-10-29'
+Oscilar Inc:
+  founded: 2022
+  employees: 70
+  source: Company site names cofounders Neha Narkhede (ex-Confluent) and Sachin Kulkarni but states no year or headcount; founded about 2022 and headcount from memory (Series A stage), not verified
+  confidence: medium
+  checked: '2026-10-29'
+Otterai Inc:
+  founded: 2016
+  employees: 265
+  source: 'Wikipedia: founded as AISense in 2016; Revelio ~267 (Mar 2026), TrueUp 280, Techlist 235'
+  confidence: high
+  checked: '2026-10-29'
+Outreach Corporation:
+  founded: 2014
+  employees: 1200
+  source: StartupHub and Techstars say 2014 (Seattle); YesPress 1,100-1,400 (Jun 2026), Revelio 1,244 (2025), StartupHub 1,562
+  confidence: medium
+  checked: '2026-10-29'
+Overjet Inc:
+  founded: 2018
+  employees: 250
+  source: Built In/LinkedIn/company site (2018); LeadIQ about 326 (Apr 2026), Unify 253, BounceWatch 218, Built In 130
+  confidence: medium
+  checked: '2026-10-29'
+Pacvue Corporation:
+  founded: 2018
+  employees: 650
+  source: Revelio ~389 (Mar 2026), LeadIQ ~504 (Feb 2026), Built In 434; Remote First Jobs says 800+ across 15 countries; founded 2018 per Revelio/Remote First Jobs
+  confidence: low
+  note: Straddles the 500 cutoff. Its job posting refers to Helium 10 solutions, so the group is larger than Pacvue alone.
+  checked: '2026-10-29'
+Pandadoc Inc:
+  founded: 2011
+  employees: 700
+  source: PitchBook and GetLatka say 2011 (some say 2013); PitchBook 700, Built In 689 (Mar 2026), Revelio 886
+  confidence: medium
+  checked: '2026-10-29'
+Path Robotics Inc:
+  founded: 2018
+  employees: 200
+  source: 'Case Western (2021 article: launched 2018), JobsOhio and Craft say 2018; OSU alumni magazine (Mar 2026): about 200 employees; Columbus Business First (Feb 2026): about 150'
+  confidence: medium
+  note: 'founding year disputed: 2014 (LinkedIn, CB Insights), 2016 (Built In; OSU says ''about 10 years old''), 2018 (Case Western, JobsOhio); a startup under every year except 2014'
+  checked: '2026-10-29'
+PathAI:
+  founded: 2016
+  employees: 600
+  source: 'Company About page: founded 2016; Revelio ~617 (Mar 2026), Built In 650, LinkedIn band 501-1,000; but LeadIQ ~272 (May 2026), Dealroom ~281'
+  confidence: low
+  note: Roche agreed to acquire PathAI (announced May 7, 2026, up to $1.05B, close expected H2 2026); counts as Roche once closed.
+  checked: '2026-10-29'
+Patreon Inc:
+  founded: 2013
+  employees: 400
+  source: Wikipedia (launched May 2013; 400 employees in 2021, 80 laid off Sep 2022); one tracker reports 93 cuts on Jul 23, 2026; LinkedIn-style band 201-500
+  confidence: low
+  note: Trackers range 370 to 1,200; founded before 2016 either way.
+  checked: '2026-10-29'
+Pattern Inc:
+  founded: 2013
+  employees: 2300
+  source: 'Pattern Group SEC filing via StockAnalysis: about 2,300 full-time staff at year-end 2025; founded 2013 as iServe Products (Lehi, Utah)'
+  confidence: high
+  note: public on Nasdaq (PTRN) since Sept 2025
+  checked: '2026-10-29'
+Payjoy Inc:
+  founded: 2015
+  employees: 700
+  source: 'PayJoy About page: started 2015 (StartX); headcount sources vary from 346 (Employbl Nov 2025) to 1,810 (PitchBook), Built In 617'
+  confidence: low
+  checked: '2026-10-29'
+Perpay Inc:
+  founded: 2014
+  employees: 80
+  source: Built In, Employbl and other directories say 2014 (Philadelphia); Built In 47 (Apr 2026), Employbl 63 (Nov 2025), listings 51-200
+  confidence: medium
+  checked: '2026-10-29'
+Perplexity:
+  founded: 2022
+  employees: 350
+  source: Wikipedia (founded Aug 2022); LinkedIn size band 201-500 but 1,414 profiles list Perplexity; trackers 1,100-1,600 (TipRanks 1,413 Jun 2026, Autobound 1,386 Sep 2026)
+  confidence: low
+  note: 'borderline: LinkedIn-profile counts of 1,100-1,600 likely include contractors and ambassadors; CEO said in Apr 2026 revenue grew 5x with only 34% team growth, and other estimates are about 270-350, so full-time headcount is probably a few hundred, but it could be above 500'
+  checked: '2026-10-29'
+Phaidra Inc:
+  founded: 2019
+  employees: 90
+  source: Revelio ~91 (Mar 2026), LeadIQ ~93 (Mar 2026); founded 2019 per directories
+  confidence: high
+  checked: '2026-10-29'
+Physicsx Inc:
+  founded: 2019
+  employees: 250
+  source: Press says founded 2019 by Jacomo Corbo and Robin Tuluie (London); Bitscale 205 (Apr 2026), LinkedIn-style band 51-200; $135M Series B Jun 2025 and a Temasek-led $300M Series C
+  confidence: medium
+  note: Fast growing, so headcount is likely above the 205 figure.
+  checked: '2026-10-29'
+Pinecone:
+  founded: 2019
+  employees: 150
+  source: Several profiles (2019); StartupHub about 127 (Jul 2026), Built In 125, TrueUp about 170, Getlatka 121 (2023)
+  confidence: high
+  checked: '2026-10-29'
+Pipe Technologies Inc:
+  founded: 2019
+  employees: 250
+  source: Founded Sep 2019 per TechCrunch/City AM coverage; Revelio ~405 (Mar 2026) looks high; Web Radar 101-250
+  confidence: low
+  checked: '2026-10-29'
+Plaid:
+  founded: 2013
+  employees: 1300
+  source: Wikipedia infobox (founded May 2013, text says 2012; 1,200 employees); 2026 trackers 1,300-1,600
+  confidence: high
+  checked: '2026-10-29'
+Plaud Inc:
+  founded: 2021
+  employees: 110
+  source: Directories (founded Dec 2021, San Francisco and Shenzhen); 6figr about 104 (Apr 2026), TrueUp 120, Bitscale 71
+  confidence: medium
+  note: PLAUD.AI hardware and software; a few job sites show 201-500
+  checked: '2026-10-29'
+Playq Inc:
+  founded: 2007
+  employees: 85
+  source: Profiles say founded 2007 (Santa Monica); PitchBook 84, Built In 87-91, LeadIQ ~85 (Oct 2025)
+  confidence: medium
+  checked: '2026-10-29'
+Pocket Gems Inc:
+  founded: 2009
+  employees: 193
+  source: Directories agree on 2009 (San Francisco); LeadIQ 194 (Apr 2026) and ~192 (Jul 2026), PitchBook 194
+  confidence: medium
+  checked: '2026-10-29'
+Poetiq Inc:
+  founded: 2025
+  employees: 8
+  source: Press (founded June 2025 by ex-DeepMind researchers; six-person team at the Jan 2026 seed announcement), Built In 8
+  confidence: high
+  checked: '2026-10-29'
+Postman:
+  founded: 2014
+  employees: 830
+  source: 'Company release (Jul 2025): 828 employees globally; Built In ~850; trackers showing 2,100-3,200 look inflated; founded 2014 per directories'
+  confidence: medium
+  checked: '2026-10-29'
+Proof Llc:
+  founded: 2017
+  employees: 130
+  source: Built In (Proof Technology, Inc., Denver) says 2017 and 110 employees; other directories 101-250 and 201-500; $30.4M Series B in 2024
+  confidence: medium
+  note: Matched via the proofserve.com posting to Proof Technology Inc (legal process serving), not Proof.com or Notarize. Process servers are 1099 contractors and not counted.
+  checked: '2026-10-29'
+Quantcast Corporation:
+  founded: 2006
+  employees: 550
+  source: 'Wikipedia infobox: founded 2006 (no headcount there); about 500-600 from memory, not re-verified (search quota ran out)'
+  confidence: medium
+  checked: '2026-10-29'
+Quantco Inc:
+  founded: 2017
+  employees: 215
+  source: 'Company posting: ''more than 180 professionals''; Built In 215; LeadIQ ~225 (Oct 2025); founded 2017 per Simplify (company says four Harvard and Stanford PhDs, no year)'
+  confidence: low
+  note: Founding year comes from one directory; verify before relying on it.
+  checked: '2026-10-29'
+Quantifind Inc:
+  founded: 2009
+  employees: 80
+  source: Most profiles say 2009 (Menlo Park); Zippia and a Wikipedia mirror 80, Employbl 90, PitchBook 127
+  confidence: medium
+  checked: '2026-10-29'
+Quora Inc:
+  founded: 2009
+  employees: 600
+  source: 'Wikipedia infobox: founded June 2009, 200-300 employees (2019, stale); 6figr about 836 (Jun 2025), LeadIQ about 1,200 (Dec 2025), TrueUp 380'
+  confidence: low
+  note: headcount estimates range 230 to 2,070 and layoffs were reported in Apr 2026; not a startup either way
+  checked: '2026-10-29'
+Rad Ai Inc:
+  founded: 2018
+  employees: 240
+  source: 'Company About page: incorporated Feb 2018; Revelio ~243 (Mar 2026), Dealroom 241, Yespress ~230'
+  confidence: high
+  note: Radiology AI company, not RAD Intel (influencer marketing, formerly RAD AI).
+  checked: '2026-10-29'
+Radformation Inc:
+  founded: 2016
+  employees: 140
+  source: Company timeline pairs 2016 founding with 2017 ClearCheck launch; Built In 115, Jobera 125, Unify 164
+  confidence: medium
+  note: Founded exactly at the 2016 cutoff.
+  checked: '2026-10-29'
+Ramp:
+  founded: 2019
+  employees: 2000
+  source: Wikipedia and directories (2019); TipRanks 2,565 (Jul 2026), Revelio 2,682, Bouncewatch 2,561, Wikipedia infobox 1,200 (2025)
+  confidence: medium
+  note: trackers range 1,200 to 3,700; far above 500 either way
+  checked: '2026-10-29'
+Reducto Inc:
+  founded: 2023
+  employees: 40
+  source: Four directories say 2023; headcount Built In 25, Taffin 27, TrueUp 30 (all undated); its own postings say it has raised over $100M (a16z, Benchmark, First Round), so estimate nudged up
+  confidence: low
+  checked: '2026-10-29'
+Remedy Robotics Inc:
+  founded: 2021
+  employees: 20
+  source: Built In says 2021 with 19 employees; company site dates its first robot demo to April 2021 (endovascular robot for stroke)
+  confidence: low
+  checked: '2026-10-29'
+Replit:
+  founded: 2016
+  employees: 550
+  source: Wikipedia (2016); LinkedIn shows 738 profiles; Autobound 709 (Sep 2026), TipRanks 634 (Jul 2026), Revelio 404 (Mar 2026); a Jul 2025 interview summary cites about 300
+  confidence: low
+  note: borderline at the 500 cutoff and founded in the cutoff year; about 60-70 staff at the 2024 low point per TechCrunch, then fast growth; London office plans to double headcount (Sep 2026); a startup only if real headcount is under 500
+  checked: '2026-10-29'
+Retool:
+  founded: 2017
+  employees: 400
+  source: Latka ~466 (Nov 2025), Nubiapage 416-471 (Jul 2026), Prospeo 370, UnifyGTM 359, Built In 350; founded 2017 per Choppingblock/Nubiapage
+  confidence: medium
+  checked: '2026-10-29'
+Revinate Inc:
+  founded: 2009
+  employees: 250
+  source: Built In and Revelio say 2009; Revelio ~378 (Mar 2026), Built In 225, LeadIQ ~143
+  confidence: low
+  checked: '2026-10-29'
+Rhombus Power Inc:
+  founded: 2011
+  employees: 190
+  source: LeadIQ, Built In, CB Insights, Craft (founded 2011, Palo Alto); LeadIQ about 192 (May 2026), Growjo 194
+  confidence: medium
+  note: defense and national-security AI; some other profiles confuse it with similarly named companies founded 2016
+  checked: '2026-10-29'
+Rocket Lawyer Inc:
+  founded: 2008
+  employees: 470
+  source: 'LeadIQ ~482 (May 2026), Revelio ~452 (Dec 2025), PitchBook 485; Wikipedia: founded Aug 2008'
+  confidence: high
+  checked: '2026-10-29'
+Roofstock Inc:
+  founded: 2015
+  employees: 390
+  source: Directories say 2015 (Oakland); LeadIQ ~383 (May 2026), Latka ~391; cut 27% of staff in Mar 2023
+  confidence: medium
+  checked: '2026-10-29'
+Scale AI:
+  founded: 2016
+  employees: 1300
+  source: Wikipedia (2016); about 1,400 full-time staff before the July 2025 cut of about 200; a Forbes-attributed figure of about 1,300 (May 2026); contractor-inclusive trackers show 5,800-7,400
+  confidence: medium
+  note: Meta took a 49% stake in June 2025 but Scale stays a separate company; trackers disagree several-fold; well above 500 either way
+  checked: '2026-10-29'
+Seatgeek Inc:
+  founded: 2009
+  employees: 800
+  source: Built In ~900 (Apr 2026), Yespress ~830, Revelio ~714 (Dec 2025); founded 2009
+  confidence: high
+  checked: '2026-10-29'
+Securityscorecard Inc:
+  founded: 2013
+  employees: 400
+  source: 'Company About page: founded in 2013 by Alex Yampolskiy and Sam Kassoumeh; Built In 350; embedded page text says 200+ (outdated)'
+  confidence: low
+  checked: '2026-10-29'
+Sentilink Corp:
+  founded: 2017
+  employees: 250
+  source: From memory (founded 2017 by Max Blumenfeld and Jason Kratz, San Francisco; LinkedIn band about 201-500); company About page had no text, not verified
+  confidence: medium
+  checked: '2026-10-29'
+Shift Technology Inc:
+  founded: 2013
+  employees: 590
+  source: PitchBook 587 (2026), StartupHub ~604, RocketList 597; founded 2013 per PitchBook/Latka/Kompass (some say 2014)
+  confidence: medium
+  checked: '2026-10-29'
+Sidecar Health Inc:
+  founded: 2018
+  employees: 230
+  source: Wikipedia and Built In say 2018; Built In 210 employees; Series D in 2024 led by Koch Disruptive Technologies
+  confidence: medium
+  checked: '2026-10-29'
+Sierra:
+  founded: 2023
+  employees: 650
+  source: 'LinkedIn page dates founding to 2023 (TechCrunch says it began in early 2024). 2026 trackers: Bitscale 490 (Jan), aiwiki about 600 (Feb), Revelio 748 (Mar), ZeroG about 700 (Jul), GoFractional 951 (Aug); stale ones 150-165'
+  confidence: low
+  note: 'borderline: recent trackers cluster at 600 to 750 (not a startup if above 500) while older ones show 150-490; $950M Series E in May 2026 and 100+ open roles point to fast growth'
+  checked: '2026-10-29'
+Sigma Computing:
+  founded: 2014
+  employees: 1200
+  source: Revelio ~1,130 (Dec 2025), TrueUp ~1,300, SVIC ~1,084 (Mar 2026); Wikipedia's 537 is US staff only; founded 2014 as Bitmoon Computing
+  confidence: medium
+  checked: '2026-10-29'
+Skild Ai Inc:
+  founded: 2023
+  employees: 120
+  source: CB Insights and Built In say 2023 (Pittsburgh); Built In lists 24, which is likely stale
+  confidence: low
+  note: Headcount is a rough estimate.
+  checked: '2026-10-29'
+Snorkel Ai Inc:
+  founded: 2019
+  employees: 210
+  source: 'TrueUp (May 2019, Stanford AI Lab spinout); Business Insider via aggregators (Sep 2025): 31 cut = 13% of about 240'
+  confidence: medium
+  note: trackers showing 700 to 1,170 likely count contract labelers; $100M Series D at $1.3B in May 2025
+  checked: '2026-10-29'
+Socure Inc:
+  founded: 2012
+  employees: 600
+  source: Autobound 639 (Sep 2026), Revelio ~548 (Mar 2026), LeadIQ ~531 (Apr 2026), Yespress ~690; founded 2012 per GetLatka/PitchBook
+  confidence: high
+  checked: '2026-10-29'
+Sofar Sounds Llc:
+  founded: 2009
+  employees: 400
+  source: Wikipedia says March 2009 in London; Built In lists 860 (likely includes part-time crew); no official full-time figure
+  confidence: low
+  checked: '2026-10-29'
+Solar Landscape Llc:
+  founded: 2012
+  employees: 350
+  source: All listings say 2012 (Asbury Park NJ); Built In 361, Solar Power World 303 (2024), Bouncewatch about 346
+  confidence: medium
+  checked: '2026-10-29'
+Spotter Inc:
+  founded: 2019
+  employees: 130
+  source: Built In 129, Levels.fyi 126; founded 2019 per profiles and Tubefilter 2022 coverage
+  confidence: medium
+  checked: '2026-10-29'
+Stackadapt Us Inc:
+  founded: 2013
+  employees: 1200
+  source: 'Company About page: platform launched 2014 in Toronto and more than 1,200 team members globally; Built In says founded 2013 with 371 employees'
+  confidence: medium
+  note: StackAdapt US Inc is the US arm of the Toronto company.
+  checked: '2026-10-29'
+Stockx Llc:
+  founded: 2015
+  employees: 1000
+  source: 'Wikipedia infobox: founded March 2015, 1,200 employees (2021); likely lower after 2022-2023 layoffs (from memory)'
+  confidence: medium
+  checked: '2026-10-29'
+Striim Inc:
+  founded: 2012
+  employees: 250
+  source: PitchBook 249 (2026), BounceWatch 251 (Feb 2026), LeadIQ ~246 (Dec 2025); founded 2012 per directories
+  confidence: high
+  checked: '2026-10-29'
+Stripe:
+  founded: 2010
+  employees: 10000
+  source: Wikipedia (8,500 employees in 2025; history says founded 2010, infobox says 2009); 2026 trackers claim 15,000-17,000 but 2025 data points are 8,200-8,500
+  confidence: medium
+  checked: '2026-10-29'
+Substack Inc:
+  founded: 2017
+  employees: 150
+  source: Wikipedia/directories (2017); company representative said slightly above 100 at the July 2025 Series C (PitchBook 100); Bitscale 146 (Feb 2026)
+  confidence: medium
+  note: some aggregators show 1,300 to 3,200 but conflict with the company's own figure
+  checked: '2026-10-29'
+Suno Inc:
+  founded: 2022
+  employees: 260
+  source: 'Company About page: ''250+'' team members in 4 offices, founded 2022, over $775M raised'
+  confidence: high
+  checked: '2026-10-29'
+Supabase:
+  founded: 2020
+  employees: 400
+  source: 'SV Investclub says Jan 2020; company careers page says 350+ team members; trackers: Autobound 421 (Sep 29, 2026), jobspipe ~425, YesPress ~410 (Aug 2026), TipRanks 405 (Jul 2026)'
+  confidence: medium
+  note: Hiring fast and close to the 500 cutoff.
+  checked: '2026-10-29'
+Tagup Inc:
+  founded: 2012
+  employees: 40
+  source: From memory (Massachusetts industrial AI software company founded about 2012; LinkedIn band about 11-50), not re-verified
+  confidence: low
+  checked: '2026-10-29'
+Tamr:
+  founded: 2013
+  employees: 80
+  source: Built In 62 (it lists founded 2012); 2013 from general knowledge (Stonebraker, Palmer)
+  confidence: low
+  checked: '2026-10-29'
+Teachfx Inc:
+  founded: 2017
+  employees: 30
+  source: Built In says 2017 with 28 employees; no company-stated figure found
+  confidence: low
+  checked: '2026-10-29'
+Tessera Labs Corporation:
+  founded: 2024
+  employees: 50
+  source: founded 2024 (Preqin, VCBacked, Rocketlist); 48 people (Built In), 55 (Rocketlist); $60M Series A led by a16z, May 2026 (Business Wire)
+  confidence: medium
+  checked: '2026-10-29'
+Thirdlove Inc:
+  founded: 2013
+  employees: 210
+  source: Built In 213 employees, founded 2013 (undated)
+  confidence: low
+  note: Launched 2013, some sources say founded 2012.
+  checked: '2026-10-29'
+Together AI:
+  founded: 2022
+  employees: 420
+  source: Company site structured data (foundingDate 2022); Autobound 431 (Sep 29, 2026), PitchBook 414, Bouncewatch ~385, Unify 256
+  confidence: medium
+  checked: '2026-10-29'
+Total Expert Inc:
+  founded: 2013
+  employees: 300
+  source: From memory (Minneapolis fintech CRM, founded about 2013; LinkedIn band about 201-500), not re-verified
+  confidence: low
+  checked: '2026-10-29'
+Tracelink Inc:
+  founded: 2009
+  employees: 940
+  source: Built In 942 employees (undated), founded 2009, Wilmington MA
+  confidence: medium
+  checked: '2026-10-29'
+Trucksmarter Inc:
+  founded: 2021
+  employees: 45
+  source: Built In and CB Insights say 2021 (San Francisco); Built In 44 employees; company site says $60M raised
+  confidence: low
+  note: A FreightWaves headline dated Sep 2, 2026 says TruckSmarter is shutting down (coverage describes its Dispatch app ending); the company site was still live and hiring on Oct 28, 2026.
+  checked: '2026-10-29'
+Truveta Inc:
+  founded: 2020
+  employees: 420
+  source: Wikipedia and company blog (formed Sep 2020, incorporated Sep 22, 2020); Revelio 468 (Dec 2025), PitchBook 413, LeadIQ about 391, Built In 333
+  confidence: medium
+  note: near the 500 cutoff; Revelio shows +21% year over year; H-1B data page shows 263
+  checked: '2026-10-29'
+Twelve Labs Inc:
+  founded: 2021
+  employees: 100
+  source: Built In 94 employees, founded 2021, San Francisco (undated)
+  confidence: medium
+  checked: '2026-10-29'
+Typeface Inc:
+  founded: 2022
+  employees: 150
+  source: CB Insights says 2022 (formerly Cortex6, Palo Alto); job post lists $165M raised from GV, Salesforce Ventures, Microsoft and others; no headcount found
+  confidence: low
+  note: No acquisition found; Salesforce is an investor.
+  checked: '2026-10-29'
+Uncountable Inc:
+  founded: 2014
+  employees: 120
+  source: From memory (materials R&D software, founded about 2014; LinkedIn band about 51-200); company site states neither, not verified
+  confidence: low
+  checked: '2026-10-29'
+Unqork Inc:
+  founded: 2017
+  employees: 480
+  source: 'Wikipedia: founded 2017 by Gary Hoberman; Built In 483 employees (undated)'
+  confidence: low
+  note: Right at the 500 cutoff.
+  checked: '2026-10-29'
+Unybrands Llc:
+  founded: 2020
+  employees: 250
+  source: 'Company job post (Greenhouse): founded 2020, over 240 team members, Miami HQ'
+  confidence: medium
+  checked: '2026-10-29'
+Upgrade Inc:
+  founded: 2016
+  employees: 1600
+  source: founded 2016 by Renaud Laplanche (tear sheet; some profiles say 2017); about 1,600 people (Revelio Labs Dec 2025, Clay 2025)
+  confidence: high
+  checked: '2026-10-29'
+Upshop Llc:
+  founded: 1989
+  employees: 200
+  source: Built In lists founded 1989 (legacy products FreshIQ, ShopperKit, Date Check Pro) and 95 employees at the Austin HQ; careers page shows offices in Canada, LA and Seattle, so the total is likely higher
+  confidence: low
+  checked: '2026-10-29'
+Vanta:
+  founded: 2018
+  employees: 1000
+  source: 'Wikipedia: founded 2018; Vanta reported 1,000 employees in April 2026'
+  confidence: high
+  checked: '2026-10-29'
+Vantage Inc:
+  founded: 2020
+  employees: 70
+  source: Company profiles (started 2020 by Ben Schaechter and Brooke McKim); Built In 79, Datanyze about 75; Fortune Mar 2023 about 15
+  confidence: medium
+  note: Vantage.sh cloud cost platform, matched by Ashby slug
+  checked: '2026-10-29'
+Vectara Inc:
+  founded: 2020
+  employees: 60
+  source: Built In 31 employees (it lists a 2022 founding); LinkedIn-style bands 51-200; 2020 founding from general knowledge
+  confidence: low
+  checked: '2026-10-29'
+Verana Health Inc:
+  founded: 2015
+  employees: 250
+  source: Built In says founded 2018 with 121 employees; other profiles say 2015 (not verified)
+  confidence: low
+  note: Founding year disputed (2015 vs 2018) and startup status flips on it. Employees is a rough estimate.
+  checked: '2026-10-29'
+Vercel:
+  founded: 2015
+  employees: 1000
+  source: Wikipedia and directories (founded 2015 as ZEIT, renamed Vercel Apr 2020); TipRanks 1,010 (Aug 2026), Jobspipe/Autobound 1,013 (Sep 2026)
+  confidence: high
+  checked: '2026-10-29'
+Verkada:
+  founded: 2016
+  employees: 2600
+  source: Revelio ~2,695 (Mar 2026), Autobound ~2,884 (Sep 2026), TrueUp ~2,000; founded 2016
+  confidence: high
+  checked: '2026-10-29'
+Viaduct Inc:
+  founded: 2019
+  employees: 35
+  source: Built In lists 31 employees; company site names David Hallac as founder but states no year, so 2019 is an estimate
+  confidence: low
+  checked: '2026-10-29'
+Vidmob Inc:
+  founded: 2012
+  employees: 300
+  source: From memory (New York creative analytics company, founded about 2012; LinkedIn band about 201-500), not re-verified
+  confidence: low
+  checked: '2026-10-29'
+Volt Inc:
+  founded: 2016
+  employees: 281
+  source: 'Built In: Voltus founded 2016, 281 employees, San Francisco (undated)'
+  confidence: medium
+  note: Board is Voltus (distributed energy resources). The H-1B filer 'Volt Inc' may be a different company.
+  checked: '2026-10-29'
+Waltz Health Inc:
+  founded: 2021
+  employees: 40
+  source: Built In and CB Insights say 2021 (Chicago); Built In 30 employees; company team page shows 31+ profiles
+  confidence: low
+  checked: '2026-10-29'
+Waymark Inc:
+  founded: 2021
+  employees: 150
+  source: Directories (2021, formerly Station Health); Built In 132, Levels.fyi 126, Bouncewatch 106
+  confidence: medium
+  note: matched by the Greenhouse posting (Community Health Worker, Cleveland) to Waymark Care, the Medicaid care company, not a separate video-creation company of the same name
+  checked: '2026-10-29'
+Wealthfront Corporation:
+  founded: 2008
+  employees: 391
+  source: '10-K (filed Apr 2026): 391 full-time employees as of Jan 31, 2026; Nasdaq IPO Dec 2025; founded 2008 as kaChing'
+  confidence: high
+  note: Public company. Trackers show about 430-517.
+  checked: '2026-10-29'
+Webai Inc:
+  founded: 2019
+  employees: 80
+  source: 'Company About page: founded in 2019 by engineers from Michigan; Built In says 2020 and 49 employees'
+  confidence: low
+  checked: '2026-10-29'
+Weee! Inc:
+  founded: 2015
+  employees: 1500
+  source: From memory (Asian grocery delivery, founded 2015 by Larry Liu, Fremont CA; LinkedIn band about 1,001-5,000), not re-verified
+  confidence: low
+  checked: '2026-10-29'
+Welbe Health Llc:
+  founded: 2015
+  employees: 450
+  source: 'Built In: founded 2015, 454 employees (undated)'
+  confidence: low
+  note: WelbeHealth is a PACE (all-inclusive elder care) provider; clinical staffing may make the real headcount higher.
+  checked: '2026-10-29'
+Whatnot Inc:
+  founded: 2019
+  employees: 900
+  source: Wikipedia (founded 2019; about 800 employees, Aug 2025); $11.5B valuation round Oct 2025
+  confidence: medium
+  checked: '2026-10-29'
+Whoop:
+  founded: 2012
+  employees: 800
+  source: 'Wikipedia infobox: founded 2012, 800 employees (2026)'
+  confidence: high
+  checked: '2026-10-29'
+Windborne Systems Inc:
+  founded: 2017
+  employees: 60
+  source: 'Built In: founded 2017, 60 employees, Palo Alto (undated)'
+  confidence: medium
+  checked: '2026-10-29'
+Windfall Data Inc:
+  founded: 2016
+  employees: 80
+  source: Built In says 2016 with 81 employees; company site says 1,500+ customer organizations
+  confidence: low
+  note: Founding year not confirmed by the company; 2016 sits exactly at the cutoff.
+  checked: '2026-10-29'
+Wistia:
+  founded: 2006
+  employees: 200
+  source: Founded 2006 (well established, not re-verified); headcount from memory of LinkedIn band 201-500
+  confidence: medium
+  checked: '2026-10-29'
+Workboard Inc:
+  founded: 2013
+  employees: 280
+  source: 'Built In: founded 2013, 281 employees, Redwood City (undated)'
+  confidence: medium
+  checked: '2026-10-29'
+Writer:
+  founded: 2020
+  employees: 600
+  source: Company page says launched in 2020; LinkedIn 603 (2026, via SV Investclub), Komo ~500 (Jun 2026), Unify 724 (Apr 2026), Built In 350
+  confidence: low
+  note: Straddles the 500 cutoff; estimates range 350 to 2,400; Writer's own blog said about 250 in Nov 2024.
+  checked: '2026-10-29'
+Zaimler Inc:
+  founded: 2024
+  employees: 12
+  source: PitchBook and F4 (2024; WFH.team says 2025); Built In 12, Datanyze about 14
+  confidence: medium
+  note: San Mateo enterprise context layer for AI agents; cofounders Biswajit Das and Sofus Macskassy
+  checked: '2026-10-29'
+Zefr Inc:
+  founded: 2009
+  employees: 200
+  source: 'Built In: founded 2009, 200 employees, Venice CA (undated)'
+  confidence: medium
+  checked: '2026-10-29'
+Zestai:
+  founded: 2009
+  employees: 150
+  source: 'Company job post: perfecting AI for consumer lending decisions since 2009; Built In 127 employees'
+  confidence: low
+  checked: '2026-10-29'
+Zocdoc Inc:
+  founded: 2007
+  employees: 800
+  source: 'Wikipedia infobox: founded 2007 (no headcount there); about 700-1,000 from memory, not re-verified (search quota ran out)'
+  confidence: medium
+  checked: '2026-10-29'
+Andromeda Surgical:
+  founded: 2023
+  employees: 12
+  source: 'YC company page (S23 batch): founded 2023, team size 12'
+  confidence: medium
+  checked: '2026-10-29'
+Ello:
+  founded: 2020
+  employees: 45
+  source: 'YC company page (W20 batch): founded 2020, team size 45'
+  confidence: medium
+  checked: '2026-10-29'
+HUD:
+  founded: 2025
+  employees: 25
+  source: 'YC company page (W25 batch): founded 2025, team size 24; posting says ''~25 people currently'' and backed by $16M from VCs and YC'
+  confidence: medium
+  checked: '2026-10-29'
+Firecrawl:
+  founded: 2024
+  employees: 3
+  source: 'YC company page (S22 listing): founded 2024, team size 3; posting says ''We''re a small team'' and a $75M Series B in Sep 2026'
+  confidence: medium
+  checked: '2026-10-29'
+Interfere:
+  founded: 2025
+  employees: 7
+  source: 'YC company page (S25 batch): founded 2025, team size 8; posting says ''seven-person team in New York'''
+  confidence: medium
+  checked: '2026-10-29'
+Exa:
+  founded: 2021
+  employees: 116
+  source: 'Revelio Labs workforce data: Exa Labs, Inc. about 116 employees (Mar 2026), founded 2021'
+  confidence: medium
+  checked: '2026-10-29'
+Sim:
+  founded: 2025
+  employees: 10
+  source: 'YC company page: founded 2025, team size 10; posting says ''a team of 10'''
+  confidence: medium
+  checked: '2026-10-29'
+Relari:
+  founded: 2024
+  employees: 4
+  source: 'YC company page (W24 batch): founded 2024, team size 4'
+  confidence: medium
+  checked: '2026-10-29'
+Stacksync:
+  founded: 2022
+  employees: 34
+  source: 'YC company page (W24 batch): founded 2022, team size 34; Revelio Labs: Stacksync, Inc. about 26 employees (Mar 2026)'
+  confidence: medium
+  checked: '2026-10-29'
+Nori:
+  founded: 2026
+  employees: 5
+  source: 'YC company page (S26 batch): founded 2026, team size 5'
+  confidence: medium
+  checked: '2026-10-29'
+Karumi:
+  founded: 2025
+  employees: 6
+  source: 'YC company page (F25 batch): founded 2025, team size 6'
+  confidence: medium
+  checked: '2026-10-29'
+Datafold:
+  founded: 2020
+  employees: 30
+  source: 'YC company page (S20 batch): founded 2020, team size 30; Revelio Labs: Datafold, Inc. about 39 employees (Mar 2026)'
+  confidence: medium
+  checked: '2026-10-29'
+Omni:
+  founded: 2022
+  employees: 275
+  source: 'Revelio Labs workforce data: Omni Analytics, Inc. about 275 employees (Mar 2026), founded 2022'
+  confidence: medium
+  checked: '2026-10-29'
+LangChain:
+  founded: 2022
+  employees: 280
+  source: 'Wikipedia: launched Oct 2022, incorporated by Apr 2023; web search of GetLatka, Autobound, Rocketlist, Built In: most say founded 2022, headcount estimates 98-431 (point figure used: 280, a mid-2026 count shown by Silicon Valley Investclub)'
+  confidence: medium
+  checked: '2026-10-29'
+Mastra:
+  founded: 2024
+  employees: 45
+  source: 'Revelio Labs workforce data: Kepler Software, Inc. (Mastra) about 45 employees (Mar 2026), founded 2024; YC company page (W25) lists team size 30'
+  confidence: medium
+  checked: '2026-10-29'
+Monte Carlo:
+  founded: 2019
+  employees: 303
+  source: 'Revelio Labs workforce data: Monte Carlo Data, Inc. about 303 employees (Mar 2026); posting says ''Founded in 2019'''
+  confidence: medium
+  checked: '2026-10-29'
+Pika:
+  founded: 2023
+  employees: 105
+  source: 'Sacra: Pika Labs founded April 2023; GetLatka lists 105 employees and Crustdata 109 (2026)'
+  confidence: medium
+  checked: '2026-10-29'
+Arize AI:
+  founded: 2020
+  employees: 191
+  source: 'Revelio Labs workforce data: Arize AI, Inc. about 191 employees (Mar 2026), founded 2020'
+  confidence: medium
+  checked: '2026-10-29'
+Ophelia:
+  founded: 2019
+  employees: 250
+  source: 'YC company page (W20 batch): founded 2019, team size 250'
+  confidence: medium
+  checked: '2026-10-29'
+Spade:
+  founded: 2021
+  employees: 30
+  source: 'YC company page (W22 batch): founded 2021, team size 30 (company calls itself a fast-growing Series B)'
+  confidence: medium
+  checked: '2026-10-29'
+Confido:
+  founded: 2020
+  employees: 65
+  source: 'YC company page (S21 batch): founded 2020, team size 65'
+  confidence: medium
+  checked: '2026-10-29'
+Novig:
+  founded: 2021
+  employees: 55
+  source: 'YC company page (S22 batch): founded 2021, team size 55'
+  confidence: medium
+  checked: '2026-10-29'
+Sumble:
+  founded: 2024
+  employees: 35
+  source: 'HN Oct 2026 post by Sumble: ''We are a team of 35''; TechCrunch (Oct 22, 2025): startup launched April 2024 by the Kaggle founders'
+  confidence: medium
+  checked: '2026-10-29'
+PointFive:
+  founded: 2023
+  employees: 110
+  source: https://builtin.com/job/ai-engineer-support-automation/11974512
+  confidence: medium
+  checked: '2026-10-30'
+Edra:
+  founded: 2024
+  employees: 19
+  source: https://builtin.com/job/ai-research-engineer-new-york/11965823
+  confidence: medium
+  checked: '2026-10-30'
+FutureSearch:
+  founded: 2023
+  employees: 8
+  source: https://builtin.com/job/research-scientist/11956046
+  confidence: medium
+  checked: '2026-10-30'
+Tono Health:
+  founded: 2020
+  employees: 20
+  source: https://builtin.com/job/data-engineer/11955195
+  confidence: medium
+  checked: '2026-10-30'
+Klavis AI (YC P25):
+  founded: 2025
+  employees: 3
+  source: https://www.ycombinator.com/companies/klavis-ai/jobs/tEVtDPg-founding-engineer
+  confidence: medium
+  checked: '2026-10-30'
+Helios Intelligence (YC F26):
+  founded: 2025
+  employees: 5
+  source: https://www.ycombinator.com/companies/helios-intelligence/jobs/IxOJ4s1-founding-engineer
+  confidence: medium
+  checked: '2026-10-30'
