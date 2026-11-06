@@ -98,7 +98,14 @@ CITIZEN = re.compile(
     re.I,
 )
 NO = re.compile(
-    r"\b(not|unable to|cannot|can't|won't|will not|does not|doesn't|do not|don't)\b[^.]{0,40}\b(sponsor|provide (visa )?sponsorship)|"
+    # up to 80 characters between the "not" and the "sponsor": "We do not offer any type of employment-based immigration
+    # sponsorship for this position" (JPMorgan, Nov 2026) has 48, which a limit of 40 let through
+    r"\b(not|unable to|cannot|can't|won't|will not|does not|doesn't|do not|don't)\b[^.]{0,80}\b(sponsor|provide (visa )?sponsorship)|"
+    # "will not provide any assistance or sign any documentation in support of ... optional practical training (OPT)":
+    # no OPT paperwork means no STEM OPT extension either (JPMorgan, Nov 2026). OPT and CPT count only in capitals, so
+    # "do not opt in" isn't one
+    r"\b(will not|won't|do not|don't|cannot|can't|unable to)\b[^.]{0,200}?"
+    r"\b(optional practical training|curricular practical training|(?-i:OPT|CPT)|I-983)\b|"
     r"sponsorship (is )?not (available|offered|provided)|not eligible for (visa )?sponsorship|"
     r"without (the need for )?(current or future |future |now or in the future )?(visa |employer |employment )?sponsorship|"
     r"now or in the future[^.]{0,60}sponsor|independently authori[sz]ed",

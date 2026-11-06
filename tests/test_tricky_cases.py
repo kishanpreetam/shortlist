@@ -46,6 +46,10 @@ class SponsorshipTest(unittest.TestCase):
             "We will sponsor your security clearance.": "unknown",  # a clearance, not a visa
             "U.S. Citizenship with the ability to obtain and maintain a security clearance.": "citizen_only",
             "The Company may not be able to employ candidates who have United States work authorization related to certain U.S. visa categories, or support future F-1 or H-1B sponsorship.": "no",
+            # JPMorgan, Nov 2026: 48 characters between "do not" and "sponsorship", then no OPT paperwork
+            "We do not offer any type of employment-based immigration sponsorship for this position.": "no",
+            "Likewise, JPMorganChase, will not provide any assistance or sign any documentation in support of any other form of immigration sponsorship or benefit including optional practical training (OPT) or curricular practical training (CPT).": "no",
+            "Employees who do not opt in to the 401(k) plan are enrolled automatically.": "unknown",  # "opt" isn't OPT
         }
         for text, want in cases.items():
             with self.subTest(text=text):
