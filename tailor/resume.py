@@ -47,13 +47,17 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import uuid
 from collections import Counter
+from contextlib import contextmanager
 from datetime import date
-from functools import lru_cache
+from functools import lru_cache, wraps
 from pathlib import Path
 
 from shortlist import classify
+
+from . import printer
 
 # Each theme starts at the start of a word, so "Econometrics" never reads as metrics work
 THEMES = {
@@ -401,6 +405,24 @@ def pending_versions(facts: dict) -> int:
 
 # ---------- terms ----------
 
+_LEXICON_VERSION = 0  # how many times use_lexicon has swapped the tools the engine knows
+
+
+def _per_lexicon(maxsize: int):
+    """lru_cache for a reading that depends on the tools the engine knows, kept apart for each set of them: a reading
+    worked out while use_lexicon swaps them (a learn runs in the background) is filed under the set before, so it is
+    never read again."""
+    def wrap(fn):
+        cached = lru_cache(maxsize=maxsize)(lambda version, *args: fn(*args))
+
+        @wraps(fn)
+        def read(*args):
+            return cached(_LEXICON_VERSION, *args)
+        read.cache_clear, read.cache_info = cached.cache_clear, cached.cache_info
+        return read
+    return wrap
+
+
 def _matches(text: str) -> dict[str, list[re.Match]]:
     """Each tool's matches in a text. A learned tool's match inside a match of one of the engine's own tools isn't the
     learned tool's: the "GitHub" in GitHub Actions, the "Sub" in Pub/Sub."""
@@ -420,12 +442,19 @@ def _matches(text: str) -> dict[str, list[re.Match]]:
 
 def terms(text: str) -> dict[str, float]:
     """{term: weight}: tools and skills weigh 2, themes 1, x1.5 when mentioned twice or more."""
+    return dict(_terms(text or ""))
+
+
+@_per_lexicon(maxsize=16384)
+def _terms(text: str) -> tuple[tuple[str, float], ...]:
+    """terms() of one text, read once for the tools the engine knows (use_lexicon clears it): fitting one preview's
+    page reads the same few hundred texts over 150,000 times."""
     out = {key: SKILL_WEIGHT * (REPEAT_BOOST if len(ms) > 1 else 1) for key, ms in _matches(text).items()}
     for key, rx in _THEME_RX.items():
-        n = len(list(rx.finditer(text or "")))
+        n = len(list(rx.finditer(text)))
         if n:
             out["theme:" + key] = THEME_WEIGHT * (REPEAT_BOOST if n > 1 else 1)
-    return out
+    return tuple(out.items())
 
 
 def vocabulary() -> list[str]:
@@ -465,7 +494,7 @@ def use_lexicon(lex: dict | None) -> int:
     recognized in postings and in your lines like the engine's own, with its label and skills row; a tool the engine
     already knows keeps its own pattern. The tables are swapped whole, so a preview running meanwhile reads either
     set, never half of one. Returns how many tools it learned."""
-    global _TERM_RX, CATEGORY, LEARNED, BOLD_ANY, _NEEDLES
+    global _TERM_RX, CATEGORY, LEARNED, BOLD_ANY, _NEEDLES, _LEXICON_VERSION
     table, kinds, learned, needles = dict(_BUILTIN_TERMS), dict(_BUILTIN_CATEGORY), {}, {}
     for key, e in ((lex or {}).get("terms") or {}).items():
         if key in table or not isinstance(e, dict) or e.get("status") == "removed" or not e.get("label") or not e.get("pattern"):
@@ -481,8 +510,9 @@ def use_lexicon(lex: dict | None) -> int:
     _NEEDLES, LEARNED, CATEGORY = needles, learned, kinds  # a term's label, row and look are in place before its pattern
     _TERM_RX = table
     BOLD_ANY = _bold_any()
-    _word_terms.cache_clear()
-    _term_set.cache_clear()
+    _LEXICON_VERSION += 1  # after the swap: readings cached from here on are for these tools (_per_lexicon)
+    for read in (_terms, _claim_set, _word_terms, _term_set, _match_in, _rewrite_problems, _labels):
+        read.cache_clear()  # what a text names, and what a check of it finds, depend on the tools known
     return len(learned)
 
 
@@ -516,13 +546,20 @@ def _score(text: str, job: dict[str, float]) -> tuple[float, list[str]]:
 
 def _item_terms(items: list[str]) -> set[str]:
     """Skill terms a list of skills-line items covers (by pattern, or by the item reading exactly as a skill's label)."""
-    by_label = {item_label(t).lower(): t for t in _TERM_RX}
+    by_label = _labels()
     out = set()
     for it in items:
         out |= {t for t in terms(it) if not t.startswith("theme:")}
         if it.lower() in by_label:
             out.add(by_label[it.lower()])
     return out
+
+
+@_per_lexicon(maxsize=1)
+def _labels() -> dict[str, str]:
+    """{each skill's label on a skills line, in lower case: its term}, for the tools the engine knows (use_lexicon
+    clears it). Read only."""
+    return {item_label(t).lower(): t for t in _TERM_RX}
 
 
 # ---------- versions of your lines ----------
@@ -698,6 +735,7 @@ def supporting_facts(bullet: dict) -> tuple[str, ...]:
                                and isinstance(detail.get("text"), str) and detail["text"].strip()))
 
 
+@lru_cache(maxsize=16384)
 def _root(word: str) -> str:
     """A crude stem for comparing words: 'reviewing', 'reviewed' and 'reviews' all read 'review'."""
     w = word.lower()
@@ -715,15 +753,20 @@ _GENERIC_ROOTS = frozenset(_root(w) for w in GENERIC)
 
 def _compounds(text: str) -> list[str]:
     """Words and hyphenated words ("real-time"), without a possessive 's or a leading number ("10-agent" reads "agent")."""
+    return list(_compound_words(text))
+
+
+@lru_cache(maxsize=16384)
+def _compound_words(text: str) -> tuple[str, ...]:
     out = []
     for c in re.findall(r"[\w'\u2019]+(?:[-\u2010\u2011][\w'\u2019]+)*", text):
         parts = [_LEAD_NUM.sub("", re.sub(r"['\u2019]s?$", "", p)) for p in re.split(r"[-\u2010\u2011]", c)]
         if any(parts):
             out.append("-".join(p for p in parts if p))
-    return out
+    return tuple(out)
 
 
-@lru_cache(maxsize=8192)
+@_per_lexicon(maxsize=8192)
 def _word_terms(word: str) -> frozenset[str]:
     return frozenset(terms(word))
 
@@ -731,12 +774,17 @@ def _word_terms(word: str) -> frozenset[str]:
 def _claims(text: str) -> set[str]:
     """What a line names and claims: its tools as written, and its themes read with the tools' names set aside, so
     naming "OpenAI API" names a tool without claiming production work."""
+    return set(_claim_set(text))
+
+
+@_per_lexicon(maxsize=8192)
+def _claim_set(text: str) -> frozenset[str]:
     found = set(terms(text))
     tools = {t for t in found if not t.startswith("theme:")}
     bare = text
     for t in tools:
         bare = _TERM_RX[t].sub(" ", bare) if t in _TERM_RX else bare
-    return tools | {t for t in terms(bare) if t.startswith("theme:")}
+    return frozenset(tools | {t for t in terms(bare) if t.startswith("theme:")})
 
 
 def _new_words(original: str, text: str, extra: set[str] | frozenset = frozenset(), phrases=(), strict: bool = False) -> list[str]:
@@ -787,6 +835,7 @@ def never_words(words) -> None:
     _NEVER_WORDS = [w for w in (str(x).strip() for x in words or []) if w]
     NEVER = (re.compile(r"\b(?:" + "|".join(re.escape(w) + "(?:s|ed|ing)?" for w in _NEVER_WORDS) + r")\b", re.I)
              if _NEVER_WORDS else _NOTHING)
+    _rewrite_problems.cache_clear()  # a rewrite that says one of them fails its check
 
 
 def never_list() -> list[str]:
@@ -1264,6 +1313,14 @@ def rewrite_problems(original: str, text: str, extra: set[str] | frozenset = fro
     faithful(): it claims no more than your line (claim_problems, R3 to R8, where your line's terms and tools back no
     claim: "backend" never says deployed), every word is your line's, a plain word or one of your line's terms, with no
     arrow or long dash, and no colon, semicolon or unusual character your line doesn't have."""
+    return list(_rewrite_problems(original, text, frozenset(extra), tuple(supporting), tuple(phrases or ()), posting))
+
+
+@_per_lexicon(maxsize=4096)
+def _rewrite_problems(original: str, text: str, extra: frozenset, supporting: tuple[str, ...], phrases: tuple,
+                      posting: str) -> tuple[str, ...]:
+    """rewrite_problems of one rewrite, checked once for the tools and never-words the engine knows (use_lexicon and
+    never_words clear it): every try at fitting the page checks the same rewrites again."""
     source = " ".join((original, *supporting))
     if posting:  # exact mode: the posting's tools are yours to name (posting_words)
         extra = set(extra) | {t for t in terms(posting) if not t.startswith("theme:")}
@@ -1293,7 +1350,7 @@ def rewrite_problems(original: str, text: str, extra: set[str] | frozenset = fro
     odd = sorted({c for c in text if not _PLAIN.fullmatch(c) and c not in original})  # emoji, invisible or right-to-left marks
     if odd:
         why.append("it has a character your line doesn't: " + ", ".join(f"U+{ord(c):04X}" for c in odd))
-    return why + wording_problems(original, text, phrases)
+    return tuple(why + wording_problems(original, text, phrases))
 
 
 _JOINERS = frozenset("with using in on for of to into from by via through".split())  # a rewrite never drops one of these
@@ -1677,6 +1734,7 @@ KEYWORD_WEIGHT = {"required": 3.0, "responsibility": 2.0, "preferred": 1.0}
 _ACRONYM = re.compile(r"\s*\(([^)]{2,40})\)\s*")  # "Amazon Web Services (AWS)": the full form and its acronym
 
 
+@lru_cache(maxsize=16384)
 def _flat(text: str) -> str:
     """Text as keywords are matched: lowercase words, hyphens and punctuation read as spaces. A dot inside or before
     a word stays (Node.js, .NET) and one that ends a sentence doesn't; an "&" inside a word keeps it one word, so R&D
@@ -1856,7 +1914,7 @@ def _near(roots: list[str], line: str, ordered: bool = False) -> bool:
     return max(first) - min(first) <= len(roots) + 2
 
 
-@lru_cache(maxsize=16384)
+@_per_lexicon(maxsize=16384)
 def _term_set(text: str) -> frozenset[str]:
     return frozenset(terms(text))
 
@@ -1876,6 +1934,13 @@ def keyword_shown(kw: str, lines: list[str], kind: str = "") -> str:
 def _match(kw: str, lines: list[str], kind: str = "") -> str:
     """keyword_shown's reading, telling apart a keyword the page says only another way: "exact", "close", "alias"
     (ALIASES) or ""."""
+    return _match_in(kw, tuple(lines), kind)
+
+
+@_per_lexicon(maxsize=65536)
+def _match_in(kw: str, lines: tuple[str, ...], kind: str) -> str:
+    """_match of one keyword in some lines, read once for the tools the engine knows (use_lexicon clears it): fitting
+    one preview's page asks it of the same few thousand keywords and lines over 400,000 times."""
     how = _shown(kw, lines, kind)
     if how:
         return how
@@ -3810,10 +3875,43 @@ def _print_pdf(html_text: str, folder: Path, filename: str, chrome: str) -> Path
     page = folder / "page.html"
     page.write_text(html_text)
     pdf = folder / filename
-    subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", f"--print-to-pdf={pdf}", page.as_uri()],
-                   check=True, capture_output=True, timeout=60)
+    if not _kept_print(page, pdf, chrome):
+        subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", f"--print-to-pdf={pdf}", page.as_uri()],
+                       check=True, capture_output=True, timeout=60)
     page.unlink()
     return pdf
+
+
+_PRINTING = threading.local()  # the Chrome kept open for this thread's prints (printing): (its path, the printer)
+
+
+@contextmanager
+def printing(chrome: str):
+    """One headless Chrome kept open for every page printed on this thread until the block ends (printer.py), instead
+    of one started for each print, which was most of a print's time. It prints a page as the command line does, to
+    the same PDF; a print it can't make is made on the command line, as is every print after it."""
+    was = getattr(_PRINTING, "chrome", None)
+    with printer.Chrome(chrome) as kept:
+        _PRINTING.chrome = (chrome, kept)
+        try:
+            yield
+        finally:
+            _PRINTING.chrome = was
+
+
+def _kept_print(page: Path, pdf: Path, chrome: str) -> bool:
+    """Print `page` to `pdf` with the Chrome kept open on this thread for `chrome` (printing): whether it did. One that
+    fails is closed and not used again."""
+    path, kept = getattr(_PRINTING, "chrome", None) or (None, None)
+    if kept is None or path != chrome:
+        return False
+    try:
+        kept.print_pdf(page, pdf)
+        return True
+    except printer.ChromeError:
+        _PRINTING.chrome = None
+        kept.close()
+        return False
 
 
 _FIT = {"index": 0}  # the page size that last fit: the next resume starts one step fuller, so most fit in one or two prints
@@ -3832,6 +3930,8 @@ def build(facts: dict, job_text: str, job_title: str, variant: str, workdir: Pat
     trimmed = []
     budgets = list(BUDGETS[max(0, _FIT["index"] - 1):])
     fitted, last_page = None, None  # fill mode: the fullest page that printed on one page so far, and its HTML
+    over: dict[tuple[int, str], int] = {}  # the pages that ran over, by budget and HTML: a budget tried again after a
+    # sparser one fit prints the same page, so it isn't printed twice
 
     def settle(res: dict) -> dict:
         """The fullest page that fit, back under its own file name."""
@@ -3859,8 +3959,11 @@ def build(facts: dict, job_text: str, job_title: str, variant: str, workdir: Pat
                 budgets.insert(0, BUDGETS[step - 1])
                 continue
             return settle(fitted)
-        pdf = _print_pdf(page, workdir, filename, chrome)
-        pages = _pages(pdf)
+        if (step, page) in over:  # printed before and ran over: the same page runs over again
+            pages = over[step, page]
+        else:
+            pdf = _print_pdf(page, workdir, filename, chrome)
+            pages = _pages(pdf)
         if pages == 1:
             _FIT["index"] = step
             result = {"selection": sel, "pdf": str(pdf), "pages": 1, "failures": check(facts, sel, 1) + print_problems(page),
@@ -3873,6 +3976,7 @@ def build(facts: dict, job_text: str, job_title: str, variant: str, workdir: Pat
                 budgets.insert(0, BUDGETS[step - 1])
                 continue
             return result
+        over[step, page] = pages
         if fitted:  # the fuller page ran over: the fullest one that fit stands
             _FIT["index"] = BUDGETS.index(budgets[1]) if len(budgets) > 1 else _FIT["index"]
             return settle(fitted)

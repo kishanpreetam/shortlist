@@ -28,6 +28,7 @@ import subprocess
 import sys
 import threading
 import webbrowser
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -268,15 +269,51 @@ def with_generated(facts: dict, points: list[dict], job_text: str = "", rewritte
     return out, shows
 
 
-def _generated(facts: dict, title: str, jd: str, rewrites, profile: dict) -> tuple[dict, str]:
+def _line_requirements(title: str, jd: str, claude: str) -> list[dict]:
+    """The posting's requirements as rewrite.rewrite works from them (logistics left out), or [] when there's no
+    posting left to read or Claude can't read it."""
+    if not rewrite.clean_posting(jd)[0].strip():
+        return []
+    try:
+        return [r for r in rewrite.requirements(title, jd, claude, RESULTS / "requirements") if r.get("kind") != "logistics"]
+    except rewrite.RewriteError:
+        return []
+
+
+def _points_ahead(facts: dict, title: str, jd: str, profile: dict):
+    """The point engine's call for this job, started with the preview so Claude writes new points while it rewrites
+    yours instead of after: a future of (the requirements and places it wrote from, its points), or None when the
+    preview won't ask for new points. It waits for the posting's read like the rewrites do (one read, cached)."""
+    claude = rewrite.claude_path(profile)
+    if not profile.get("generate_points") or not profile.get("rewrite_points", True) or not claude:
+        return None
+
+    def write():
+        reqs, pl = _line_requirements(title, jd, claude), places(facts)
+        return reqs, pl, rewrite.generate_points(title, jd, reqs, pl, claude, RESULTS / "generated") if reqs else []
+    pool = ThreadPoolExecutor(1, thread_name_prefix="new-points")
+    try:
+        return pool.submit(write)
+    finally:
+        pool.shutdown(wait=False)
+
+
+def _generated(facts: dict, title: str, jd: str, rewrites, profile: dict, ahead=None) -> tuple[dict, str]:
     """The point engine (generate_points in profile.yaml): new points for your roles and projects from this job's
-    requirements, the passing ones added to `facts` for this resume, and what they show added to the rewrites."""
+    requirements, the passing ones added to `facts` for this resume, and what they show added to the rewrites.
+    `ahead` (_points_ahead): the same call started with the preview, used when it wrote from the requirements and
+    places these rewrites came from, so its points are the ones asking now would get (the same answer, cached)."""
     claude = rewrite.claude_path(profile)
     reqs = [r for r in getattr(rewrites, "requirements", None) or [] if r.get("kind") != "logistics"]
     if not profile.get("generate_points") or not claude or not reqs or not isinstance(rewrites, rewrite.Rewrites):
         return facts, ""
     try:
-        got = rewrite.generate_points(title, jd, reqs, places(facts), claude, RESULTS / "generated")
+        early = ahead.result() if ahead else None
+    except rewrite.RewriteError:
+        early = None  # asked again below, as without it: a failure under a minute old comes back at once
+    try:
+        got = early[2] if early and early[:2] == (reqs, places(facts)) else \
+            rewrite.generate_points(title, jd, reqs, places(facts), claude, RESULTS / "generated")
     except rewrite.RewriteError as exc:
         return facts, f"New points couldn't be written for this job ({exc})."
     facts, shows = with_generated(facts, got, jd, dict(rewrites))
@@ -290,27 +327,29 @@ def _preview(facts: dict, job: tuple, d: dict, profile: dict) -> dict:
     company, title, n, variant, jd = job
     pid = engine.new_preview_id()
     ids = lambda key: set(map(str, d.get(key) or []))
+    ahead = _points_ahead(facts, title, jd, profile) if d.get("rewrite", True) else None  # written alongside the rewrites
     points, rewrites, note, failed = _rewritten(facts, title, jd, company, variant, profile, d.get("rewrite", True))
     if d.get("rewrite", True):  # new points for your experience, written from this job (the point engine)
-        facts, gen_note = _generated(facts, title, jd, rewrites, profile)
+        facts, gen_note = _generated(facts, title, jd, rewrites, profile, ahead)
         note = " ".join(x for x in (note, gen_note) if x)
     fit = RESULTS / "fit.json"  # the page size that fit last time, kept across restarts so a page prints once or twice
     try:
         engine._FIT.update(json.loads(fit.read_text()))
     except (OSError, ValueError):
         pass
-    make = lambda facts: engine.build(facts, jd, title, variant, RESULTS / "tailor-preview" / pid, None,
-                                      profile.get("chrome_path") or CHROME_DEFAULT,
+    chrome = profile.get("chrome_path") or CHROME_DEFAULT
+    make = lambda facts: engine.build(facts, jd, title, variant, RESULTS / "tailor-preview" / pid, None, chrome,
                                       exclude=ids("exclude"), include=ids("include"), summary_id=d.get("summary_id") or None,
                                       title_skip=ids("title_skip"), original=ids("original"), skill_skip=ids("skill_skip"),
                                       employer=company, rewrites=rewrites, exact=exact(profile),
                                       proven=bool(profile.get("skills_proven")), fill=bool(profile.get("fill_page")))
-    out = make(facts)
-    asked = [x["term"] for x in out["selection"].get("skills_detail") or [] if x["state"] == "missing"]
-    level = profile.get("unanswered_skills", "used")
-    if asked and level in ("used", "learning"):
-        facts = assumed_skills(facts, asked, level)  # the job's skills you never answered: yours, never asked about
+    with engine.printing(chrome):  # one Chrome for every print of this preview
         out = make(facts)
+        asked = [x["term"] for x in out["selection"].get("skills_detail") or [] if x["state"] == "missing"]
+        level = profile.get("unanswered_skills", "used")
+        if asked and level in ("used", "learning"):
+            facts = assumed_skills(facts, asked, level)  # the job's skills you never answered: yours, never asked about
+            out = make(facts)
     assumed = {a["term"] for a in facts.get("added_skills") or [] if a.get("source", "").startswith("a skill this job asks for")}
     try:
         fit.write_text(json.dumps(engine._FIT))
@@ -663,9 +702,10 @@ def tailor(item: dict, profile: dict, text: str | None = None, rewrite: bool = F
         _, rewrites, note, _ = _rewritten(facts, item["title"], jd, item["company"], item["resume"], profile)
         if note:
             print(f"  ! #{item['n']} {item['company']}: {note}")
-    out = engine.build(facts, jd, item["title"], item["resume"],
-                       RESULTS / "tailor-preview" / engine.new_preview_id(), None, profile.get("chrome_path") or CHROME_DEFAULT,
-                       employer=item["company"], rewrites=rewrites)
+    chrome = profile.get("chrome_path") or CHROME_DEFAULT
+    with engine.printing(chrome):  # one Chrome for this resume's prints
+        out = engine.build(facts, jd, item["title"], item["resume"], RESULTS / "tailor-preview" / engine.new_preview_id(), None,
+                           chrome, employer=item["company"], rewrites=rewrites)
     if out["failures"] or not out["pdf"]:
         raise ValueError("; ".join(out["failures"]) or "not built")
     folder = tailored_folder(profile) / date.today().isoformat() / job_folder_name(item)
