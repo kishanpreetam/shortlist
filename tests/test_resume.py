@@ -993,6 +993,139 @@ class KeywordTest(unittest.TestCase):
         self.assertFalse(resume.worded_item("Data Warehouse for patients", {"data_warehouse"}))
         self.assertFalse(resume.worded_item("Snowflake", {"data_warehouse"}))
 
+    # (the posting's keyword, how a line says it): the same thing written another way
+    WRITTEN_ANOTHER_WAY = [
+        ("DynamoDB", "Stored sessions in Dynamo"), ("BigQuery", "Modeled tables in Big Query"),
+        ("CI/CD", "Set up continuous integration and continuous delivery"), ("continuous integration", "Built CI/CD pipelines"),
+        ("LLMs", "Built apps on large language models"), ("large language models", "Built apps on LLMs"),
+        ("Machine Learning", "Trained ML models"), ("ML", "Trained machine learning models"),
+        ("NLP", "Built natural language processing features"), ("Natural Language Processing", "Built NLP features"),
+        ("GenAI", "Shipped generative AI features"), ("Generative AI", "Shipped GenAI features"),
+        ("JavaScript", "Wrote front ends in JS"), ("TypeScript", "Wrote front ends in TS"), ("REST APIs", "Built RESTful services"),
+        ("A/B testing", "Ran AB tests on checkout"), ("Infrastructure as Code", "Wrote Terraform (IaC) modules"),
+        ("OKRs", "Owned OKR reporting"), ("microservices", "Split a monolith into micro services"),
+        ("machine learning models", "Trained ML models"), ("RAG", "Built retrieval-augmented generation search"),
+        ("Go", "Wrote billing services in Golang"), ("LLM-powered applications", "Built applications powered by large language models"),
+        ("BI tools", "Built tools for business intelligence"),
+        # spellings the engine's own tools already read
+        ("AWS", "Built pipelines on Amazon Web Services (S3, Glue)"), ("Amazon Web Services", "Built pipelines on AWS (S3, Glue)"),
+        ("Kubernetes", "Deployed services on K8s"), ("K8s", "Deployed services on Kubernetes"),
+        ("GCP", "Ran jobs on Google Cloud Platform"), ("Google Cloud", "Ran jobs on GCP"), ("PostgreSQL", "Tuned Postgres queries"),
+        ("Postgres", "Tuned PostgreSQL queries"), ("Elasticsearch", "Indexed logs in Elastic Search"),
+        ("data pipelines", "Built a data pipeline for orders"), ("data warehousing", "Modeled a data warehouse in Snowflake"),
+        ("Node.js", "Wrote services in NodeJS"), ("Power BI", "Built PowerBI dashboards"), ("KPIs", "Tracked KPI dashboards"),
+        ("scikit-learn", "Trained models with sklearn"),
+    ]
+    # (keyword, a line that must not show it): related things are not the same thing
+    NOT_THE_SAME = [
+        ("ETL", "Built ELT jobs"), ("Kubernetes", "Deployed services on EKS"), ("Bash", "Worked in the Linux shell"),
+        ("continuous integration", "Practiced continuous delivery"), ("continuous delivery", "Practiced continuous deployment"),
+        ("LLMs", "Shipped generative AI features"), ("JavaScript", "Wrote Node.js services"),
+        ("Machine Learning", "Measured 500 ml samples"), ("TypeScript", "Held a TS/SCI clearance"), ("AI", "Called the OpenAI API"),
+        # another way of writing one counts only with its own words in order
+        ("ETL", "Built extract, load, transform jobs"), ("IaC", "Wrote code for the data infrastructure"),
+        ("BI", "Shared intelligence reports with the business"), ("ML", "Learned to operate machine tools"),
+    ]
+
+    def test_a_keyword_written_another_way_shows_as_a_close_match(self):
+        for kw, line in self.WRITTEN_ANOTHER_WAY:
+            with self.subTest(kw):
+                self.assertEqual(resume.keyword_shown(kw, [line]), "close", line)
+        self.assertEqual(resume.keyword_shown("Machine Learning", ["Trained machine learning models"]), "exact")  # as written
+        for kw, line in self.NOT_THE_SAME:
+            with self.subTest(kw):
+                self.assertEqual(resume.keyword_shown(kw, [line]), "", line)
+        self.assertTrue(resume._evidenced("LLMs", ["Built apps on large language models."]))  # a one-word keyword's other form
+        self.assertFalse(resume._evidenced("LLMs", ["Shipped generative AI features."]))
+
+    def test_a_short_name_or_a_plain_word_counts_exactly_only_as_written(self):
+        for kw, line, kind in (("R", "Supported R&D reporting", ""), ("Excel", "Chance to excel at scale", ""),
+                               ("Swift", "Delivered swift turnarounds", ""), ("C", "Presented findings to the C-suite", ""),
+                               ("R", "Raised R-squared from 0.6 to 0.8", ""), ("Go", "Planned the go-to-market launch", ""),
+                               ("Go", "Planned the Go-to-Market launch", ""), ("ML", "Measured 500 ml samples", ""),
+                               ("Access", "Built a data access layer", "tool"), ("Teams", "Partnered with 4 teams", "tool"),
+                               ("Cursor", "Moved the cursor", ""), ("SAS", "Partnered with SAs", ""),
+                               ("REST", "Took a rest day", ""), ("Clustering", "Ran k-means clustering on 2M users", "")):
+            with self.subTest(f"{kw} <- {line}"):
+                self.assertEqual(resume.keyword_shown(kw, [line], kind), "")
+        for kw, line, kind in (("R", "Built forecasting models in R and Python.", ""), ("R", "Wrote R, SQL and Python", ""),
+                               ("Excel", "Built Excel models for finance", ""), ("Excel", "Automated Microsoft Excel reports", ""),
+                               ("Swift", "Shipped an iOS app in Swift", ""), ("Go", "Wrote Go services for billing", ""),
+                               ("AI", "Built AI-powered search", ""), ("Access", "Built Access databases", "tool"),
+                               ("Cursor", "Used Cursor daily", ""), ("SAS", "Wrote SAS macros", ""), ("R&D", "Supported R&D reporting", ""),
+                               ("Tableau", "Built tableau dashboards", ""), ("Agile", "Worked in agile methodologies", ""),
+                               ("dbt", "Built DBT models", ""), ("Clustering", "Ran k-means clustering on 2M users", "skill"),
+                               ("Terraform", "Wrote Terraform modules", ""), ("Kafka", "Kafka consumers", ""),
+                               ("C++", "Wrote services in C++", ""), ("C#", "Wrote services in C#", ""), ("H-1B", "Authorized under H-1B", ""),
+                               ("AWS/GCP", "Built pipelines on GCP", ""), ("CI/CD", "Built CI/CD pipelines", ""),
+                               ("Node.js", "Wrote Node.js services", "")):
+            with self.subTest(f"{kw} <- {line}"):
+                self.assertEqual(resume.keyword_shown(kw, [line], kind), "exact")
+        for kw, line in (("Java", "Wrote front ends in JavaScript"), ("Go", "Worked with Google Cloud data"), ("C", "Wrote services in C++"),
+                         ("R", "Worked in Rails"), (".NET", "Built ASP.NET services"), ("SQL", "Tuned NoSQL stores"),
+                         ("SQL", "Tuned MySQL indexes"), ("Python", "Wrote pythonic helpers"), ("AI", "Maintained rails and email"),
+                         ("ML", "Built HTML and XML exporters"), ("Spark", "Sparked adoption of the tool"), ("Scala", "Scaled the platform")):
+            with self.subTest(f"{kw} <- {line}"):
+                self.assertEqual(resume.keyword_shown(kw, [line]), "")
+        self.assertEqual(resume._flat("Supported R&D, Q & A"), " supported r&d q a ")
+        self.assertEqual(resume._flat("Wrote Node.js and .NET services in Go."), " wrote node.js and .net services in go ")
+        self.assertEqual(resume.keyword_shown("Go", ["Wrote billing services in Go."]), "exact")  # a sentence's end isn't a word
+        kws = resume.job_keywords("Data Analyst", "Support R&D teams. Model survey data in R, SQL and Python.",
+                                  [{"text": "R", "kind": "tool", "from": "required"}])
+        self.assertEqual(next(k for k in kws if k["text"] == "R")["count"], 1)  # R&D isn't R
+
+    def test_a_keyword_a_more_specific_one_says_in_full_counts_once(self):
+        def texts(jd, *given):
+            return [k["text"] for k in resume.job_keywords("Data Engineer", jd, [dict(zip(("text", "kind", "from"), g)) for g in given])]
+        python = (("Python", "tool", "required"), ("Python libraries", "tool", "required"))
+        got = texts("Build tools with Python libraries such as pandas.", *python)
+        self.assertIn("Python libraries", got)
+        self.assertNotIn("Python", got)
+        self.assertNotIn("CPQ", texts("Configure Salesforce CPQ quotes.", ("CPQ", "tool", "required"), ("Salesforce CPQ", "tool", "required")))
+        self.assertNotIn("modeling", texts("Build statistical modeling tools.", ("modeling", "skill", "responsibility"),
+                                           ("Statistical Modeling", "skill", "required")))
+        # both stay: the posting asks for the general one apart from the specific one too
+        self.assertTrue({"Python", "Python libraries"} <= set(texts("Python is required. Build tools with Python libraries.", *python)))
+        # both stay: a required tool never goes for a less important phrase, a tool for a skill, a skill for a degree or
+        # a list, nor anything for a long description
+        for jd, general, specific in (
+                ("Publish dashboards to Tableau Cloud.", ("Tableau", "tool", "required"), ("Tableau Cloud", "tool", "preferred")),
+                ("Write SQL queries for reports.", ("SQL", "tool", "required"), ("SQL queries", "skill", "responsibility")),
+                ("Degree in Statistics, Mathematics, or Computer Science.", ("statistics", "skill", "required"),
+                 ("Statistics, Mathematics, or Computer Science", "education", "required")),
+                ("Hold Epic certifications.", ("Epic", "tool", "responsibility"), ("Epic certifications", "education", "responsibility")),
+                ("Automate recurring recruiting reports.", ("recruiting", "domain", "responsibility"),
+                 ("automate recurring recruiting reports", "skill", "responsibility"))):
+            with self.subTest(general[0]):
+                self.assertTrue({general[0], specific[0]} <= set(texts(jd, general, specific)))
+        # the keyword that goes makes room for the next one
+        more = [(f"method {c}{d}", "skill", "responsibility") for c in "ab" for d in "abcdefghijklmnopqrstuvwxyz"][:29]
+        got = texts("Add data quality checks.", ("data quality", "skill", "responsibility"),
+                    ("data quality checks", "skill", "responsibility"), *more)
+        self.assertEqual(len(got), resume.KEYWORDS_MAX)
+        self.assertNotIn("data quality", got)
+        self.assertIn(more[-1][0], got)
+
+    def test_the_report_calls_another_way_of_writing_close_and_the_postings_words_still_go_on(self):
+        facts = copy.deepcopy(FACTS)
+        facts["roles"][0]["bullets"].append({"id": "r1d", "text": "Built a support bot on LLMs for 300 agents.", "status": "approved"})
+        page = lambda summary, bullet: {"summary": {"text": summary}, "projects": [],
+                                        "experience": [{"id": "r1", "heading": "", "tech": [], "bullets": [{"id": "r1d", "text": bullet}]}],
+                                        "skills": [{"id": "sk_data", "items": ["ETL", "Airflow", "SQL"]}, {"id": "sk_ml", "items": ["Forecasting", "Tableau"]}]}
+        kws = [{"text": "large language models", "kind": "skill", "from": "required", "count": 1, "terms": ["llm"]}]
+        sel = page("Data engineer.", facts["roles"][0]["bullets"][-1]["text"])
+        report = resume.keyword_report(kws, sel, facts)
+        self.assertEqual((report[0]["status"], report[0]["match"], report[0].get("alias")), ("on page", "close", True))
+        self.assertEqual(resume.place_keywords(sel, report, facts), 1)  # the posting's words go on, as a search finds them
+        self.assertIn("Large Language Models", sel["skills"][1]["items"])
+        self.assertEqual(resume.keyword_report(kws, sel, facts)[0]["match"], "exact")
+        # a page that says it only in a line of the summary, with none of your lines behind it: shown, never added
+        sel = page("Data engineer who builds LLM apps.", "Built ETL pipelines in Python and SQL with Airflow for 1M+ rows.")
+        report = resume.keyword_report(kws, sel, FACTS)
+        self.assertEqual((report[0]["status"], report[0]["match"]), ("on page", "close"))
+        self.assertEqual(resume.place_keywords(sel, report, FACTS), 0)
+        self.assertNotIn("Large Language Models", [it for row in sel["skills"] for it in row["items"]])
+
     def test_keywords_you_have_go_on_the_page_in_the_postings_words_and_the_report_says_where_each_stands(self):
         facts = copy.deepcopy(FACTS)
         facts["added_skills"] = [{"term": "data_warehouse", "level": "used", "status": "approved"},
@@ -1032,6 +1165,22 @@ class CopilotTest(unittest.TestCase):
                      "Roll out Microsoft 365 Copilot to the sales team.", "Configure Einstein Copilot in Salesforce."):
             with self.subTest(text):
                 self.assertFalse({"copilot", "ai_coding"} & set(resume.terms(text)))
+
+
+class BuiltInPatternTest(unittest.TestCase):
+    def test_a_tool_name_inside_another_name_or_a_term_is_not_the_tool(self):
+        tools = lambda text: {k for k in resume.terms(text) if not k.startswith("theme:")}
+        self.assertEqual(tools("We model the warehouse as a snowflake schema."), set())
+        self.assertEqual(tools("Snowflake-schema designs for the marts."), set())
+        self.assertEqual(tools("Load it into Snowflake."), {"snowflake"})
+        self.assertEqual(tools("Dashboards in Looker Studio."), {"looker_studio"})
+        self.assertEqual(tools("Dashboards in Looker."), {"looker"})
+
+    def test_a_tool_keyword_shows_exactly_only_where_the_engine_reads_the_tool(self):
+        self.assertEqual(resume.keyword_shown("Looker", ["Looker Studio reports"]), "")
+        self.assertEqual(resume.keyword_shown("Looker", ["Dashboards in Looker"]), "exact")
+        self.assertEqual(resume.keyword_shown("Snowflake", ["Modeled a snowflake schema"]), "")
+        self.assertEqual(resume.keyword_shown("AWS Glue", ["ETL on AWS Glue"]), "exact")
 
 if __name__ == "__main__":
     unittest.main()

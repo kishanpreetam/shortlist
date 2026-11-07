@@ -265,6 +265,12 @@ def _job_reading(facts: dict, title: str, jd: str, company: str, variant: str, c
     return (rewrite.points_for(facts, title, jd, company, kws), _summary_ctx(facts, title, variant, [k["text"] for k in kws]), kws)
 
 
+def _point_check(facts: dict, kws: list, profile: dict):
+    """The fact check each rewrite of your points must pass, with the posting's keywords as the resume engine reads
+    them, so the ones that fail go back to Claude once (`rewrite_repair`, on unless false); None when that's off."""
+    return rewrite.point_check(facts, [k["text"] for k in kws]) if profile.get("rewrite_repair", True) else None
+
+
 def resume_suggest(d: dict, profile: dict) -> dict:
     """Suggested lines for one requirement of a job: two or three, each for one of your roles or projects, labeled
     by what it adds beyond that place's facts, with one recommended (one that only rewords your lines when any does)."""
@@ -326,14 +332,15 @@ def resume_preview(d: dict, profile: dict) -> dict:
     ids = lambda key: set(map(str, d.get(key) or []))
     # your points reworded for this job by Claude; the engine keeps only rewrites that keep your facts
     claude = rewrite.claude_path(profile) if d.get("rewrite", True) and profile.get("rewrite_points", True) else None
-    points, ctx, _ = _job_reading(facts, title, jd, company, variant, claude)
+    points, ctx, kws = _job_reading(facts, title, jd, company, variant, claude)
     rewrites, note, failed = {}, "", False
     if d.get("rewrite", True) and profile.get("rewrite_points", True):
         if not claude:
             note = "Claude Code isn't installed, so your own wording is used."
         else:
             try:
-                rewrites = rewrite.rewrite(points, title, jd, claude, RESULTS / "rewrites", summary_ctx=ctx)
+                rewrites = rewrite.rewrite(points, title, jd, claude, RESULTS / "rewrites", summary_ctx=ctx,
+                                           check=_point_check(facts, kws, profile))
                 note = getattr(rewrites, "note", "")
             except rewrite.RewriteError as exc:
                 note, failed = f"{exc} Your own wording is used for now.", True
@@ -376,6 +383,7 @@ def resume_preview(d: dict, profile: dict) -> dict:
                        for g in facts[grp] if engine.ok(g)],
             "rewrite_note": note, "rewrite_failed": failed, "rewritten": len(sel.get("rewrites") or {}),
             "rejected": len([k for k, v in rewrites.items() if k in mine and v != mine[k] and k not in kept]),
+            "repaired": len([k for k in getattr(rewrites, "repaired", ()) if k in kept]),
             "originals": {k: engine.sentence(mine[k]) for k in sel.get("rewrites") or {} if k in mine}}
 
 
@@ -422,8 +430,9 @@ def _warm_round(profile: dict, claude: str, ahead: int) -> None:
             continue
         facts = engine.load_facts(_facts_path(profile))  # fresh for each job, so lines you just approved count
         try:  # the rewrites for this job, ready before you click Tailor
-            points, ctx, _ = _job_reading(facts, item["title"], jd, item["company"], item.get("resume") or variant_for_title(item["title"]), claude)
-            rewrite.rewrite(points, item["title"], jd, claude, RESULTS / "rewrites", parallel=False, summary_ctx=ctx)
+            points, ctx, kws = _job_reading(facts, item["title"], jd, item["company"], item.get("resume") or variant_for_title(item["title"]), claude)
+            rewrite.rewrite(points, item["title"], jd, claude, RESULTS / "rewrites", parallel=False, summary_ctx=ctx,
+                            check=_point_check(facts, kws, profile))
         except rewrite.RewriteError as exc:
             WARM["note"] = str(exc)
             return
@@ -1529,7 +1538,7 @@ function drawPreview(key){const p=PV[key];const box=p&&p.box();if(!box||!p.r)ret
  const ask=skillsAsk(r,p,key);if(ask)k.push(ask);
  const rq=reqBox(r,key);if(rq)k.push(rq);
  const kb=kwBox(r);if(kb)k.push(kb);
- if(r.rewritten)k.push(el('p',{class:'small muted',text:r.rewritten+' of your points were rewritten for this job, with the added words marked and your wording under each. Read them before you save, and tap "my wording" on any you want back'+(r.rejected?'. '+r.rejected+' rewrites that changed a fact were dropped':'')+'.'}));
+ if(r.rewritten)k.push(el('p',{class:'small muted',text:r.rewritten+' of your points were rewritten for this job, with the added words marked and your wording under each. Read them before you save, and tap "my wording" on any you want back'+(r.repaired?'. '+r.repaired+(r.repaired===1?' rewrite that failed the fact check was':' rewrites that failed the fact check were')+' fixed on a second try':'')+(r.rejected?'. '+r.rejected+(r.rejected===1?' rewrite that changed a fact was':' rewrites that changed a fact were')+' dropped':'')+'.'}));
  const parts=(r.title_line||'').split(' · ');
  k.push(el('div',{class:'row'},el('b',{text:'Title (names the file): '}),el('span',{class:'chip',text:parts[0]||'(none yet)'})));
  if(r.summary){const job=r.summary.version==='job';const sel=el('select',{},el('option',{value:'',text:job?'written for this job':'best match for this job'}),...r.summaries.map(x=>el('option',{value:x.id,text:'your '+(x.variant||x.id)+' summary'})));sel.value=st.summary_id||'';sel.addEventListener('change',()=>{st.summary_id=sel.value||null;redo();});k.push(el('div',{class:'row'},el('b',{text:'Summary: '}),sel),el('p',{class:'quote',text:r.summary.text}),job?el('p',{class:'small muted',text:'Written for this job from these lines of yours, and fact-checked: '+(r.summary.uses||[]).join(', ')}):null);}

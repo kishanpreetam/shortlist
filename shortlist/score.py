@@ -128,7 +128,7 @@ def score_posting(p: Posting, company: Company, profile: dict, sponsor_record: d
 
     seniority = classify.seniority(p.title)
     signal = classify.sponsorship_signal(p.text)
-    s.years_required = classify.years_required(p.text)
+    s.years_required = classify.years_required(p.text, advanced_degree=classify.has_advanced_degree(profile.get("degree")))
     have = float(profile["years_experience"])
     if off_field(p.title, profile["roles"]):
         s.excluded = off_field(p.title, profile["roles"])

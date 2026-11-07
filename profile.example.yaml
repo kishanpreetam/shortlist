@@ -4,6 +4,7 @@ name: Your Name
 home_area: "14460"        # OFLC area code where you'd work remotely (14460 = Boston-Cambridge-Newton)
 home_label: Boston        # shown in the target list for local openings
 years_experience: 1.5     # full-time-equivalent professional experience
+degree: bachelors         # optional: bachelors, masters or phd. A master's or PhD meets "or 5+ years with an advanced degree" asks
 lottery_seasons: 2        # H-1B lotteries you can enter before your work authorization ends
 
 # Role families to scan (keys from shortlist/roles.py). Remove ones you don't want.
@@ -63,6 +64,7 @@ pitch: {}
 # and only rewrites that keep your facts are used.
 # rewrite_points: true          # false keeps your own wording
 # rewrite_warmup: 5             # how many of the next jobs to rewrite in the background (0 waits for a Tailor click)
+# rewrite_repair: true          # rewrites the fact check drops go back to Claude once with its reasons; false skips it
 # claude_path: /path/to/claude  # if it isn't on your PATH
 # learn_keywords: true          # learn the tools postings name beyond the built-in list (data/lexicon.json); false turns it off
 # Words that never go on any resume it builds: headings drop them, and lines that use one stay off.
