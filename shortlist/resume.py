@@ -1500,8 +1500,11 @@ _ACRONYM = re.compile(r"\s*\(([^)]{2,40})\)\s*")  # "Amazon Web Services (AWS)":
 
 
 def _flat(text: str) -> str:
-    """Text as keywords are matched: lowercase words, hyphens and punctuation read as spaces."""
-    return " " + " ".join(re.sub(r"[^a-z0-9+#./]+", " ", (text or "").lower()).split()) + " "
+    """Text as keywords are matched: lowercase words, hyphens and punctuation read as spaces. A dot inside or before
+    a word stays (Node.js, .NET) and one that ends a sentence doesn't; an "&" inside a word keeps it one word, so R&D
+    never reads as R."""
+    t = re.sub(r"(?<![a-z0-9])&|&(?![a-z0-9])|\.+(?=\s|$)", " ", re.sub(r"[^a-z0-9+#./&]+", " ", (text or "").lower()))
+    return " " + " ".join(t.split()) + " "
 
 
 def _case_acronym(a: str) -> bool:
@@ -1516,10 +1519,8 @@ def case_acronyms(text: str) -> list[str]:
     return [m.group(1).strip()] if m and _case_acronym(m.group(1).strip()) else []
 
 
-def keyword_forms(text: str) -> list[str]:
-    """The ways a keyword can be written and still be the same one: as the posting writes it, its full form and acronym
-    apart ("Amazon Web Services (AWS)" reads as either), and each side of a choice of tools ("AWS/GCP" reads as
-    either; "CI/CD" stays one)."""
+def _forms(text: str) -> set[str]:
+    """keyword_forms in the posting's own capitals."""
     t = " ".join((text or "").split())
     forms = {t}
     m = _ACRONYM.search(t)
@@ -1530,7 +1531,111 @@ def keyword_forms(text: str) -> list[str]:
     sides = [x.strip() for x in re.split(r"\s*/\s*", t)]
     if len(sides) > 1 and all(any(not k.startswith("theme:") for k in terms(x)) for x in sides):
         forms |= set(sides)
-    return sorted({_flat(f).strip() for f in forms if _flat(f).strip()})
+    return forms
+
+
+def keyword_forms(text: str) -> list[str]:
+    """The ways a keyword can be written and still be the same one: as the posting writes it, its full form and acronym
+    apart ("Amazon Web Services (AWS)" reads as either), and each side of a choice of tools ("AWS/GCP" reads as
+    either; "CI/CD" stays one)."""
+    return sorted({_flat(f).strip() for f in _forms(text) if _flat(f).strip()})
+
+
+# Ways of writing one keyword that a recruiter reads as the same thing: a posting's "LLMs" is a line's "large language
+# models", its "CI/CD" a line's "continuous integration". A line that writes a keyword another way shows it as a close
+# match, never an exact one, and only with its words in their order. Each group is one thing, never two related
+# ones: ELT is not ETL, EKS is not Kubernetes, shell is not Bash, and continuous integration is not continuous
+# delivery, though CI/CD names both. A tool the engine already reads in all its spellings (AWS, K8s, Postgres,
+# Node.js) needs no entry. Adapted in part from Reactive-Resume's alias list (AmruthPillai/Reactive-Resume,
+# packages/resume/src/ats-pdf/jd/aliases.ts, MIT License).
+ALIASES = (
+    ("LLM", "LLMs", "large language model", "large language models"),
+    ("GenAI", "Gen AI", "generative AI"),
+    ("ML", "machine learning"),
+    ("AI", "artificial intelligence"),
+    ("NLP", "natural language processing"),
+    ("RAG", "retrieval-augmented generation"),
+    ("RL", "reinforcement learning"),
+    ("MLOps", "ML Ops"),
+    ("BI", "business intelligence"),
+    ("CI/CD", "CICD", "continuous integration"),
+    ("CI/CD", "CICD", "continuous delivery"),
+    ("CI/CD", "CICD", "continuous deployment"),
+    ("IaC", "infrastructure as code"),
+    ("SDLC", "software development life cycle", "software development lifecycle"),
+    ("TDD", "test-driven development"),
+    ("OOP", "object-oriented programming"),
+    ("JavaScript", "JS"),
+    ("TypeScript", "TS"),
+    ("Go", "Golang"),
+    ("React", "ReactJS", "React.js"),
+    ("REST API", "REST APIs", "RESTful API", "RESTful APIs", "RESTful services", "RESTful"),
+    ("A/B", "AB"),
+    ("microservices", "microservice", "micro services", "micro service"),
+    ("Agile", "agile methodology", "agile methodologies"),
+    ("RDBMS", "relational database", "relational databases"),
+    ("MongoDB", "Mongo"),
+    ("DynamoDB", "Dynamo"),
+    ("BigQuery", "Big Query"),
+    ("Spark SQL", "SparkSQL"),
+    ("dbt", "data build tool"),
+    ("UI", "user interface"),
+    ("P&L", "profit and loss"),
+    ("ROI", "return on investment"),
+)
+# each way of writing one (as _flat reads it): the other ways, as written, from every group it is in
+_ALIAS_OF = {f: frozenset(o for g in ALIASES if any(_flat(x).strip() == f for x in g) for o in g if _flat(o).strip() != f)
+             for f in {_flat(s).strip() for g in ALIASES for s in g}}
+
+
+@lru_cache(maxsize=8192)
+def alias_forms(text: str) -> tuple[tuple[str, str], ...]:
+    """The other ways of writing a keyword that say the same thing (ALIASES), as a line would write them, each with
+    its words from the table, which keep their order: "large language models" for "LLMs", "ML models" (with "ML")
+    for "machine learning models", and an acronym in the other number ("OKR" for "OKRs")."""
+    t = " ".join((text or "").split())
+    m = _ACRONYM.search(t)
+    bases = {_ACRONYM.sub(" ", t).strip(), m.group(1).strip()} if m else {t}  # "Machine Learning (ML)": each part
+    out = set()
+    for b in bases:
+        f = _flat(b).strip()
+        out |= {(o, o) for o in _ALIAS_OF.get(f, ())}
+        for s, others in _ALIAS_OF.items():  # a way of writing one inside a longer keyword
+            if s != f and f" {s} " in f" {f} ":
+                out |= {(f" {f} ".replace(f" {s} ", f" {o} ", 1).strip(), o) for o in others}
+        if re.fullmatch(r"[A-Z][A-Z0-9]*[A-Z0-9]s", b):
+            out.add((b[:-1], b[:-1]))
+        elif re.fullmatch(r"[A-Z][A-Z0-9]*[A-Z0-9]", b) and not b.endswith("S"):
+            out.add((b + "s", b + "s"))
+    own = {_flat(b).strip() for b in bases}
+    return tuple(sorted(x for x in out if _flat(x[0]).strip() not in own))
+
+
+def _as_written(name: str, kind: str = "") -> tuple[re.Pattern, ...]:
+    """What a line must say for it to say a one-word name exactly, when the name is short ("R", "Go", "ML"), an
+    acronym or styled name ("REST", "LLMs"), a tool whose own pattern keeps its capitals ("Excel", "Cursor") or an
+    unknown name that is also a plain word ("Swift"): its capitals kept, as a learned tool's are (lexicon.cased), and
+    never part of a word joined by "&" (R&D) or, for one letter or a two-letter word, by a hyphen (C-suite,
+    Go-to-market). Nothing for any other keyword: several words, one written in lower case, a tool the engine reads
+    in any case ("Tableau"), or a skill the posting capitalized (`kind` skill, domain, education or soft: "Clustering")."""
+    letters = re.sub(r"[^A-Za-z]", "", name or "")
+    if not letters or letters.islower() or re.search(r"\s", name):
+        return ()
+    tools = {t for t in _term_set(name) if not t.startswith("theme:")}
+    if len(letters) > 2 and tools:  # the engine's own pattern says whether its capitals count
+        own = tuple(_TERM_RX[t] for t in sorted(tools) if t in _TERM_RX)
+        return own if own and all(rx.search(name) and not rx.search(name.lower()) for rx in own) else ()
+    if len(letters) > 2 and sum(c.isupper() for c in letters) < 2 and not (
+            re.fullmatch(r"[A-Z][a-z]+", name) and kind in ("", "tool")):
+        return ()
+    every = len(letters) <= 3 or letters.isupper()  # "IaC", "REST": every capital; "LLMs", "Swift": the leading ones
+    body, lead = "", True
+    for c in name:
+        lead = lead and (not c.isalpha() or c.isupper())
+        body += (c if c.isupper() and (every or lead) else f"[{c.lower()}{c.upper()}]") if c.isalpha() else re.escape(c)
+    if len(letters) == 1 or (len(letters) == 2 and not letters.isupper()):  # "C-suite", "Go-to-market"
+        return (re.compile(rf"(?<![\w&.+#\-\u2010\u2011]){body}(?![\w&+#])(?![\-\u2010\u2011]\w)"),)
+    return (re.compile(rf"(?<![\w&.+#]){body}(?![\w&+#])"),)
 
 
 _KW_STOP = {"skill", "skills", "experience", "knowledge", "ability", "abilities", "proficiency", "understanding",
@@ -1552,11 +1657,22 @@ def _same_word(a: str, b: str) -> bool:
     return a == b or (len(short) >= 5 and long_.startswith(short) and long_[len(short):] in _ENDINGS)
 
 
-def _near(roots: list[str], line: str) -> bool:
-    """Whether every one of `roots` is in `line` as a form of the word, all within a few words of each other."""
+def _near(roots: list[str], line: str, ordered: bool = False) -> bool:
+    """Whether every one of `roots` is in `line` as a form of the word, all within a few words of each other;
+    `ordered`, each after the one before it, so "user experience" is never "the experience of users"."""
     words = [_root(w) for w in _flat(line).split()]
     spots = [[i for i, w in enumerate(words) if _same_word(r, w)] for r in roots]
     if not roots or not all(spots):
+        return False
+    if ordered:
+        for start in spots[0]:
+            at = start
+            for p in spots[1:]:
+                at = next((i for i in p if i > at), -1)
+                if at < 0:
+                    break
+            if at >= 0 and at - start <= len(roots) + 2:
+                return True
         return False
     first = [min(p) for p in spots]
     return max(first) - min(first) <= len(roots) + 2
@@ -1567,24 +1683,54 @@ def _term_set(text: str) -> frozenset[str]:
     return frozenset(terms(text))
 
 
-def keyword_shown(kw: str, lines: list[str]) -> str:
+def keyword_shown(kw: str, lines: list[str], kind: str = "") -> str:
     """How a keyword shows in the page's lines: "exact" (as the posting writes it, or its acronym or full form, in a
     line), "close" (for a tool, every skill it names in one line, as "AWS Glue" in "AWS (S3, Lambda, Glue)"; for an
     idea, every word of it near the others in one line, in another form, as "data models" in "Data Modeling" or
-    "communication" in "communicating"), or ""."""
-    forms, flats = keyword_forms(kw), [_flat(x) for x in lines]
-    if any(f" {f} " in x for f in forms for x in flats) or any(
-            re.search(rf"(?<![A-Za-z0-9]){re.escape(a)}(?![A-Za-z0-9])", x) for a in case_acronyms(kw) for x in lines):
+    "communication" in "communicating"; or written another way that says the same, as "large language models" for
+    "LLMs" (ALIASES)), or "". A short name, an acronym or a name that is also a plain word counts exactly only as
+    written (_as_written): "R" is never the R of R&D, nor "Excel" a chance to excel. `kind`: the keyword's kind in
+    the posting's read, so a skill it capitalized ("Clustering") still reads in any case."""
+    how = _match(kw, lines, kind)
+    return "close" if how == "alias" else how
+
+
+def _match(kw: str, lines: list[str], kind: str = "") -> str:
+    """keyword_shown's reading, telling apart a keyword the page says only another way: "exact", "close", "alias"
+    (ALIASES) or ""."""
+    how = _shown(kw, lines, kind)
+    if how:
+        return how
+    return "alias" if any(_shown(a, lines, kind, part) for a, part in alias_forms(kw)) else ""
+
+
+def _shown(kw: str, lines: list[str], kind: str = "", ordered: str = "") -> str:
+    """keyword_shown's reading of the keyword's own forms, before ALIASES. `ordered`: words of it that, read in
+    another form, count only in their order (_near), as an alias form's own words do."""
+    written, flats = sorted(_forms(kw)), [_flat(x) for x in lines]
+    for w in written:
+        f = _flat(w).strip()
+        hits = [x for x, fl in zip(lines, flats) if f and f" {f} " in fl]
+        named = {t for t in _term_set(w) if not t.startswith("theme:") and t not in CONCEPTS}
+        if hits and named:  # a tool shows exactly only where the engine reads that tool: not Looker in Looker Studio
+            hits = [x for x in hits if named <= _term_set(x)]
+        real = _as_written(w, kind) if hits else ()
+        if hits and (not real or any(rx.search(x) for rx in real for x in hits)):
+            return "exact"
+    if any(re.search(rf"(?<![A-Za-z0-9]){re.escape(a)}(?![A-Za-z0-9])", x) for a in case_acronyms(kw) for x in lines):
         return "exact"
     word = " ".join((kw or "").split())
     if " " not in word and word[:1].isupper() and not _term_set(word):  # a name ("Transformer"), not a word to inflect
         return ""
-    for f in forms:
-        tools = {t for t in _term_set(f) if not t.startswith("theme:") and t not in CONCEPTS}
+    roots = lambda f: [_root(r) for r in _flat(f).split() if r not in _FUNCTION and r not in _KW_STOP]
+    for w in written:
+        f = _flat(w).strip()
+        # a tool as written too: "Excel" names the tool its pattern keeps the capital for, where "excel" names none
+        tools = {t for t in _term_set(f) | _term_set(w) if not t.startswith("theme:") and t not in CONCEPTS}
         if tools:
             if any(tools <= _term_set(x) for x in lines):
                 return "close"
-        elif any(_near([_root(w) for w in f.split() if w not in _FUNCTION and w not in _KW_STOP], x) for x in lines):
+        elif f and any(_near(roots(f), x) and (not ordered or _near(roots(ordered), x, True)) for x in lines):
             return "close"
     return ""
 
@@ -1609,8 +1755,9 @@ def your_skills(facts: dict) -> set[str]:
 def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
     """Put each keyword that's yours but still missing from the page on the skills row it belongs to, in the posting's
     words: a tool or idea as the posting says it ("Business Intelligence"), a general phrase with the tool of yours it
-    stands for ("Version Control (Git)"). A row makes room by dropping items the posting doesn't name; nothing goes on
-    that worded_item wouldn't pass. How many went on."""
+    stands for ("Version Control (Git)"). A keyword the page says only another way ("ML" for "machine learning",
+    ALIASES) goes on in the posting's words too, as a search for them finds it. A row makes room by dropping items
+    the posting doesn't name as it writes them; nothing goes on that worded_item wouldn't pass. How many went on."""
     rows = [r for r in sel["skills"] if r["id"] != "learning"]
     if not rows:
         return 0
@@ -1618,11 +1765,11 @@ def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
     themes = {t for t in terms(" ".join(b["text"] for grp in ("roles", "projects") for g in facts[grp] if ok(g)
                                         for b in g["bullets"] if ok(b))) if t.startswith("theme:")}
     named = " ".join(k["text"] for k in report)
-    wanted = lambda it: any(keyword_shown(k["text"], [it]) for k in report) or bool(set(terms(it)) & set(terms(named)))
+    wanted = lambda it: any(_shown(k["text"], [it], k.get("kind", "")) for k in report) or bool(set(terms(it)) & set(terms(named)))
     kind_of = {r["id"]: _kind(next((x for x in facts["skills"] if x["id"] == r["id"]), r)) for r in rows}
     placed = 0
     mine = approved_lines(facts)
-    for k in [k for k in report if k["status"] == "missing" and k.get("kind") != "soft"]:  # a soft skill shows in lines
+    for k in [k for k in report if (k["status"] == "missing" or k.get("alias")) and k.get("kind") != "soft"]:  # a soft skill shows in lines
         found = set(terms(k["text"]))
         tools = {t for t in found if not t.startswith("theme:")}
         general = synonym_tools(k["text"]) & yours if not tools else set()
@@ -1654,18 +1801,20 @@ def place_keywords(sel: dict, report: list[dict], facts: dict) -> int:
     return placed
 
 
-def _evidenced(kw: str, lines: list[str]) -> bool:
+def _evidenced(kw: str, lines: list[str], kind: str = "") -> bool:
     """Whether one of `lines` says keyword `kw`: a phrase as keyword_shown reads it, and a one-word keyword only as
-    that word or its acronym, so "Monitored outgoing goods" never stands for pipeline monitoring."""
-    how = keyword_shown(kw, lines)
-    return how == "exact" or (bool(how) and len(kw.split()) > 1)
+    that word, its acronym or another way of writing it (ALIASES: "LLMs" for "large language models"), so "Monitored
+    outgoing goods" never stands for pipeline monitoring."""
+    how = _match(kw, lines, kind)
+    return how in ("exact", "alias") or (how == "close" and len(kw.split()) > 1)
 
 
 def keyword_report(kws: list[dict], sel: dict, facts: dict) -> list[dict]:
-    """Each of the posting's keywords on this page. status: "on page" (match "exact" or "close"), "learning" (on your
-    Currently learning line), "missing" (yours, but nothing on the page says it yet), "ask" (a skill it names that you
-    haven't said you have; the preview asks), "declined" (you said you haven't used it) or "only you" (none of your
-    lines shows it; write one only if you've done it)."""
+    """Each of the posting's keywords on this page. status: "on page" (match "exact" or "close", and alias True when
+    the page says it only another way, ALIASES), "learning" (on your Currently learning line), "missing" (yours, but
+    nothing on the page says it yet), "ask" (a skill it names that you haven't said you have; the preview asks),
+    "declined" (you said you haven't used it) or "only you" (none of your lines shows it; write one only if you've
+    done it)."""
     groups = sel["experience"] + sel["projects"]
     lines = [(sel.get("summary") or {}).get("text", "")] + [b["text"] for g in groups for b in g["bullets"]] \
         + [", ".join(g.get("tech") or []) for g in groups] + [", ".join(x["items"]) for x in sel["skills"] if x["id"] != "learning"] \
@@ -1680,18 +1829,19 @@ def keyword_report(kws: list[dict], sel: dict, facts: dict) -> list[dict]:
         found, topics = set(k["terms"]), {t for t in terms(k["text"]) if t.startswith("theme:")}
         either = len(keyword_forms(k["text"])) > 1 and "/" in k["text"]  # a choice: any one of its tools is enough
         have = (found & yours) if either else (found if found <= yours else set())
-        how = keyword_shown(k["text"], lines)
+        how = _match(k["text"], lines, k["kind"])
         general = synonym_tools(k["text"]) if not found else set()
-        in_lines = _evidenced(k["text"], approved_lines)  # one of your lines says it, in its own words
+        in_lines = _evidenced(k["text"], approved_lines, k["kind"])  # one of your lines says it, in its own words
         single = len(found | topics) <= 1 or bool(general)
-        status = ("on page" if how else "learning" if keyword_shown(k["text"], learning) else
+        status = ("on page" if how else "learning" if keyword_shown(k["text"], learning, k["kind"]) else
                   "missing" if (found and have and (either or _spoken_for(k["text"], set(terms(k["text"])), strict=True))
                                 and (single or in_lines)) or (general & yours)
                   or (not found and topics and topics <= themes and _spoken_for(k["text"], topics, strict=True)
                       and topics <= _SKILL_THEMES and k.get("kind") != "soft" and (single or in_lines))
                   or in_lines else
                   "declined" if found & said_no else "ask" if (found - yours) or general else "only you")
-        out.append({"text": k["text"], "kind": k["kind"], "from": k["from"], "count": k["count"], "status": status, "match": how})
+        out.append({"text": k["text"], "kind": k["kind"], "from": k["from"], "count": k["count"], "status": status,
+                    "match": "close" if how == "alias" else how, **({"alias": True} if how == "alias" else {})})
     return out
 
 
@@ -1724,18 +1874,46 @@ def job_keywords(job_title: str, job_text: str, given: list[dict] | tuple = (), 
         seen.add(word.lower())
         where = "required" if _TERM_RX[t].search(asked["required"]) else "preferred" if _TERM_RX[t].search(asked["preferred"]) else "responsibility"
         out.append({"text": word, "kind": "skill" if t in CONCEPTS else "tool", "from": where, "terms": [t]})
+    said = {}  # times the posting writes each keyword, inside longer ones too: none for one it never writes
     for k in out:
         k["count"] = max([1] + [flat.count(f" {f} ") for f in keyword_forms(k["text"])])
         k["weight"] = round(KEYWORD_WEIGHT.get(k["from"], 2.0) * (1 + 0.5 * math.log2(k["count"]))
                             * (1.25 if any(f" {f} " in title for f in keyword_forms(k["text"])) else 1.0), 2)
+        said[id(k)] = max([0] + [len(re.findall(rf"(?<= ){re.escape(f)}(?= )", flat)) for f in keyword_forms(k["text"])])
     out.sort(key=lambda k: -k["weight"])  # the order it was read in breaks ties
-    # the mix a recruiter searches: every required tool, at most TOOLS_OTHER_MAX other tools, and the skill and method
-    # phrases ("data quality checks", "data models") never crowded out by tools
-    tools = [k for k in out if k["kind"] == "tool"]
-    keep = [k for k in tools if k["from"] == "required"] + [k for k in tools if k["from"] != "required"][:TOOLS_OTHER_MAX]
-    rest = [k for k in out if k["kind"] != "tool"]
-    keep += rest[:max(PHRASES_MIN, KEYWORDS_MAX - len(keep))]
+
+    def mix(ks: list[dict]) -> list[dict]:
+        """The mix a recruiter searches: every required tool, at most TOOLS_OTHER_MAX other tools, and the skill and
+        method phrases ("data quality checks", "data models") never crowded out by tools."""
+        tools = [k for k in ks if k["kind"] == "tool"]
+        keep = [k for k in tools if k["from"] == "required"] + [k for k in tools if k["from"] != "required"][:TOOLS_OTHER_MAX]
+        rest = [k for k in ks if k["kind"] != "tool"]
+        return keep + rest[:max(PHRASES_MIN, KEYWORDS_MAX - len(keep))]
+    keep = mix(out)
+    # a keyword that a more specific one on the list says in full counts once, as the specific one, and the next
+    # keyword takes its place (Reactive-Resume's selectTerms drops a term that one outranking it holds)
+    gone = {id(a) for a in keep if any(_holds(b, a, said) for b in keep)}
+    while gone:
+        out = [k for k in out if id(k) not in gone]
+        keep = mix(out)
+        gone = {id(a) for a in keep if any(_holds(b, a, said) for b in keep)}
     return sorted(keep, key=lambda k: -k["weight"])
+
+
+def _holds(b: dict, a: dict, said: dict[int, int]) -> bool:
+    """Whether keyword `b` says keyword `a` in full as a more specific one ("Python libraries" holds "Python"), where
+    the posting never writes `a` apart from `b` (`said`: how often it writes each) and `a` is no more important, so
+    the list needs only `b`. `b` is a short phrase, never a list or a choice ("Statistics, Mathematics, or Computer
+    Science", "AWS/GCP"), and of `a`'s kind: a tool only for a tool, a skill or domain for a tool, skill or domain,
+    the others for their own."""
+    fa, fb = _flat(a["text"]).strip(), _flat(b["text"]).strip()
+    if a is b or not fa or fa == fb or f" {fa} " not in f" {fb} " or len(_ACRONYM.sub(" ", b["text"]).split()) > 3:
+        return False
+    if re.search(r"[,;]|\s&\s|\b(?:and|or)\b", b["text"], re.I) or (len(keyword_forms(b["text"])) > 1 and "/" in b["text"]):
+        return False
+    if a["kind"] != b["kind"] and not (a["kind"] in ("skill", "domain") and b["kind"] in ("tool", "skill", "domain")):
+        return False
+    return said[id(a)] <= said[id(b)] and a["weight"] <= b["weight"]
 
 
 def _whole_word(text: str, m: re.Match) -> str:
@@ -2752,8 +2930,9 @@ def select(facts: dict, job_text: str, job_title: str, variant: str,
     # the posting's keywords each line says, and the ones the page says already (its skills rows count half: a
     # keyword reads stronger in a line about the work)
     said: dict[str, set[int]] = {}
-    kw_in = lambda text: said.setdefault(text, {i for i, k in enumerate(kws) if _evidenced(k["text"], [text])})
-    in_skills = {i for i, k in enumerate(kws) if keyword_shown(k["text"], [", ".join(x["items"]) for x in skills if x["id"] != "learning"])}
+    kw_in = lambda text: said.setdefault(text, {i for i, k in enumerate(kws) if _evidenced(k["text"], [text], k["kind"])})
+    rows_said = [", ".join(x["items"]) for x in skills if x["id"] != "learning"]
+    in_skills = {i for i, k in enumerate(kws) if keyword_shown(k["text"], rows_said, k["kind"])}
     kw_done = set(kw_in(summary["text"])) if summary else set()
     for bid in picked:
         kw_done |= kw_in(picked[bid]["text"])

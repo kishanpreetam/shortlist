@@ -6,7 +6,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from shortlist import rewrite
+from shortlist import apply, rewrite
+from shortlist import resume as engine
 
 FACTS = {
     "roles": [{"id": "r1", "title": "Data Engineer", "org": "Acme", "status": "approved", "tools": ["Python", "SQL"], "bullets": [
@@ -25,7 +26,8 @@ ONLY_R1A = {"type": "result", "is_error": False, "structured_output": {"rewrites
     {"id": "r1a", "text": "Engineered ETL in SQL for 1M+ rows."}, {"id": "zzz", "text": "Built a rocket."}]}}
 SIGNED_OUT = {"type": "result", "is_error": True, "result": "Failed to authenticate: OAuth session expired"}
 
-# Stands in for the claude command line: logs how it was called, then prints FAKE_CLAUDE_OUT.
+# Stands in for the claude command line: logs how it was called, then prints FAKE_CLAUDE_OUT (FAKE_REPAIR_OUT, when
+# set, for the repair call, the one that sends rejected rewrites back).
 LAUNCH = '#!/bin/sh\nexec "{python}" -I "{script}" "$@"\n'  # a shell wrapper, since the venv path may have a space
 FAKE = """import json, os, sys
 prompt = sys.stdin.read()
@@ -37,6 +39,8 @@ if "hiring manager will check" in system:  # the requirements step answers on it
     print(os.environ.get("FAKE_REQ_OUT", json.dumps({"type": "result", "is_error": False, "structured_output": {"requirements": [
         {"id": "x", "text": "Build ETL pipelines with SQL", "kind": "required"},
         {"id": "y", "text": "Monitor pipeline reliability", "kind": "bogus"}]}})))
+elif '"rejected":' in prompt and "FAKE_REPAIR_OUT" in os.environ:
+    print(os.environ["FAKE_REPAIR_OUT"])
 else:
     print(os.environ["FAKE_CLAUDE_OUT"])
 """
@@ -56,10 +60,11 @@ class FakeClaude(unittest.TestCase):
         rewrite._FAILED.clear()  # a failure remembered by another test must not answer for this one
         self.addCleanup(rewrite._FAILED.clear)
 
-    def run_fake(self, out, job=JOB, title="Data Engineer", **kw):
+    def run_fake(self, out, job=JOB, title="Data Engineer", repair=None, **kw):
         out = out if isinstance(out, str) else json.dumps(out)
         mine = {"CLAUDE_CODE_EFFORT_LEVEL": "max", "MAX_THINKING_TOKENS": "32000"}  # as your own Claude Code settings may set
-        with mock.patch.dict(os.environ, {"FAKE_CLAUDE_LOG": str(self.log), "FAKE_CLAUDE_OUT": out, **mine}):
+        fix = {"FAKE_REPAIR_OUT": repair if isinstance(repair, str) else json.dumps(repair)} if repair is not None else {}
+        with mock.patch.dict(os.environ, {"FAKE_CLAUDE_LOG": str(self.log), "FAKE_CLAUDE_OUT": out, **mine, **fix}):
             return rewrite.rewrite(rewrite.points_for(FACTS), title, job, str(self.claude), self.cache, **kw)
 
     def all_calls(self):
@@ -70,6 +75,9 @@ class FakeClaude(unittest.TestCase):
 
     def req_calls(self):
         return [c for c in self.all_calls() if c["argv"][c["argv"].index("--system-prompt") + 1] == rewrite.REQ_RULES]
+
+    def repair_calls(self):  # the rewrite calls that send rejected rewrites back
+        return [c for c in self.calls() if '"rejected":' in c["prompt"]]
 
 
 class RewriteTest(FakeClaude):
@@ -247,6 +255,94 @@ class SummaryRepairTest(FakeClaude):
         prompts = [c["prompt"] for c in self.all_calls()]
         self.assertEqual(len(prompts), 2)  # the first try and one repair, never more
         self.assertIn("It failed these checks: it claims more scope: end to end", prompts[1])
+
+
+class PointRepairTest(FakeClaude):
+    """A rewrite the fact check would drop goes back to Claude once, with its problems, and the second try is used
+    only where it passes the same check; otherwise your own line stays."""
+    BAD = {"r1a": "Built ETL pipelines in Python and SQL with Kafka for 1M+ rows.", "p1a": "Built 6 detection agents in Kafka."}
+    GOOD = {"r1a": "Built Python and SQL ETL pipelines for 1M+ rows.", "p1a": "Built 6 agents for detection."}
+
+    @staticmethod
+    def answer(texts, shows=None):
+        return {"type": "result", "is_error": False, "structured_output": {"rewrites": [
+            {"id": k, "text": v, "shows": (shows or {}).get(k, [])} for k, v in texts.items()]}}
+
+    @staticmethod
+    def sent(call):  # the points a repair call sends back, each with its rejected rewrite and problems
+        return json.loads(call["prompt"].split("Points:\n", 1)[1].split("\n\n<job", 1)[0])
+
+    def test_the_check_is_the_one_the_resume_engine_runs(self):
+        texts = [("r1a", t) for t in (self.BAD["r1a"], self.GOOD["r1a"], "Built ETL pipelines in SQL for 1M+ rows.",
+                                      "Built ETL pipelines in Python and SQL for 2M+ rows.")] + \
+                [("p1a", t) for t in (self.BAD["p1a"], self.GOOD["p1a"], "Built 6 agentic detection agents.")]
+        for phrases in ((), ["agentic systems"]):  # a posting's own keyword lets a rewrite use its words
+            check = rewrite.point_check(FACTS, phrases)
+            for pid, text in texts:
+                with self.subTest(text=text, phrases=phrases):
+                    self.assertEqual(not check(pid, text), pid in engine.faithful_rewrites(FACTS, {pid: text}, phrases))
+        self.assertEqual([bool(rewrite.point_check(FACTS, p)("p1a", "Built 6 agentic detection agents.")) for p in ((), ["agentic systems"])],
+                         [True, False])
+        self.assertTrue(rewrite.point_check(FACTS)("r1b", "Wrote a Kafka streaming job."))  # a pending line is never rewritten
+
+    def test_a_rejected_rewrite_is_repaired_and_used(self):
+        first = self.answer({"r1a": self.BAD["r1a"], "p1a": self.GOOD["p1a"]}, {"r1a": ["R2"]})
+        fix = self.answer({"r1a": self.GOOD["r1a"]}, {"r1a": ["R1", "R9"]})
+        got = self.run_fake(first, repair=fix, check=rewrite.point_check(FACTS))
+        self.assertEqual(got, self.GOOD)
+        self.assertEqual((got.repaired, got.shows["r1a"], got.note), (["r1a"], ["R1"], ""))  # its shows as the repair gives them
+        self.assertEqual(engine.faithful_rewrites(FACTS, got), self.GOOD)  # the resume engine keeps it
+        [call] = self.repair_calls()
+        [sent] = self.sent(call)  # only the rewrite the check would drop goes back, beside your line
+        self.assertEqual((sent["id"], sent["text"], sent["rejected"]),
+                         ("r1a", "Built ETL pipelines in Python and SQL for 1M+ rows.", self.BAD["r1a"]))
+        self.assertIn("it names something your line doesn't: Kafka", sent["problems"])
+        argv, prompt = call["argv"], call["prompt"]
+        self.assertEqual(argv[argv.index("--system-prompt") + 1], rewrite._rules(rewrite.RULES))  # under the same rules
+        self.assertEqual((argv[argv.index("--tools") + 1], call["files"], call["effort"]), ("", [], rewrite.EFFORT))  # locked down
+        self.assertIn("--strict-mcp-config", argv)
+        self.assertIn("Requirements:", prompt)
+        self.assertEqual(prompt.count("</job>"), 1)  # the posting stays inside its tag
+        self.assertGreater(prompt.index(rewrite.REPAIR), prompt.index("</job>"))  # and the request comes after it
+
+    def test_a_repair_that_still_fails_keeps_your_line(self):
+        first = self.answer({"r1a": self.BAD["r1a"], "p1a": self.GOOD["p1a"]})
+        for i, fix in enumerate(("Built ETL pipelines in Python and SQL for 2M+ rows.",  # a changed number
+                                 "Built ETL pipelines in Python and SQL for 1M+ rows.")):  # your line back, unchanged
+            with self.subTest(fix=fix):
+                self.cache = self.tmp / f"cache{i}"
+                got = self.run_fake(first, repair=self.answer({"r1a": fix}), check=rewrite.point_check(FACTS))
+                self.assertEqual((got["r1a"], got.repaired), (self.BAD["r1a"], []))  # the rejected one, so the preview counts it
+                self.assertEqual(engine.faithful_rewrites(FACTS, got), {"p1a": self.GOOD["p1a"]})  # the page prints your line
+        self.assertEqual(len(self.repair_calls()), 2)
+
+    def test_one_repair_call_per_job_and_it_is_cached(self):
+        first = self.answer(self.BAD, {"r1a": ["R2"], "p1a": ["R2"]})
+        fix = self.answer(self.GOOD, {"r1a": ["R1"], "p1a": []})
+        got = self.run_fake(first, repair=fix, check=rewrite.point_check(FACTS))
+        self.assertEqual((got, got.repaired), (self.GOOD, ["r1a", "p1a"]))
+        self.assertEqual(got.shows, {"r1a": ["R1"], "p1a": ["R2"]})  # a repair that names none keeps the first answer's
+        [call] = self.repair_calls()  # the rejects of both groups, in one call
+        self.assertEqual([p["id"] for p in self.sent(call)], ["r1a", "p1a"])
+        n = len(self.all_calls())
+        again = self.run_fake(first, repair=fix, check=rewrite.point_check(FACTS))
+        self.assertEqual((again, again.repaired, again.shows), (got, got.repaired, got.shows))
+        self.assertEqual(len(self.all_calls()), n)  # the next click reads every answer from the cache
+
+    def test_repair_off_makes_no_extra_call(self):
+        self.assertIsNone(apply._point_check(FACTS, [], {"rewrite_repair": False}))  # the profile switch
+        self.assertIsNotNone(apply._point_check(FACTS, [], {}))  # on unless you turn it off
+        first = self.answer({"r1a": self.BAD["r1a"], "p1a": self.GOOD["p1a"]})
+        got = self.run_fake(first, repair=self.answer({"r1a": self.GOOD["r1a"]}), check=None)
+        self.assertEqual((got["r1a"], got.repaired, len(self.calls()), self.repair_calls()), (self.BAD["r1a"], [], 2, []))
+
+    def test_a_failed_repair_call_keeps_the_first_answers(self):
+        first = self.answer({"r1a": self.BAD["r1a"], "p1a": self.GOOD["p1a"]}, {"r1a": ["R1"]})
+        got = self.run_fake(first, repair=SIGNED_OUT, check=rewrite.point_check(FACTS))
+        self.assertEqual((got, got.shows, got.repaired, got.note),
+                         ({"r1a": self.BAD["r1a"], "p1a": self.GOOD["p1a"]}, {"r1a": ["R1"], "p1a": []}, [], ""))
+        self.run_fake(first, repair=SIGNED_OUT, check=rewrite.point_check(FACTS))
+        self.assertEqual(len(self.repair_calls()), 1)  # the next click doesn't wait on a repair that just failed
 
 
 class PostingTest(unittest.TestCase):
