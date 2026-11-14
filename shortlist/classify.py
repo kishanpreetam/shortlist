@@ -112,25 +112,44 @@ NO = re.compile(
     r"\b(optional practical training|curricular practical training|(?-i:OPT|CPT)|I-983)\b|"
     # "sponsorship is not available", "Current and future sponsorship are not available for this position" (FIS, Nov
     # 2026), "sponsorship is unavailable"
-    r"sponsorship\s+(?:is\s+|are\s+)?(?:not\s+|un)(?:available|offered|provided|possible|supported)|"
+    r"spon?sorship\s+(?:is\s+|are\s+)?(?:not\s+|un)(?:available|offered|provided|possible|supported)|"  # "sposorship" too
     r"not eligible for (visa )?sponsorship|"
+    # "This role is not visa eligible" (22 postings)
+    r"\bnot\s+visa[- ]eligible\b|\bnot eligible for (?:a |an )?(?:work |employment )?visa\b|"
     # "No visa sponsorship is available" read as yes until Nov 2026: YES finds "visa sponsorship is available" in it
     r"\bno\s+(?:(?:visa|h-?1b|immigration|employment|work)\s+)?sponsorship\b|"
     # "Visa Sponsorship: No", "Sponsorship Available: No", "Is visa sponsorship available? No" (YES finds those too)
     r"sponsorship(?:\s+(?:is\s+)?(?:available|offered|provided))?\s*[:?]\s*"
     r"(?:no|none|n/a|unavailable|not (?:available|offered|provided))\b|"
-    r"without (the need for )?(current or future |future |now or in the future )?(visa |employer |employment )?sponsorship|"
-    r"now or in the future[^.]{0,60}sponsor|independently authori[sz]ed",
+    # "without the need for new visa sponsorship", "without requiring current or future visa sponsorship", "without
+    # visa support or sponsorship" (Cisco, Oct 2026): any wording between "without" and "sponsorship"
+    r"\bwithout\b[^.]{0,60}?\bsponsorship\b|"
+    r"now or in the future[^.]{0,60}sponsor|independently authori[sz]ed|"
+    # "We will not consider candidates who require current or future sponsorship" (American Family, Oct 2026), "unable to
+    # consider candidates on a student visa", "does not hire H-1B, F-1 CPT, OPT, or STEM OPT candidates"
+    r"\b(will not|won't|do not|don't|does not|doesn't|cannot|can't|unable to|not able to)\s+(consider|accept|hire|support)\b"
+    r"[^.]{0,80}?\b(?:sponsor|(?<!J-1 )visas?\b|F-1\b|H-1B\b|(?-i:OPT)\b)|"  # J-1 exchange visas aren't F-1 OPT
+    r"sponsorship (will|would) not be (considered|offered|provided|available)",
     re.I,
 )
+# An indirect refusal, read only when the posting doesn't also offer sponsorship: authorized to work "on a permanent
+# basis", "indefinitely", or "for any employer ... now and in the future" is more than an OPT holder can promise, but
+# Latitude AI pairs its "on a permanent basis" with "Visa sponsorship is available for this position"
+NO_WEAK = re.compile(
+    r"\bauthori[sz](?:ed|ation)\s+to\s+work\b[^.]{0,60}?\b(?:on\s+a\s+(?:continuing\s+and\s+)?permanent\s+basis|"
+    r"indefinitely|permanently|now\s+and\s+in\s+the\s+future)\b", re.I)
 YES = re.compile(
     r"\bwe (do |will |can )?(sponsor|offer (visa )?sponsorship)\b|visa sponsorship (is )?available|"
     r"supports? (work authori[sz]ation|visas?|immigration)|take over sponsorship|sponsorship (is )?available",
     re.I,
 )
-ABOUT_WORK = re.compile(r"visa|work|employ|h-?1b|\bopt\b|authori[sz]|immigra|citizen|sponsor|clearance", re.I)
+# "U.S. Person status is required as this position will require the ability to access U.S.-only data systems" names no
+# work or citizenship word, so it went unread
+ABOUT_WORK = re.compile(r"visa|work|employ|h-?1b|\bopt\b|authori[sz]|immigra|citizen|sponsor|clearance|\bu\.?s\.? persons?\b", re.I)
 FALSE_POSITIVE = re.compile(r"export licen[cs]e|every role|executive sponsor|sponsor bank|event sponsor|clearance sponsor|sponsor your clearance|"
-                            r"gas[- ]sponsorship|paymaster", re.I)  # crypto wallets "sponsor" gas fees
+                            r"gas[- ]sponsorship|paymaster|"  # crypto wallets "sponsor" gas fees
+                            r"sponsored (?:benefits|health|medical|dental|insurance|plans?|retirement)|"  # "not eligible for Company sponsored benefits"
+                            r"sponsor\w*[^.]{0,80}\b(?:degrees|scholarships?)\b", re.I)  # "we sponsor bright women ... through their university degrees"
 # "may not be able to employ candidates who ... or support future F-1 or H-1B sponsorship" (Roblox and others)
 NO_VISA_SUPPORT = re.compile(r"\b(may not|not be able to|unable to|cannot)\b[^\n]{0,220}?\b(F-1|H-1B|visa)\b[^\n]{0,40}?\bsponsorship\b", re.I)
 # Green-card (PERM) postings list one person's exact background: "Position also requires the following: 2 years ..."
@@ -147,8 +166,8 @@ CLEARANCE_SPONSOR = re.compile(r"sponsor (your |a )?(security )?clearance", re.I
 # A sentence ends at ".", "!" or "?" and a space, or at a line break, but not after "U.S.", "U.S.A.", "e.g." or "i.e.",
 # and not before a one-word answer: "Must be a U.S. citizen." is one sentence (split after "U.S.", it read as unknown
 # until Nov 2026), and so is "Is visa sponsorship available? No."
-_SENTENCE_END = re.compile(r"(?<=[.!?])(?<![Uu]\.[Ss]\.)(?<![Ss]\.[Aa]\.)(?<![Ee]\.[Gg]\.)(?<![Ii]\.[Ee]\.)"
-                           r"\s+(?!\s*(?i:no|yes|none|n/a)\b)|\n+")
+_SENTENCE_END = re.compile(r"(?<=[.!?])(?<![Uu]\.[Ss]\.)(?<![Ss]\.[Aa]\.)(?<![Ee]\.[Gg]\.)(?<![Ii]\.[Ee]\.)(?<!C\.F\.R\.)"
+                           r"\s+(?!\s*(?i:no|yes|none|n/a)\b)|\n+")  # "a U.S. person as defined in 22 C.F.R. §120.62"
 # "Whether or not you need visa sponsorship, we welcome you" is no refusal: its "not ... sponsor" read as one until Nov 2026
 _WHETHER_OR_NOT = re.compile(r"\bwhether\s+or\s+not\b", re.I)
 # A citizenship sentence that also lets in anyone authorized to work lets in an OPT holder: "U.S. citizens, permanent
@@ -159,8 +178,13 @@ OPEN_ALTERNATIVE = re.compile(
 # Citizenship or a clearance a posting only prefers, or may need, rules no one out: "U.S. citizenship preferred", "an
 # active clearance is preferred but not required", "Security clearance not required, but a plus"
 CITIZEN_SOFT = re.compile(r"\b(?:preferred|a plus|desired|nice to have|not required|not a requirement|may be required|"
-                          r"if required|may require)\b|"
+                          r"if required|may require|beneficial|not necessary|not mandatory|optional|where required|"
+                          r"where applicable|if applicable)\b|"  # "may include meeting the definition of a U.S. Person where required"
                           r"\brequired\s*[:?]\s*(?:no|none|n/a)\b", re.I)  # "U.S. Citizenship Required: No"
+# A requirements bullet often has no "must": "Ability to obtain and maintain a U.S. security clearance" (23 postings),
+# "Working on a U.S. visa does NOT qualify as a U.S. person"
+REQUIREMENT = re.compile(r"require|must|only|restricted|eligib|\b(?:ability|able) to (?:obtain|maintain|hold)\b|"
+                         r"\bqualif(?:y|ies) as\b", re.I)
 # Clauses, so the softening applies only to its own: in "requires an active Secret clearance (Top Secret preferred)" the
 # Secret clearance is still required
 _CLAUSE = re.compile(r"[;()]|,\s*(?=(?:with|but|though|although)\b)|\s+but\s+", re.I)
@@ -171,7 +195,7 @@ def _requires_citizenship(sentence: str) -> bool:
     """A sentence that requires citizenship, or a clearance (which needs it): a requirement word, no open alternative for
     anyone authorized to work, and a citizenship or clearance phrase in a clause that doesn't soften it. A bare softener
     right after the clause, "(preferred but not required)" or ", but a plus", softens it too."""
-    if not re.search(r"require|must|only|restricted|eligib", sentence, re.I) or OPEN_ALTERNATIVE.search(sentence):
+    if not REQUIREMENT.search(sentence) or OPEN_ALTERNATIVE.search(sentence):
         return False
     clauses = _CLAUSE.split(sentence)
     for i, clause in enumerate(clauses):
@@ -189,11 +213,15 @@ def sponsorship_signal(text: str) -> str:
     # A line that goes on in lower case is the same sentence wrapped: "This role is not eligible for visa" then
     # "sponsorship." (Carvana's has a no-break space and spaces around the line break)
     text = re.sub(r"\s*\n\s*(?=[a-z])", " ", text or "")
+    # A one-word answer on the next line answers the line before: "Visa Sponsorship Available" then "No" (Allegiant, 20
+    # postings) read as yes
+    text = re.sub(r"\s*\n\s*(?=(?:No|NO|Yes|YES|None|N/A)\s*(?:\n|$))", ": ", text)
     sentences = [_WHETHER_OR_NOT.sub("whether", s) for s in _SENTENCE_END.split(text)]
     relevant = [s for s in sentences if ABOUT_WORK.search(s) and not FALSE_POSITIVE.search(s)]
     # Joined with ". " so a gap like "not ... sponsor" never runs from one bullet into the next: "Must not need
-    # relocation to work onsite" then "Visa sponsorship available" isn't a refusal
-    joined = ". ".join(relevant)
+    # relocation to work onsite" then "Visa sponsorship available" isn't a refusal. "U.S." reads as "US" here, so a gap
+    # can run past it: "authorized to work for any employer in the U.S. now and in the future"
+    joined = re.sub(r"\b([Uu])\.([Ss])\.(?:([Aa])\.)?", r"\1\2\3", ". ".join(relevant))
     if any(_requires_citizenship(s) for s in relevant):
         return "citizen_only"
     # A requirements list often says it with no "must": "U.S. Citizenship with the ability to obtain ... a clearance."
@@ -204,6 +232,8 @@ def sponsorship_signal(text: str) -> str:
         return "no"
     if YES.search(joined) and not CLEARANCE_SPONSOR.search(joined):
         return "yes"
+    if NO_WEAK.search(joined):
+        return "no"
     return "unknown"
 
 
