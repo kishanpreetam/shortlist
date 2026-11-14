@@ -93,8 +93,12 @@ def skills_in(text: str) -> set[str]:
 # first, then "no", then "yes". A sentence only counts if it's about work authorization.
 
 CITIZEN = re.compile(
-    r"\bU\.?S\.? citizens?(hip)?\b|lawful permanent resident|green card holder|\bITAR\b|\bU\.S\. persons?\b|"
-    r"(security|secret|top secret|ts/sci|active|government|federal) clearance",
+    # never the agency: "E-Verify, a system operated by U.S. Citizenship and Immigration Services" (U.S. Bank, Geotab)
+    r"\b(?:U\.?S\.?|United States) citizens?(hip)?\b(?!\s+(?:and|&)\s+immigration)|"
+    r"lawful permanent resident|green card holder|\bITAR\b|\bU\.S\. persons?\b|"
+    r"(security|secret|top secret|ts/sci|active|government|federal) clearance|"
+    # "Top Secret preferred; candidates eligible and willing to obtain clearance will also be considered"
+    r"\b(?:eligible|able|willing)\s+(?:and\s+willing\s+)?to\s+obtain\s+(?:a\s+|the\s+)?(?:security\s+)?clearance",
     re.I,
 )
 NO = re.compile(
@@ -106,7 +110,15 @@ NO = re.compile(
     # "do not opt in" isn't one
     r"\b(will not|won't|do not|don't|cannot|can't|unable to)\b[^.]{0,200}?"
     r"\b(optional practical training|curricular practical training|(?-i:OPT|CPT)|I-983)\b|"
-    r"sponsorship (is )?not (available|offered|provided)|not eligible for (visa )?sponsorship|"
+    # "sponsorship is not available", "Current and future sponsorship are not available for this position" (FIS, Nov
+    # 2026), "sponsorship is unavailable"
+    r"sponsorship\s+(?:is\s+|are\s+)?(?:not\s+|un)(?:available|offered|provided|possible|supported)|"
+    r"not eligible for (visa )?sponsorship|"
+    # "No visa sponsorship is available" read as yes until Nov 2026: YES finds "visa sponsorship is available" in it
+    r"\bno\s+(?:(?:visa|h-?1b|immigration|employment|work)\s+)?sponsorship\b|"
+    # "Visa Sponsorship: No", "Sponsorship Available: No", "Is visa sponsorship available? No" (YES finds those too)
+    r"sponsorship(?:\s+(?:is\s+)?(?:available|offered|provided))?\s*[:?]\s*"
+    r"(?:no|none|n/a|unavailable|not (?:available|offered|provided))\b|"
     r"without (the need for )?(current or future |future |now or in the future )?(visa |employer |employment )?sponsorship|"
     r"now or in the future[^.]{0,60}sponsor|independently authori[sz]ed",
     re.I,
@@ -117,7 +129,8 @@ YES = re.compile(
     re.I,
 )
 ABOUT_WORK = re.compile(r"visa|work|employ|h-?1b|\bopt\b|authori[sz]|immigra|citizen|sponsor|clearance", re.I)
-FALSE_POSITIVE = re.compile(r"export licen[cs]e|every role|executive sponsor|sponsor bank|event sponsor|clearance sponsor|sponsor your clearance", re.I)
+FALSE_POSITIVE = re.compile(r"export licen[cs]e|every role|executive sponsor|sponsor bank|event sponsor|clearance sponsor|sponsor your clearance|"
+                            r"gas[- ]sponsorship|paymaster", re.I)  # crypto wallets "sponsor" gas fees
 # "may not be able to employ candidates who ... or support future F-1 or H-1B sponsorship" (Roblox and others)
 NO_VISA_SUPPORT = re.compile(r"\b(may not|not be able to|unable to|cannot)\b[^\n]{0,220}?\b(F-1|H-1B|visa)\b[^\n]{0,40}?\bsponsorship\b", re.I)
 # Green-card (PERM) postings list one person's exact background: "Position also requires the following: 2 years ..."
@@ -128,16 +141,60 @@ def is_perm_style(text: str) -> bool:
     return bool(PERM_STYLE.search(text or ""))
 
 
-CITIZEN_WITH_CLEARANCE = re.compile(r"\bU\.?\s?S\.?\s+citizen(ship)?\b.{0,160}?\bclearance\b", re.I | re.S)
+CITIZEN_WITH_CLEARANCE = re.compile(r"\bU\.?\s?S\.?\s+citizen(ship)?\b(?!\s+(?:and|&)\s+immigration).{0,160}?\bclearance\b",
+                                    re.I | re.S)
 CLEARANCE_SPONSOR = re.compile(r"sponsor (your |a )?(security )?clearance", re.I)
+# A sentence ends at ".", "!" or "?" and a space, or at a line break, but not after "U.S.", "U.S.A.", "e.g." or "i.e.",
+# and not before a one-word answer: "Must be a U.S. citizen." is one sentence (split after "U.S.", it read as unknown
+# until Nov 2026), and so is "Is visa sponsorship available? No."
+_SENTENCE_END = re.compile(r"(?<=[.!?])(?<![Uu]\.[Ss]\.)(?<![Ss]\.[Aa]\.)(?<![Ee]\.[Gg]\.)(?<![Ii]\.[Ee]\.)"
+                           r"\s+(?!\s*(?i:no|yes|none|n/a)\b)|\n+")
+# "Whether or not you need visa sponsorship, we welcome you" is no refusal: its "not ... sponsor" read as one until Nov 2026
+_WHETHER_OR_NOT = re.compile(r"\bwhether\s+or\s+not\b", re.I)
+# A citizenship sentence that also lets in anyone authorized to work lets in an OPT holder: "U.S. citizens, permanent
+# residents, or otherwise authorized to work in the U.S.", "a U.S. citizen or hold a valid work permit"
+OPEN_ALTERNATIVE = re.compile(
+    r"\bor\b[^.]{0,80}?\b(?:authori[sz]ed|eligible|permitted)\s+to\s+work\b|"
+    r"\bor\b[^.]{0,80}?\b(?:work|employment)\s+(?:authori[sz]ation|permit|visa)\b", re.I)
+# Citizenship or a clearance a posting only prefers, or may need, rules no one out: "U.S. citizenship preferred", "an
+# active clearance is preferred but not required", "Security clearance not required, but a plus"
+CITIZEN_SOFT = re.compile(r"\b(?:preferred|a plus|desired|nice to have|not required|not a requirement|may be required|"
+                          r"if required|may require)\b|"
+                          r"\brequired\s*[:?]\s*(?:no|none|n/a)\b", re.I)  # "U.S. Citizenship Required: No"
+# Clauses, so the softening applies only to its own: in "requires an active Secret clearance (Top Secret preferred)" the
+# Secret clearance is still required
+_CLAUSE = re.compile(r"[;()]|,\s*(?=(?:with|but|though|although)\b)|\s+but\s+", re.I)
+_FILLER = re.compile(r"\b(?:but|and|or|not|is|are|be|it|this|that|strongly|highly|very|also|though|although|a|an|the)\b|\W+", re.I)
+
+
+def _requires_citizenship(sentence: str) -> bool:
+    """A sentence that requires citizenship, or a clearance (which needs it): a requirement word, no open alternative for
+    anyone authorized to work, and a citizenship or clearance phrase in a clause that doesn't soften it. A bare softener
+    right after the clause, "(preferred but not required)" or ", but a plus", softens it too."""
+    if not re.search(r"require|must|only|restricted|eligib", sentence, re.I) or OPEN_ALTERNATIVE.search(sentence):
+        return False
+    clauses = _CLAUSE.split(sentence)
+    for i, clause in enumerate(clauses):
+        if not CITIZEN.search(clause) or CITIZEN_SOFT.search(clause):
+            continue
+        after = clauses[i + 1] if i + 1 < len(clauses) else ""
+        if CITIZEN_SOFT.search(after) and not _FILLER.sub("", CITIZEN_SOFT.sub("", after)):
+            continue
+        return True
+    return False
 
 
 def sponsorship_signal(text: str) -> str:
     """'citizen_only' | 'no' | 'yes' | 'unknown'"""
-    sentences = re.split(r"(?<=[.!?])\s+|\n+", text)
+    # A line that goes on in lower case is the same sentence wrapped: "This role is not eligible for visa" then
+    # "sponsorship." (Carvana's has a no-break space and spaces around the line break)
+    text = re.sub(r"\s*\n\s*(?=[a-z])", " ", text or "")
+    sentences = [_WHETHER_OR_NOT.sub("whether", s) for s in _SENTENCE_END.split(text)]
     relevant = [s for s in sentences if ABOUT_WORK.search(s) and not FALSE_POSITIVE.search(s)]
-    joined = " ".join(relevant)
-    if any(CITIZEN.search(s) and re.search(r"require|must|only|restricted|eligib", s, re.I) for s in relevant):
+    # Joined with ". " so a gap like "not ... sponsor" never runs from one bullet into the next: "Must not need
+    # relocation to work onsite" then "Visa sponsorship available" isn't a refusal
+    joined = ". ".join(relevant)
+    if any(_requires_citizenship(s) for s in relevant):
         return "citizen_only"
     # A requirements list often says it with no "must": "U.S. Citizenship with the ability to obtain ... a clearance."
     # Checked on the whole text, since sentence splitting cuts "U.S." apart.
@@ -190,10 +247,36 @@ PLACE_SEP = re.compile(r"\s*[;|\n]\s*|\s+/\s+|\s+or\s+")
 def is_us(location: str, title: str = "") -> bool:
     if not location:
         return False
-    if NON_US.search(title) and not re.search(r"united states|\bus\b|\busa\b", title, re.I):
+    places = [p for p in PLACE_SEP.split(location) if p.strip()]
+    # A title naming another country's city rules the job out, unless the job is in that city's US namesake:
+    # "Data Analyst - Dublin" in "Dublin, CA"
+    if NON_US.search(title) and not re.search(r"united states|\bus\b|\busa\b", title, re.I) \
+            and not _us_twin(title) and not any(_us_twin(p) for p in places):
         return False
     # A posting that lists several places is open to US candidates if any of them is in the US.
-    return any(_is_us_place(p) for p in PLACE_SEP.split(location) if p.strip())
+    return any(_is_us_place(p) for p in places)
+
+
+# US towns named like a place on NON_US, by state. A two-letter code can be a country too ("Berlin, DE" is Germany,
+# "Hyderabad, IN" India, "Toronto, ON, CA" Canada), so a code rescues only these known US places
+US_TWINS = {
+    "dublin": "CA OH GA VA PA TX NH IN", "melbourne": "FL KY IA AR", "vancouver": "WA", "paris": "TX TN KY IL AR ME MO ID",
+    "london": "KY OH AR", "berlin": "NH CT MD NJ PA VT WI", "warsaw": "IN NY KY MO NC", "peru": "IN IL NY",
+    "mexico": "MO ME NY IN", "toronto": "OH", "lisbon": "OH ME CT ND NH", "amsterdam": "NY OH", "madrid": "IA NE ME",
+}
+
+
+def _us_twin(place: str) -> bool:
+    """Whether a place is a US town that shares its name with one abroad: "Dublin, CA", "Dublin, OH", "Melbourne, FL",
+    "Vancouver, WA", "Warsaw, IN", or a full state name, "Dublin, Ohio". They all read as abroad until Nov 2026."""
+    city, _, rest = place.partition(",")
+    name = NON_US.search(city)
+    if not name or not rest.strip():
+        return False
+    code = re.match(r"\s*([A-Z]{2})\b", rest)
+    if code:
+        return code.group(1) in US_TWINS.get(name.group(0).lower(), "").split()
+    return bool(re.match(r"\s*" + US_STATE_NAMES.pattern, rest, re.I))
 
 
 def _is_us_place(location: str) -> bool:
@@ -201,7 +284,8 @@ def _is_us_place(location: str) -> bool:
     trailing = re.findall(r",\s*([A-Z]{2})\b(?!\s*,?\s*(?:United States|US|USA))", location)
     if trailing and all(t not in US_STATES and t != "US" for t in trailing) and not re.search(r"united states|\busa?\b", location, re.I):
         return False
-    if NON_US.search(location) and not re.search(r"united states|\bus\b|\busa\b", location, re.I):
+    if NON_US.search(location) and not _us_twin(location) \
+            and not re.search(r"united states|\bus\b|\busa\b", location, re.I):
         return False
     tokens = re.findall(r"\b[A-Z]{2}\b", location)
     return any(t in US_STATES for t in tokens) or bool(US_HINT.search(location) or US_STATE_NAMES.search(location)) or bool(

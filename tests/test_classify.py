@@ -26,6 +26,20 @@ class IsUSTest(unittest.TestCase):
         self.assertTrue(is_us("San Francisco", title="Capacity Systems Software Engineer"))
         self.assertFalse(is_us("Ontario - Remote", title="AI Support Engineer - Toronto"))
 
+    def test_a_us_state_beats_a_city_name_shared_abroad(self):
+        # These all read as abroad until Nov 2026, so their jobs never reached a list
+        for loc in ["Dublin, CA", "Dublin, OH", "Dublin, Ohio", "Melbourne, FL", "Vancouver, WA", "Paris, TX", "Peru, IN",
+                    "Mexico, MO"]:
+            with self.subTest(loc=loc):
+                self.assertTrue(is_us(loc))
+        # ...and the same names abroad stay abroad, including "Toronto, ON, CA", where CA is Canada
+        for loc in ["Dublin, Ireland", "Melbourne, VIC, Australia", "Vancouver, BC", "Toronto, ON, CA", "London, ON, CA",
+                    "Vancouver, BC, CA"]:
+            with self.subTest(loc=loc):
+                self.assertFalse(is_us(loc))
+        self.assertTrue(is_us("Dublin, CA", title="Data Analyst - Dublin"))
+        self.assertFalse(is_us("Remote", title="Data Analyst - Dublin"))
+
 
 class SeniorityTest(unittest.TestCase):
     def test_hospital_and_university_titles(self):

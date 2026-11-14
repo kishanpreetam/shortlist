@@ -79,5 +79,62 @@ class ContractTest(unittest.TestCase):
         self.assertFalse(is_contract("Data Engineer", "Full-time"))
 
 
+class SponsorshipMisreads(unittest.TestCase):
+    """Wordings that read wrong until Nov 2026: refusals that read as yes or unknown, citizens-only that read as
+    unknown, and open postings that read as no."""
+
+    def test_refusals_read_as_no(self):
+        for text in ("No visa sponsorship is available for this role.",  # read as yes
+                     "Sponsorship Available: No",  # read as yes
+                     "Is visa sponsorship available? No.",  # read as yes
+                     "Current and future sponsorship are not available for this position.",  # FIS; read as unknown
+                     "Visa sponsorship is unavailable for this role.",
+                     "Visa Sponsorship: No"):
+            with self.subTest(text=text):
+                self.assertEqual(sponsorship_signal(text), "no")
+
+    def test_citizens_only_reads_whole(self):
+        # "U.S." no longer ends the sentence, so the citizenship ask and its "must" are read together
+        for text in ("Must be a U.S. citizen.", "Applicants must be U.S. citizens or permanent residents."):
+            with self.subTest(text=text):
+                self.assertEqual(sponsorship_signal(text), "citizen_only")
+
+    def test_open_postings_arent_ruled_out(self):
+        self.assertEqual(sponsorship_signal("Whether or not you need visa sponsorship, we welcome you to apply."), "unknown")
+        self.assertEqual(sponsorship_signal(
+            "Must be a U.S. citizen, permanent resident, or otherwise authorized to work in the U.S."), "unknown")
+        self.assertEqual(sponsorship_signal("Must be authorized to work in the U.S.; U.S. citizenship preferred."), "unknown")
+        # a "not" in one bullet no longer pairs with "sponsor" in the next
+        self.assertEqual(sponsorship_signal("Must not need relocation to work onsite\nVisa sponsorship available"), "yes")
+        self.assertEqual(sponsorship_signal("There are no restrictions on visa sponsorship for strong candidates."), "unknown")
+        # the agency isn't a citizenship requirement (U.S. Bank and Geotab postings name it for E-Verify)
+        self.assertEqual(sponsorship_signal("Employers must verify eligibility through E-Verify, a system operated by "
+                                            "U.S. Citizenship and Immigration Services."), "unknown")
+        # crypto wallets sponsor gas fees, not visas
+        self.assertEqual(sponsorship_signal("Set the paymaster and gas-sponsorship strategy and how it degrades when "
+                                            "sponsorship is unavailable."), "unknown")
+
+    def test_a_wrapped_line_is_one_sentence(self):
+        self.assertEqual(sponsorship_signal("This role is not eligible for visa\nsponsorship."), "no")
+        self.assertEqual(sponsorship_signal("This role is not eligible for visa\xa0 \n sponsorship.\xa0 \n Carvana is"), "no")
+
+    def test_softening_belongs_to_its_own_clause(self):
+        # still required: the preference is about the higher clearance
+        for text in ("This role requires an active Secret clearance (Top Secret preferred).",
+                     "Clearance: Active Secret clearance required; TS/SCI strongly preferred.",
+                     "Security Clearance: Active Top Secret clearance strongly preferred; candidates eligible and willing "
+                     "to obtain clearance will also be considered."):
+            with self.subTest(text=text):
+                self.assertEqual(sponsorship_signal(text), "citizen_only")
+        # not required: the clause itself, or a bare note right after it, softens it
+        for text in ("Clearance: An active U.S. government security clearance is preferred but not required.",
+                     "Hold or are eligible for a US security clearance (preferred but not required).",
+                     "Security clearance not required, but a plus.",
+                     "With eligibility for a US security clearance being a plus.",
+                     "U.S. Citizenship Required: No"):
+            with self.subTest(text=text):
+                self.assertEqual(sponsorship_signal(text), "unknown")
+
+
 if __name__ == "__main__":
     unittest.main()
