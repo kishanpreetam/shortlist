@@ -836,6 +836,17 @@ class ContextTest(unittest.TestCase):
         self.assertEqual(trim("Analyzed performance data from 300+ institutions for a $10M NSF-funded alliance, building ETL pipelines.",
                               ["$10M", "300+"]), "Analyzed performance data, building ETL pipelines.")
         self.assertIsNone(trim("Processed 1M+ rows with Spark.", ["1M+"]))  # there the number is the result, not context
+        self.assertEqual(trim("Modeled semantic layers, feeding Tableau dashboards for alliance leadership across data from "
+                              "300+ institutions.", ["300+"]),
+                         "Modeled semantic layers, feeding Tableau dashboards for alliance leadership.")  # not "across data."
+        self.assertEqual(trim("Built Tableau dashboards for 500 users across a $10M NSF-funded alliance.", ["$10M"]),
+                         "Built Tableau dashboards for 500 users.")  # a phrase with its own number stays
+        self.assertEqual(trim("Reduced errors in model inputs across pipelines handling 1M+ customer-interaction records.", ["1M+"]),
+                         "Reduced errors in model inputs across pipelines.")  # "across pipelines" says something
+        self.assertEqual(trim("Cut processing time by 40% for analysis across a $10M NSF funded alliance.", ["$10M"]),
+                         "Cut processing time by 40% for analysis.")
+        self.assertIsNone(trim("Maintained ETL pipelines, keeping data from 300+ institutions reliable for dashboards.",
+                               ["300+"]))  # "keeping data for dashboards" would lose what the line says
 
     def test_the_first_line_keeps_it_and_the_check_verifies_the_rest(self):
         facts = copy.deepcopy(FACTS)

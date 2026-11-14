@@ -1443,9 +1443,21 @@ def trim_context(text: str, nums) -> str | None:
     line whose context an earlier line of the same role already states, so a role doesn't repeat it."""
     out = text
     for n in sorted(set(nums), key=lambda n: (-len(n), n)):
-        rx = re.compile(rf"(?:,\s*|\s+){_CTX_LEAD}\s+(?:an?\s+|the\s+)?{re.escape(n)}(?:\s+[A-Za-z][\w'-]*){{1,3}}?"
+        # up to 3 words after the number, ending at the first plural: never "300+ institutions reliable", which would
+        # take "reliable" out of "keeping data from 300+ institutions reliable for dashboards"
+        rx = re.compile(rf"(?:,\s*|\s+){_CTX_LEAD}\s+(?:an?\s+|the\s+)?{re.escape(n)}"
+                        rf"(?:\s+[A-Za-z][\w'-]*(?<![s'])){{0,2}}?\s+[A-Za-z][\w'-]*"
                         rf"(?=\s*[,.;]|\s+(?:and|to|with|by|for|across|in|from|at|that|which|while)\b|$)", re.I)
-        out = rx.sub("", out, count=1)
+        m = rx.search(out)
+        if not m:
+            continue
+        before = out[:m.start()]
+        # "across data from 300+ institutions": "across data" alone says nothing, so it comes out with the number's
+        # phrase, while "across pipelines" and "for analysis" stay; never a phrase that names a tool
+        lead = re.search(r"(?:,\s*|\s+)(?:across|spanning)\s+((?:[a-z][\w'-]*\s+)?[a-z][\w'-]*(?<![s']))$", before)
+        if lead and not any(_tool_at(w, False) for w in lead.group(1).split()):
+            before = before[:lead.start()]
+        out = before + out[m.end():]
     out = re.sub(r"\s+([,.;])", r"\1", re.sub(r"\s{2,}", " ", out)).strip()
     out = re.sub(r",\s*([.;])", r"\1", out)
     return out if out != text and len(out) >= 0.4 * len(text) else None  # a line keeps most of what it says
